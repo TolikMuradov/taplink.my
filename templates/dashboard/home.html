@@ -94,8 +94,8 @@
     {% if at_limit %}
     <div class="flex items-center justify-center gap-3 bg-tertiary text-on-tertiary px-4 h-10 text-sm font-medium shrink-0">
       <span class="material-symbols-outlined text-base" style="font-variation-settings:'FILL' 1">warning</span>
-      You've reached your {{ link_limit }} link limit.
-      <a href="#" class="underline font-semibold hover:no-underline">Upgrade to Standard &rarr;</a>
+      You've reached your {{ link_limit }}-link limit.
+      <a href="{% url 'upgrade' %}" class="underline font-semibold hover:no-underline">Upgrade to Standard &rarr;</a>
     </div>
     {% endif %}
 
@@ -127,13 +127,24 @@
                 <span x-text="links.length"></span> links
               </p>
             </div>
-            <button
-              @click="addLink()"
-              class="ml-auto flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-on-primary text-sm font-semibold hover:opacity-90 active:scale-95 transition-all"
-            >
-              <span class="material-symbols-outlined text-base">add</span>
-              Add link
-            </button>
+            <template x-if="links.length < linkLimit">
+              <button
+                @click="addLink()"
+                class="ml-auto flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-on-primary text-sm font-semibold hover:opacity-90 active:scale-95 transition-all"
+              >
+                <span class="material-symbols-outlined text-base">add</span>
+                Add link
+              </button>
+            </template>
+            <template x-if="links.length >= linkLimit">
+              <a href="{% if not profile.is_standard %}{% url 'upgrade' %}{% else %}#{% endif %}"
+                class="ml-auto flex items-center gap-2 px-4 py-2 rounded-xl bg-surface-container border border-outline-variant text-on-surface-variant text-sm font-semibold transition-all"
+                :title="isStandard ? 'Link limit reached' : 'Upgrade to add more links'"
+              >
+                <span class="material-symbols-outlined text-base">{% if not profile.is_standard %}workspace_premium{% else %}block{% endif %}</span>
+                {% if not profile.is_standard %}Upgrade{% else %}Limit reached{% endif %}
+              </a>
+            </template>
           </div>
 
           <!-- Empty state -->
@@ -1187,6 +1198,7 @@ function dashboardApp() {
     sidebarOpen: true,
     previewOpen: true,
     isStandard: {{ profile.is_standard|yesno:"true,false" }},
+    linkLimit: {{ link_limit }},
 
     // Links
     links: INITIAL_LINKS,

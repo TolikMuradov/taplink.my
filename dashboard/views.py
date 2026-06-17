@@ -12,7 +12,7 @@ from accounts.models import UserProfile, Link, Appearance
 from analytics_app.models import ProfileView, LinkClick
 from django_ratelimit.decorators import ratelimit
 
-FREE_LINK_LIMIT = 9999  # temporarily unlimited for dev
+FREE_LINK_LIMIT = 2
 STANDARD_LINK_LIMIT = 10
 
 PLATFORM_ICONS = [
