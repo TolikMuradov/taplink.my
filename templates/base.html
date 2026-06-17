@@ -123,6 +123,10 @@
       background: rgba(27, 27, 35, 0.8);
       backdrop-filter: blur(12px);
       border: 1px solid rgba(144, 143, 160, 0.2);
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+    .glass-card:hover {
+      border-color: rgba(192, 193, 255, 0.18);
     }
     .material-symbols-outlined {
       font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
@@ -130,6 +134,79 @@
     [x-cloak] { display: none !important; }
     .custom-scrollbar::-webkit-scrollbar { width: 4px; }
     .custom-scrollbar::-webkit-scrollbar-thumb { background: #464554; border-radius: 10px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+
+    /* ── Page entry ── */
+    @keyframes page-in {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: none; }
+    }
+    body { animation: page-in 0.32s cubic-bezier(0.16, 1, 0.3, 1) both; }
+
+    /* ── Smooth scroll ── */
+    html { scroll-behavior: smooth; }
+
+    /* ── Focus ring ── */
+    *:focus-visible {
+      outline: 2px solid rgba(192, 193, 255, 0.7);
+      outline-offset: 2px;
+      border-radius: 6px;
+    }
+    input:focus, textarea:focus, select:focus {
+      box-shadow: 0 0 0 3px rgba(192, 193, 255, 0.06);
+    }
+
+    /* ── Button active press feedback ── */
+    button:active:not(:disabled),
+    a.btn-press:active {
+      transform: scale(0.97);
+    }
+    button { transition: transform 0.08s ease, opacity 0.15s ease, colors 0.15s ease; }
+
+    /* ── Float animation ── */
+    @keyframes float-y {
+      0%, 100% { transform: translateY(0px); }
+      50%       { transform: translateY(-10px); }
+    }
+    .animate-float { animation: float-y 4s ease-in-out infinite; }
+
+    /* ── Scroll reveal ── */
+    .reveal {
+      opacity: 0;
+      transform: translateY(22px);
+      transition: opacity 0.55s cubic-bezier(0.16, 1, 0.3, 1),
+                  transform 0.55s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .reveal.visible { opacity: 1; transform: none; }
+    .reveal-d1 { transition-delay: 0.08s; }
+    .reveal-d2 { transition-delay: 0.17s; }
+    .reveal-d3 { transition-delay: 0.26s; }
+
+    /* ── Shimmer ── */
+    .shimmer {
+      background: linear-gradient(90deg, rgba(192,193,255,0) 0%, rgba(192,193,255,0.08) 50%, rgba(192,193,255,0) 100%);
+      background-size: 200% 100%;
+      animation: shimmer 2.5s infinite linear;
+    }
+    @keyframes shimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }
+
+    /* ── Stagger hero ── */
+    .hero-item {
+      opacity: 0;
+      transform: translateY(14px);
+      animation: page-in 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+    .hero-d1 { animation-delay: 0.05s; }
+    .hero-d2 { animation-delay: 0.12s; }
+    .hero-d3 { animation-delay: 0.20s; }
+    .hero-d4 { animation-delay: 0.28s; }
+
+    /* ── Modal spring ── */
+    @keyframes modal-spring {
+      from { opacity: 0; transform: scale(0.94) translateY(10px); }
+      to   { opacity: 1; transform: none; }
+    }
+    .animate-modal { animation: modal-spring 0.22s cubic-bezier(0.34, 1.4, 0.64, 1) both; }
   </style>
 
   {% block extra_head %}{% endblock %}
@@ -142,14 +219,31 @@
   <div id="toast-container" class="fixed bottom-4 right-4 z-[100] flex flex-col gap-2 pointer-events-none"></div>
 
   <script>
-    function showToast(message, type) {
-      const bg = { success: 'bg-green-600', error: 'bg-error', warning: 'bg-tertiary' };
+    function showToast(message, type = 'success') {
+      const cfg = {
+        success: { bg: '#16a34a', icon: 'check_circle' },
+        error:   { bg: '#b91c1c', icon: 'error' },
+        warning: { bg: '#b45309', icon: 'warning' },
+      };
+      const { bg, icon } = cfg[type] || cfg.success;
       const t = document.createElement('div');
-      t.className = `${bg[type] || bg.success} text-white px-4 py-3 rounded-lg shadow-lg text-body-sm font-body-sm pointer-events-auto transition-all duration-300 opacity-0 translate-y-1`;
-      t.textContent = message;
+      t.className = 'flex items-center gap-3 text-white pl-4 pr-5 py-3 rounded-xl shadow-2xl text-sm font-medium pointer-events-auto max-w-xs';
+      t.style.cssText = `background:${bg}ee;backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,0.12);opacity:0;transform:translateX(14px) scale(0.95);`;
+      t.innerHTML = `<span class="material-symbols-outlined text-lg shrink-0" style="font-variation-settings:'FILL' 1">${icon}</span><span>${message}</span>`;
       document.getElementById('toast-container').appendChild(t);
-      requestAnimationFrame(() => t.classList.remove('opacity-0', 'translate-y-1'));
-      setTimeout(() => { t.classList.add('opacity-0', 'translate-y-1'); setTimeout(() => t.remove(), 300); }, 3000);
+      // Spring in
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        t.style.transition = 'opacity 0.25s ease, transform 0.3s cubic-bezier(0.34,1.56,0.64,1)';
+        t.style.opacity = '1';
+        t.style.transform = 'none';
+      }));
+      // Fade out
+      setTimeout(() => {
+        t.style.transition = 'opacity 0.2s ease, transform 0.2s ease';
+        t.style.opacity = '0';
+        t.style.transform = 'translateX(14px) scale(0.95)';
+        setTimeout(() => t.remove(), 210);
+      }, 3300);
     }
     {% with messages=messages %}{% for message in messages %}
     showToast("{{ message|escapejs }}", "{% if message.tags == 'error' %}error{% elif message.tags == 'warning' %}warning{% else %}success{% endif %}");

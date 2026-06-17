@@ -11,12 +11,6 @@
     overflow: hidden;
     background: #111;
   }
-  .shimmer {
-    background: linear-gradient(90deg, rgba(192,193,255,0) 0%, rgba(192,193,255,0.08) 50%, rgba(192,193,255,0) 100%);
-    background-size: 200% 100%;
-    animation: shimmer 2.5s infinite linear;
-  }
-  @keyframes shimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }
 </style>
 {% endblock %}
 
@@ -45,20 +39,20 @@
 
     <!-- Left: Copy -->
     <div class="space-y-lg">
-      <span class="inline-flex items-center gap-sm px-3 py-1 rounded-full bg-secondary-container text-on-secondary-container text-label-md font-label-md">
+      <span class="hero-item hero-d1 inline-flex items-center gap-sm px-3 py-1 rounded-full bg-secondary-container text-on-secondary-container text-label-md font-label-md">
         <span class="w-1.5 h-1.5 bg-on-secondary-container rounded-full animate-pulse"></span>
         Free to start
       </span>
 
-      <h1 class="text-display font-display leading-tight">
+      <h1 class="hero-item hero-d2 text-display font-display leading-tight">
         Your links,<br><span class="text-primary-container">your brand.</span>
       </h1>
 
-      <p class="text-body-lg font-body-lg text-on-surface-variant max-w-md">
+      <p class="hero-item hero-d3 text-body-lg font-body-lg text-on-surface-variant max-w-md">
         The only link-in-bio tool designed for the Thai creative ecosystem. Consolidate your TikTok shop, Shopee store, and LINE contact into one beautiful page.
       </p>
 
-      <div class="pt-md">
+      <div class="hero-item hero-d4 pt-md">
         <a href="{% url 'account_login' %}" class="inline-flex items-center gap-sm bg-primary-container text-on-primary-container px-8 py-4 rounded-xl font-bold text-headline-md hover:brightness-110 transition-all brand-glow active:scale-95">
           Create your page
           <span class="material-symbols-outlined">arrow_forward</span>
@@ -88,7 +82,7 @@
          }">
 
       <!-- Phone -->
-      <div class="interactive-mockup shadow-2xl transition-colors duration-500" :style="`background-color: ${bg}`">
+      <div class="interactive-mockup shadow-2xl transition-colors duration-500 animate-float" :style="`background-color: ${bg}`">
         <div class="p-md text-center h-full overflow-y-auto custom-scrollbar">
           <!-- Avatar -->
           <div class="w-20 h-20 bg-surface-container-highest rounded-full mx-auto mb-md border-2 border-primary overflow-hidden flex items-center justify-center">
@@ -153,29 +147,29 @@
 
   <!-- ======== FEATURES ======== -->
   <section id="features" class="py-2xl border-t border-outline-variant">
-    <div class="text-center mb-xl">
+    <div class="text-center mb-xl reveal">
       <h2 class="text-headline-lg font-headline-lg text-on-surface">Everything you need to grow.</h2>
     </div>
     <div class="grid grid-cols-1 md:grid-cols-3 gap-lg">
 
-      <div class="bg-surface-container p-xl rounded-2xl border border-outline-variant hover:border-primary-container transition-colors group">
-        <div class="w-12 h-12 rounded-xl bg-primary-container/10 flex items-center justify-center mb-lg group-hover:scale-110 transition-transform">
+      <div class="reveal reveal-d1 bg-surface-container p-xl rounded-2xl border border-outline-variant hover:border-primary-container hover:-translate-y-1 hover:shadow-xl hover:shadow-primary/5 transition-all duration-300 group">
+        <div class="w-12 h-12 rounded-xl bg-primary-container/10 flex items-center justify-center mb-lg group-hover:scale-110 group-hover:bg-primary-container/20 transition-all duration-300">
           <span class="material-symbols-outlined text-primary-container">link</span>
         </div>
         <h3 class="text-headline-md font-headline-md text-on-surface mb-sm">Your own link</h3>
         <p class="text-on-surface-variant text-body-md">Get a professional <span class="text-primary font-bold">name.taplink.my</span> URL that looks great in any social media bio.</p>
       </div>
 
-      <div class="bg-surface-container p-xl rounded-2xl border border-outline-variant hover:border-primary-container transition-colors group">
-        <div class="w-12 h-12 rounded-xl bg-primary-container/10 flex items-center justify-center mb-lg group-hover:scale-110 transition-transform">
+      <div class="reveal reveal-d2 bg-surface-container p-xl rounded-2xl border border-outline-variant hover:border-primary-container hover:-translate-y-1 hover:shadow-xl hover:shadow-primary/5 transition-all duration-300 group">
+        <div class="w-12 h-12 rounded-xl bg-primary-container/10 flex items-center justify-center mb-lg group-hover:scale-110 group-hover:bg-primary-container/20 transition-all duration-300">
           <span class="material-symbols-outlined text-primary-container">palette</span>
         </div>
         <h3 class="text-headline-md font-headline-md text-on-surface mb-sm">Full customization</h3>
         <p class="text-on-surface-variant text-body-md">Choose from hundreds of themes or build your own with colors, fonts, backgrounds, and button styles.</p>
       </div>
 
-      <div class="bg-surface-container p-xl rounded-2xl border border-outline-variant hover:border-primary-container transition-colors group">
-        <div class="w-12 h-12 rounded-xl bg-primary-container/10 flex items-center justify-center mb-lg group-hover:scale-110 transition-transform">
+      <div class="reveal reveal-d3 bg-surface-container p-xl rounded-2xl border border-outline-variant hover:border-primary-container hover:-translate-y-1 hover:shadow-xl hover:shadow-primary/5 transition-all duration-300 group">
+        <div class="w-12 h-12 rounded-xl bg-primary-container/10 flex items-center justify-center mb-lg group-hover:scale-110 group-hover:bg-primary-container/20 transition-all duration-300">
           <span class="material-symbols-outlined text-primary-container">location_on</span>
         </div>
         <h3 class="text-headline-md font-headline-md text-on-surface mb-sm">Built for Thailand</h3>
@@ -187,7 +181,7 @@
 
   <!-- ======== PRICING ======== -->
   <section id="pricing" class="py-2xl">
-    <div class="text-center mb-xl">
+    <div class="text-center mb-xl reveal">
       <h2 class="text-headline-lg font-headline-lg text-on-surface">Simple pricing.</h2>
       <p class="text-on-surface-variant text-body-md mt-sm">Start free. Upgrade when you're ready.</p>
     </div>
@@ -195,7 +189,7 @@
     <div class="grid grid-cols-1 md:grid-cols-2 gap-xl max-w-[800px] mx-auto">
 
       <!-- Free -->
-      <div class="bg-surface-container p-xl rounded-2xl border border-outline-variant flex flex-col">
+      <div class="reveal reveal-d1 bg-surface-container p-xl rounded-2xl border border-outline-variant flex flex-col hover:-translate-y-1 hover:shadow-lg transition-all duration-300">
         <div class="mb-lg">
           <h3 class="text-headline-md font-headline-md text-on-surface">Free</h3>
           <div class="flex items-baseline gap-xs mt-sm">
@@ -228,7 +222,7 @@
       </div>
 
       <!-- Standard -->
-      <div class="bg-surface-container p-xl rounded-2xl border-2 border-primary-container flex flex-col relative brand-glow">
+      <div class="reveal reveal-d2 bg-surface-container p-xl rounded-2xl border-2 border-primary-container flex flex-col relative brand-glow hover:-translate-y-1 hover:shadow-2xl hover:shadow-primary/10 transition-all duration-300">
         <div class="absolute -top-4 left-1/2 -translate-x-1/2 bg-primary-container text-on-primary-container px-4 py-1 rounded-full text-label-md font-bold whitespace-nowrap">
           Most popular
         </div>
@@ -301,4 +295,16 @@
 
 {% block extra_js %}
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+<script>
+  // Scroll reveal
+  const _observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.classList.add('visible');
+        _observer.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.12 });
+  document.querySelectorAll('.reveal').forEach(el => _observer.observe(el));
+</script>
 {% endblock %}

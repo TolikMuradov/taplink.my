@@ -109,7 +109,10 @@
       <div class="max-w-2xl mx-auto px-4 py-6 pb-24 lg:pb-6">
 
         <!-- ========== TAB: LINKS ========== -->
-        <div x-show="activeTab==='links'" x-cloak>
+        <div x-show="activeTab==='links'" x-cloak
+          x-transition:enter="transition ease-out duration-180"
+          x-transition:enter-start="opacity-0 translate-y-2"
+          x-transition:enter-end="opacity-100 translate-y-0">
           <!-- Header -->
           <div class="flex items-center gap-3 mb-6">
             <div>
@@ -120,7 +123,7 @@
             </div>
             <button
               @click="addLink()"
-              class="ml-auto flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-on-primary text-sm font-semibold hover:opacity-90 transition-opacity"
+              class="ml-auto flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-on-primary text-sm font-semibold hover:opacity-90 active:scale-95 transition-all"
             >
               <span class="material-symbols-outlined text-base">add</span>
               Add link
@@ -144,8 +147,14 @@
           <div class="space-y-3" id="links-list">
             <template x-for="link in links" :key="link.id">
               <div
-                class="glass-card rounded-xl p-4 group hover:border-primary hover:shadow-lg transition-all duration-200"
-                :class="link.is_active ? '' : 'opacity-60'"
+                x-transition:enter="transition ease-out duration-200"
+                x-transition:enter-start="opacity-0 -translate-y-1 scale-[0.98]"
+                x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+                x-transition:leave="transition ease-in duration-150"
+                x-transition:leave-start="opacity-100 scale-100"
+                x-transition:leave-end="opacity-0 scale-[0.98]"
+                class="glass-card rounded-xl p-4 group hover:border-primary/60 hover:shadow-lg hover:shadow-primary/5 transition-all duration-200"
+                :class="link.is_active ? '' : 'opacity-50'"
               >
                 <div class="flex items-center gap-3">
                   <!-- Drag handle -->
@@ -319,7 +328,10 @@
         </div>
 
         <!-- ========== TAB: APPEARANCE ========== -->
-        <div x-show="activeTab==='appearance'" x-cloak>
+        <div x-show="activeTab==='appearance'" x-cloak
+          x-transition:enter="transition ease-out duration-180"
+          x-transition:enter-start="opacity-0 translate-y-2"
+          x-transition:enter-end="opacity-100 translate-y-0">
           <div class="mb-6">
             <h1 class="text-xl font-bold text-on-surface">Appearance</h1>
             <p class="text-sm text-on-surface-variant mt-0.5">Customise how your page looks</p>
@@ -560,7 +572,7 @@
 
           <!-- Sticky save -->
           <div class="sticky bottom-0 pt-4 pb-2 bg-surface/90 backdrop-blur-sm mt-4">
-            <button @click="saveAppearance()" class="w-full py-3 rounded-xl bg-primary text-on-primary font-semibold text-sm hover:opacity-90 transition-opacity flex items-center justify-center gap-2">
+            <button @click="saveAppearance()" class="w-full py-3 rounded-xl bg-primary text-on-primary font-semibold text-sm hover:opacity-90 active:scale-[0.98] transition-all flex items-center justify-center gap-2">
               <span class="material-symbols-outlined text-base">save</span>
               Save changes
             </button>
@@ -568,7 +580,10 @@
         </div>
 
         <!-- ========== TAB: ANALYTICS ========== -->
-        <div x-show="activeTab==='analytics'" x-cloak>
+        <div x-show="activeTab==='analytics'" x-cloak
+          x-transition:enter="transition ease-out duration-180"
+          x-transition:enter-start="opacity-0 translate-y-2"
+          x-transition:enter-end="opacity-100 translate-y-0">
           <div class="mb-6">
             <h1 class="text-xl font-bold text-on-surface">Analytics</h1>
             <p class="text-sm text-on-surface-variant mt-0.5">Track your page performance</p>
@@ -617,7 +632,10 @@
         </div>
 
         <!-- ========== TAB: SETTINGS ========== -->
-        <div x-show="activeTab==='settings'" x-cloak>
+        <div x-show="activeTab==='settings'" x-cloak
+          x-transition:enter="transition ease-out duration-180"
+          x-transition:enter-start="opacity-0 translate-y-2"
+          x-transition:enter-end="opacity-100 translate-y-0">
           <div class="mb-6">
             <h1 class="text-xl font-bold text-on-surface">Settings</h1>
             <p class="text-sm text-on-surface-variant mt-0.5">Manage your account and preferences</p>
@@ -912,11 +930,24 @@
   <div
     x-show="showIconPicker"
     x-cloak
+    x-transition:enter="transition ease-out duration-200"
+    x-transition:enter-start="opacity-0"
+    x-transition:enter-end="opacity-100"
+    x-transition:leave="transition ease-in duration-150"
+    x-transition:leave-start="opacity-100"
+    x-transition:leave-end="opacity-0"
     @keydown.escape.window="showIconPicker = false"
     class="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4"
   >
     <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" @click="showIconPicker = false"></div>
-    <div class="relative w-full max-w-md glass-card rounded-2xl overflow-hidden shadow-2xl">
+    <div x-show="showIconPicker"
+      x-transition:enter="transition ease-out duration-220"
+      x-transition:enter-start="opacity-0 scale-95 translate-y-3"
+      x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+      x-transition:leave="transition ease-in duration-150"
+      x-transition:leave-start="opacity-100 scale-100"
+      x-transition:leave-end="opacity-0 scale-95"
+      class="relative w-full max-w-md glass-card rounded-2xl overflow-hidden shadow-2xl">
       <div class="flex items-center gap-3 px-5 py-4 border-b border-outline-variant">
         <h3 class="font-semibold text-on-surface">Choose icon</h3>
         <button @click="showIconPicker = false" class="ml-auto text-on-surface-variant hover:text-on-surface transition-colors">
@@ -970,11 +1001,24 @@
   <div
     x-show="showUsernameModal"
     x-cloak
+    x-transition:enter="transition ease-out duration-200"
+    x-transition:enter-start="opacity-0"
+    x-transition:enter-end="opacity-100"
+    x-transition:leave="transition ease-in duration-150"
+    x-transition:leave-start="opacity-100"
+    x-transition:leave-end="opacity-0"
     @keydown.escape.window="showUsernameModal = false"
     class="fixed inset-0 z-50 flex items-center justify-center p-4"
   >
     <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" @click="showUsernameModal = false"></div>
-    <div class="relative w-full max-w-sm glass-card rounded-2xl p-6 shadow-2xl">
+    <div x-show="showUsernameModal"
+      x-transition:enter="transition ease-out duration-220"
+      x-transition:enter-start="opacity-0 scale-95 translate-y-2"
+      x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+      x-transition:leave="transition ease-in duration-150"
+      x-transition:leave-start="opacity-100 scale-100"
+      x-transition:leave-end="opacity-0 scale-95"
+      class="relative w-full max-w-sm glass-card rounded-2xl p-6 shadow-2xl">
       <div class="flex flex-col items-center text-center mb-5">
         <div class="w-14 h-14 rounded-full bg-tertiary/10 flex items-center justify-center mb-3">
           <span class="material-symbols-outlined text-3xl text-tertiary" style="font-variation-settings:'FILL' 1">warning</span>
@@ -1013,11 +1057,24 @@
   <div
     x-show="showDeleteModal"
     x-cloak
+    x-transition:enter="transition ease-out duration-200"
+    x-transition:enter-start="opacity-0"
+    x-transition:enter-end="opacity-100"
+    x-transition:leave="transition ease-in duration-150"
+    x-transition:leave-start="opacity-100"
+    x-transition:leave-end="opacity-0"
     @keydown.escape.window="showDeleteModal = false"
     class="fixed inset-0 z-50 flex items-center justify-center p-4"
   >
     <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" @click="showDeleteModal = false"></div>
-    <div class="relative w-full max-w-sm glass-card rounded-2xl p-6 shadow-2xl">
+    <div x-show="showDeleteModal"
+      x-transition:enter="transition ease-out duration-220"
+      x-transition:enter-start="opacity-0 scale-95 translate-y-2"
+      x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+      x-transition:leave="transition ease-in duration-150"
+      x-transition:leave-start="opacity-100 scale-100"
+      x-transition:leave-end="opacity-0 scale-95"
+      class="relative w-full max-w-sm glass-card rounded-2xl p-6 shadow-2xl">
       <div class="flex flex-col items-center text-center mb-5">
         <div class="w-14 h-14 rounded-full bg-error/10 flex items-center justify-center mb-3">
           <span class="material-symbols-outlined text-3xl text-error" style="font-variation-settings:'FILL' 1">warning</span>
