@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Taplink - Your links, your brand.</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&amp;family=Poppins:wght@400;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script defer="" src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "inverse-surface": "#e4e1ed",
+                        "on-primary": "#1000a9",
+                        "tertiary-fixed": "#ffdcc5",
+                        "outline": "#908fa0",
+                        "secondary-container": "#42447b",
+                        "tertiary-fixed-dim": "#ffb783",
+                        "on-tertiary": "#4f2500",
+                        "primary-container": "#8083ff",
+                        "tertiary": "#ffb783",
+                        "on-tertiary-fixed": "#301400",
+                        "surface-container-low": "#1b1b23",
+                        "tertiary-container": "#d97721",
+                        "on-secondary": "#292a60",
+                        "primary-fixed-dim": "#c0c1ff",
+                        "surface-container-highest": "#34343d",
+                        "error-container": "#93000a",
+                        "surface-bright": "#393841",
+                        "on-tertiary-container": "#452000",
+                        "surface-variant": "#34343d",
+                        "surface": "#13131b",
+                        "background": "#0a0a0a",
+                        "inverse-primary": "#494bd6",
+                        "on-primary-fixed": "#07006c",
+                        "on-error": "#690005",
+                        "on-surface": "#e4e1ed",
+                        "inverse-on-surface": "#303038",
+                        "on-primary-container": "#0d0096",
+                        "surface-container-lowest": "#0d0d15",
+                        "on-error-container": "#ffdad6",
+                        "on-tertiary-fixed-variant": "#703700",
+                        "on-background": "#e4e1ed",
+                        "on-secondary-fixed": "#13144a",
+                        "on-secondary-container": "#b2b3f2",
+                        "surface-container-high": "#292932",
+                        "surface-tint": "#c0c1ff",
+                        "secondary-fixed-dim": "#c0c1ff",
+                        "on-primary-fixed-variant": "#2f2ebe",
+                        "on-surface-variant": "#c7c4d7",
+                        "secondary-fixed": "#e1e0ff",
+                        "secondary": "#c0c1ff",
+                        "on-secondary-fixed-variant": "#404178",
+                        "outline-variant": "#464554",
+                        "surface-container": "#1f1f27",
+                        "error": "#ffb4ab",
+                        "primary-fixed": "#e1e0ff",
+                        "primary": "#c0c1ff",
+                        "surface-dim": "#13131b"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "2xl": "3rem",
+                        "gutter": "1rem",
+                        "xl": "2rem",
+                        "lg": "1.5rem",
+                        "xs": "0.25rem",
+                        "container-max": "640px",
+                        "md": "1rem",
+                        "sm": "0.5rem"
+                    },
+                    "fontFamily": {
+                        "body-lg": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "label-md": ["Inter"],
+                        "display": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "body-md": ["Inter"],
+                        "headline-lg-mobile": ["Inter"]
+                    },
+                    "fontSize": {
+                        "body-lg": ["18px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                        "body-sm": ["14px", {"lineHeight": "1.4", "fontWeight": "400"}],
+                        "label-md": ["12px", {"lineHeight": "1", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                        "display": ["48px", {"lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "headline-md": ["24px", {"lineHeight": "1.3", "fontWeight": "600"}],
+                        "headline-lg": ["32px", {"lineHeight": "1.2", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                        "body-md": ["16px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                        "headline-lg-mobile": ["24px", {"lineHeight": "1.2", "fontWeight": "700"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            background-color: #0a0a0a;
+            color: #e4e1ed;
+            font-family: 'Inter', sans-serif;
+        }
+        .brand-glow {
+            box-shadow: 0 0 20px rgba(99, 102, 241, 0.3);
+        }
+        .interactive-mockup {
+            width: 280px;
+            height: 560px;
+            border: 12px solid #1a1a1a;
+            border-radius: 40px;
+            overflow: hidden;
+            background: #111;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #464554;
+            border-radius: 10px;
+        }
+        .glass-card {
+            background: rgba(27, 27, 35, 0.8);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(144, 143, 160, 0.2);
+        }
+    </style>
+</head>
+<body class="selection:bg-primary-container selection:text-on-primary-container">
+<!-- TopNavBar -->
+<nav class="sticky top-0 z-50 flex justify-between items-center px-gutter w-full h-16 bg-surface/80 backdrop-blur-md border-b border-outline-variant shadow-sm">
+<div class="text-headline-md font-headline-lg-mobile font-bold text-on-surface dark:text-on-surface">
+            Taplink
+        </div>
+<div class="hidden md:flex items-center gap-xl">
+<a class="text-primary font-bold text-body-md font-body-md" href="#">Features</a>
+<a class="text-on-surface-variant hover:bg-primary-container/20 transition-colors px-3 py-1 rounded-lg text-body-md font-body-md" href="#">Pricing</a>
+<a class="text-on-surface-variant hover:bg-primary-container/20 transition-colors px-3 py-1 rounded-lg text-body-md font-body-md" href="#">Templates</a>
+</div>
+<div class="flex items-center gap-md">
+<button class="text-primary font-body-md hover:opacity-80 transition-opacity">Log in</button>
+<button class="bg-primary-container text-on-primary-container px-4 py-2 rounded-xl font-bold text-body-md transition-transform active:scale-95 duration-100 brand-glow">
+                Create your page
+            </button>
+</div>
+</nav>
+<main class="max-w-[1200px] mx-auto px-gutter pt-xl">
+<!-- Hero Section -->
+<section class="grid grid-cols-1 md:grid-cols-2 gap-2xl items-center py-2xl">
+<div class="space-y-lg">
+<span class="inline-flex items-center px-3 py-1 rounded-full bg-secondary-container text-on-secondary-container text-label-md font-label-md">
+                    Free to start
+                </span>
+<h1 class="text-display font-display leading-tight">
+                    Your links,<br/><span class="text-primary-container">your brand.</span>
+</h1>
+<p class="text-body-lg font-body-lg text-on-surface-variant max-w-md">
+                    The only link-in-bio tool designed for the Thai creative ecosystem. Consolidate your TikTok shop, Shopee store, and LINE contact into one beautiful page.
+                </p>
+<div class="pt-md">
+<button class="bg-primary-container text-on-primary-container px-8 py-4 rounded-xl font-bold text-headline-md flex items-center gap-sm hover:brightness-110 transition-all brand-glow">
+                        Create your page <span class="material-symbols-outlined" data-icon="arrow_forward">arrow_forward</span>
+</button>
+</div>
+</div>
+<!-- Interactive Mockup Column -->
+<div class="flex flex-col items-center gap-lg" x-data="{ bg: '#111111', font: 'Inter', activeTab: 'TikTok' }">
+<div :style="{ backgroundColor: bg }" class="interactive-mockup relative shadow-2xl transition-colors duration-300">
+<div class="p-md text-center">
+<div class="w-20 h-20 bg-surface-container-highest rounded-full mx-auto mb-md border-2 border-primary overflow-hidden">
+<img alt="Profile" class="w-full h-full object-cover" data-alt="A high-quality 3D avatar of a trendy Thai influencer with stylish streetwear, set against a vibrant indigo gradient background. The avatar is designed in a modern, semi-realistic Pixar-like style with soft cinematic lighting that emphasizes textures and depth. The overall mood is professional, youthful, and digitally native, perfectly matching a high-end tech platform aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC5H1t4zYqo7XM_EtlGgagOEJoc8sFGzfb5uCfJ14DsFS-n0M4NGIhzz9MNUWvisRd-k709AwuFTMpq1J1wva-GB_orGzsSm_O5aXFdgfU69P6dhbIXJu6o3D9mv4AvmeK9MzW3u3OnIRoZTdrxYVM2zxQu623FCzHzqkqnDhgEOiEP_mNHC34SjKmoUHgrkzbaI1B2Y3idMGzuXTMaNUNSL0djRoRhAe8k57SasRMqnW3tQuKH5zBfJQH8Z_yeQghgWMc6ynK7VPA"/>
+</div>
+<h2 :style="{ fontFamily: font }" class="font-bold text-headline-md">@thecreativeth</h2>
+<p class="text-on-surface-variant text-body-sm mb-lg">Bkk Digital Creator 🇹🇭</p>
+<div class="space-y-sm">
+<div class="flex items-center justify-between p-md bg-white/10 backdrop-blur-md rounded-xl border border-white/5 hover:scale-[1.02] transition-transform cursor-pointer">
+<div class="flex items-center gap-md">
+<span class="material-symbols-outlined" data-icon="shopping_cart">shopping_cart</span>
+<span class="font-bold">Shopee Shop</span>
+</div>
+<span class="material-symbols-outlined text-xs">open_in_new</span>
+</div>
+<div class="flex items-center justify-between p-md bg-white/10 backdrop-blur-md rounded-xl border border-white/5 hover:scale-[1.02] transition-transform cursor-pointer">
+<div class="flex items-center gap-md">
+<span class="material-symbols-outlined" data-icon="chat">chat</span>
+<span class="font-bold">LINE Contact</span>
+</div>
+<span class="material-symbols-outlined text-xs">open_in_new</span>
+</div>
+<div class="flex items-center justify-between p-md bg-white/10 backdrop-blur-md rounded-xl border border-white/5 hover:scale-[1.02] transition-transform cursor-pointer">
+<div class="flex items-center gap-md">
+<span class="material-symbols-outlined" data-icon="videocam">videocam</span>
+<span class="font-bold">TikTok Feed</span>
+</div>
+<span class="material-symbols-outlined text-xs">open_in_new</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Demo Controls -->
+<div class="w-full max-w-[320px] glass-card p-md rounded-2xl space-y-md">
+<div>
+<span class="text-label-md font-label-md text-on-surface-variant block mb-sm">BACKGROUND</span>
+<div class="flex gap-sm">
+<button @click="bg = '#111111'" class="w-8 h-8 rounded-full border-2 border-white/20 bg-[#111111]"></button>
+<button @click="bg = '#2d1b4e'" class="w-8 h-8 rounded-full border-2 border-white/20 bg-[#2d1b4e]"></button>
+<button @click="bg = '#00283d'" class="w-8 h-8 rounded-full border-2 border-white/20 bg-[#00283d]"></button>
+<button @click="bg = '#1a2e1a'" class="w-8 h-8 rounded-full border-2 border-white/20 bg-[#1a2e1a]"></button>
+</div>
+</div>
+<div>
+<span class="text-label-md font-label-md text-on-surface-variant block mb-sm">FONT</span>
+<select class="bg-surface-container-highest border-outline-variant text-on-surface rounded-lg w-full text-body-sm p-sm outline-none" x-model="font">
+<option value="Inter">Inter (System)</option>
+<option value="Poppins">Poppins (Modern)</option>
+<option value="system-ui">Serif (Classic)</option>
+</select>
+</div>
+<div class="flex items-center gap-xs text-on-surface-variant">
+<span class="material-symbols-outlined text-sm" data-icon="info">info</span>
+<p class="text-[10px] uppercase font-bold tracking-wider">Drag to reorder links in dashboard</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Features Section -->
+<section class="py-2xl border-t border-outline-variant">
+<div class="text-center mb-xl">
+<h2 class="text-headline-lg font-headline-lg">Everything you need to grow.</h2>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-lg">
+<div class="surface-container p-xl rounded-2xl border border-outline-variant hover:border-primary-container transition-colors group">
+<div class="w-12 h-12 rounded-xl bg-primary-container/10 flex items-center justify-center mb-lg group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-primary-container" data-icon="link">link</span>
+</div>
+<h3 class="text-headline-md font-headline-md mb-sm">Your own link</h3>
+<p class="text-on-surface-variant text-body-md">Get a professional taplink.my/yourname URL that looks great in any social media bio.</p>
+</div>
+<div class="surface-container p-xl rounded-2xl border border-outline-variant hover:border-primary-container transition-colors group">
+<div class="w-12 h-12 rounded-xl bg-primary-container/10 flex items-center justify-center mb-lg group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-primary-container" data-icon="palette">palette</span>
+</div>
+<h3 class="text-headline-md font-headline-md mb-sm">Full customization</h3>
+<p class="text-on-surface-variant text-body-md">Choose from hundreds of themes or build your own with advanced CSS controls and layout options.</p>
+</div>
+<div class="surface-container p-xl rounded-2xl border border-outline-variant hover:border-primary-container transition-colors group">
+<div class="w-12 h-12 rounded-xl bg-primary-container/10 flex items-center justify-center mb-lg group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-primary-container" data-icon="location_on">location_on</span>
+</div>
+<h3 class="text-headline-md font-headline-md mb-sm">Built for Thailand</h3>
+<p class="text-on-surface-variant text-body-md">Native integrations with LINE, Shopee, and Thai banking QR codes for seamless local commerce.</p>
+</div>
+</div>
+</section>
+<!-- Pricing Section -->
+<section class="py-2xl">
+<div class="text-center mb-xl">
+<h2 class="text-headline-lg font-headline-lg">Simple pricing.</h2>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-xl max-w-[800px] mx-auto">
+<!-- Free Card -->
+<div class="surface-container p-xl rounded-2xl border border-outline-variant flex flex-col">
+<div class="mb-lg">
+<h3 class="text-headline-md font-headline-md">Free</h3>
+<div class="flex items-baseline gap-xs mt-sm">
+<span class="text-display font-display">฿0</span>
+<span class="text-on-surface-variant">/mo</span>
+</div>
+<p class="text-body-sm text-on-surface-variant mt-sm">Perfect for beginners.</p>
+</div>
+<ul class="space-y-sm flex-grow">
+<li class="flex items-center gap-sm text-body-md">
+<span class="material-symbols-outlined text-primary-container text-sm" data-icon="check" data-weight="fill">check</span>
+                            Unlimited Links
+                        </li>
+<li class="flex items-center gap-sm text-body-md">
+<span class="material-symbols-outlined text-primary-container text-sm" data-icon="check" data-weight="fill">check</span>
+                            Basic Analytics
+                        </li>
+<li class="flex items-center gap-sm text-body-md">
+<span class="material-symbols-outlined text-primary-container text-sm" data-icon="check" data-weight="fill">check</span>
+                            Standard Themes
+                        </li>
+</ul>
+<button class="mt-xl w-full py-3 rounded-xl border border-outline-variant font-bold hover:bg-surface-container-highest transition-colors">Get started</button>
+</div>
+<!-- Standard Card -->
+<div class="surface-container p-xl rounded-2xl border-2 border-primary-container flex flex-col relative brand-glow">
+<div class="absolute -top-4 left-1/2 -translate-x-1/2 bg-primary-container text-on-primary-container px-4 py-1 rounded-full text-label-md font-bold">
+                        Most popular
+                    </div>
+<div class="mb-lg">
+<h3 class="text-headline-md font-headline-md">Standard</h3>
+<div class="flex items-baseline gap-xs mt-sm">
+<span class="text-display font-display">฿199</span>
+<span class="text-on-surface-variant">/mo</span>
+</div>
+<p class="text-body-sm text-on-surface-variant mt-sm">For growing creators &amp; businesses.</p>
+</div>
+<ul class="space-y-sm flex-grow">
+<li class="flex items-center gap-sm text-body-md">
+<span class="material-symbols-outlined text-primary-container text-sm" data-icon="check" data-weight="fill">check</span>
+                            Custom Domains
+                        </li>
+<li class="flex items-center gap-sm text-body-md">
+<span class="material-symbols-outlined text-primary-container text-sm" data-icon="check" data-weight="fill">check</span>
+                            Advanced Analytics (Daily)
+                        </li>
+<li class="flex items-center gap-sm text-body-md">
+<span class="material-symbols-outlined text-primary-container text-sm" data-icon="check" data-weight="fill">check</span>
+                            Remove Taplink Branding
+                        </li>
+<li class="flex items-center gap-sm text-body-md">
+<span class="material-symbols-outlined text-primary-container text-sm" data-icon="check" data-weight="fill">check</span>
+                            Premium Animations
+                        </li>
+</ul>
+<button class="mt-xl w-full py-3 rounded-xl bg-primary-container text-on-primary-container font-bold hover:brightness-110 transition-all">Go Pro Now</button>
+</div>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="w-full py-xl px-gutter flex flex-col items-center gap-md text-center border-t border-outline-variant mt-xl bg-surface-container-lowest dark:bg-surface-container-lowest">
+<div class="text-headline-md font-headline-md font-bold text-on-surface">Taplink</div>
+<div class="flex flex-wrap justify-center gap-xl mt-md">
+<a class="text-on-surface-variant hover:text-primary transition-colors text-label-md font-label-md" href="#">Terms of Service</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors text-label-md font-label-md" href="#">Privacy Policy</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors text-label-md font-label-md" href="#">Contact Support</a>
+</div>
+<p class="text-body-sm font-body-sm text-on-surface-variant mt-lg opacity-80">© 2024 Taplink. All rights reserved.</p>
+</footer>
+</body></html>

@@ -1,0 +1,304 @@
+{% extends "base.html" %}
+{% block title %}taplink.my — Your links, your brand{% endblock %}
+
+{% block extra_head %}
+<style>
+  body { background-color: #0a0a0a; }
+  .interactive-mockup {
+    width: 280px; height: 560px;
+    border: 12px solid #1a1a1a;
+    border-radius: 40px;
+    overflow: hidden;
+    background: #111;
+  }
+  .shimmer {
+    background: linear-gradient(90deg, rgba(192,193,255,0) 0%, rgba(192,193,255,0.08) 50%, rgba(192,193,255,0) 100%);
+    background-size: 200% 100%;
+    animation: shimmer 2.5s infinite linear;
+  }
+  @keyframes shimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }
+</style>
+{% endblock %}
+
+{% block body %}
+
+<!-- ======== NAVBAR ======== -->
+<nav class="sticky top-0 z-50 flex justify-between items-center px-gutter w-full h-16 bg-surface/80 backdrop-blur-md border-b border-outline-variant">
+  <div class="text-headline-md font-bold text-on-surface tracking-tight">
+    taplink<span class="text-primary-container">.my</span>
+  </div>
+  <div class="hidden md:flex items-center gap-xl">
+    <a href="#features" class="text-on-surface-variant hover:text-on-surface transition-colors text-body-md">Features</a>
+    <a href="#pricing" class="text-on-surface-variant hover:text-on-surface transition-colors text-body-md">Pricing</a>
+  </div>
+  <div class="flex items-center gap-md">
+    <a href="{% url 'account_login' %}" class="text-primary font-body-md hover:opacity-80 transition-opacity">Log in</a>
+    <a href="{% url 'account_login' %}" class="bg-primary-container text-on-primary-container px-4 py-2 rounded-xl font-bold text-body-md transition-all active:scale-95 brand-glow hover:brightness-110">
+      Create your page
+    </a>
+  </div>
+</nav>
+
+<!-- ======== HERO ======== -->
+<main class="max-w-[1200px] mx-auto px-gutter pt-xl">
+  <section class="grid grid-cols-1 md:grid-cols-2 gap-2xl items-center py-2xl">
+
+    <!-- Left: Copy -->
+    <div class="space-y-lg">
+      <span class="inline-flex items-center gap-sm px-3 py-1 rounded-full bg-secondary-container text-on-secondary-container text-label-md font-label-md">
+        <span class="w-1.5 h-1.5 bg-on-secondary-container rounded-full animate-pulse"></span>
+        Free to start
+      </span>
+
+      <h1 class="text-display font-display leading-tight">
+        Your links,<br><span class="text-primary-container">your brand.</span>
+      </h1>
+
+      <p class="text-body-lg font-body-lg text-on-surface-variant max-w-md">
+        The only link-in-bio tool designed for the Thai creative ecosystem. Consolidate your TikTok shop, Shopee store, and LINE contact into one beautiful page.
+      </p>
+
+      <div class="pt-md">
+        <a href="{% url 'account_login' %}" class="inline-flex items-center gap-sm bg-primary-container text-on-primary-container px-8 py-4 rounded-xl font-bold text-headline-md hover:brightness-110 transition-all brand-glow active:scale-95">
+          Create your page
+          <span class="material-symbols-outlined">arrow_forward</span>
+        </a>
+        <p class="mt-md text-body-sm text-on-surface-variant">Free forever. No credit card needed.</p>
+      </div>
+    </div>
+
+    <!-- Right: Interactive Demo -->
+    <div class="flex flex-col items-center gap-lg"
+         x-data="{
+           bg: '#111111',
+           font: 'Inter',
+           dragSrc: null,
+           links: [
+             { id: 1, icon: 'shopping_cart', label: 'Shopee Shop' },
+             { id: 2, icon: 'chat',          label: 'LINE Contact' },
+             { id: 3, icon: 'videocam',      label: 'TikTok Feed' },
+           ],
+           dragStart(i) { this.dragSrc = i; },
+           drop(i) {
+             if (this.dragSrc === null || this.dragSrc === i) return;
+             const moved = this.links.splice(this.dragSrc, 1)[0];
+             this.links.splice(i, 0, moved);
+             this.dragSrc = null;
+           }
+         }">
+
+      <!-- Phone -->
+      <div class="interactive-mockup shadow-2xl transition-colors duration-500" :style="`background-color: ${bg}`">
+        <div class="p-md text-center h-full overflow-y-auto custom-scrollbar">
+          <!-- Avatar -->
+          <div class="w-20 h-20 bg-surface-container-highest rounded-full mx-auto mb-md border-2 border-primary overflow-hidden flex items-center justify-center">
+            <span class="material-symbols-outlined text-on-surface-variant" style="font-size:40px">person</span>
+          </div>
+          <h2 class="font-bold text-headline-md text-white" :style="`font-family: ${font}, sans-serif`">@thecreativeth</h2>
+          <p class="text-on-surface-variant text-body-sm mb-lg">Bkk Digital Creator 🇹🇭</p>
+
+          <!-- Links -->
+          <div class="space-y-sm">
+            <template x-for="(link, i) in links" :key="link.id">
+              <div
+                class="flex items-center justify-between p-md bg-white/10 backdrop-blur-md rounded-xl border border-white/5 hover:scale-[1.02] transition-all cursor-grab active:cursor-grabbing select-none"
+                draggable="true"
+                @dragstart="dragStart(i)"
+                @dragover.prevent
+                @drop.prevent="drop(i)"
+              >
+                <div class="flex items-center gap-md">
+                  <span class="material-symbols-outlined text-white/90" x-text="link.icon"></span>
+                  <span class="font-bold text-white text-body-sm" :style="`font-family: ${font}, sans-serif`" x-text="link.label"></span>
+                </div>
+                <span class="material-symbols-outlined text-white/30 text-xs">open_in_new</span>
+              </div>
+            </template>
+          </div>
+
+          <!-- Watermark -->
+          <p class="mt-lg text-white/20 text-label-md">taplink.my</p>
+        </div>
+      </div>
+
+      <!-- Controls -->
+      <div class="w-full max-w-[320px] glass-card p-md rounded-2xl space-y-md">
+        <!-- Background -->
+        <div>
+          <span class="text-label-md font-label-md text-on-surface-variant block mb-sm">BACKGROUND</span>
+          <div class="flex gap-sm">
+            <button @click="bg='#111111'" class="w-8 h-8 rounded-full border-2 border-white/20 bg-[#111111] hover:scale-110 transition-transform" title="Dark"></button>
+            <button @click="bg='#2d1b4e'" class="w-8 h-8 rounded-full border-2 border-white/20 bg-[#2d1b4e] hover:scale-110 transition-transform" title="Purple"></button>
+            <button @click="bg='#00283d'" class="w-8 h-8 rounded-full border-2 border-white/20 bg-[#00283d] hover:scale-110 transition-transform" title="Ocean"></button>
+            <button @click="bg='#1a2e1a'" class="w-8 h-8 rounded-full border-2 border-white/20 bg-[#1a2e1a] hover:scale-110 transition-transform" title="Forest"></button>
+          </div>
+        </div>
+        <!-- Font -->
+        <div>
+          <span class="text-label-md font-label-md text-on-surface-variant block mb-sm">FONT</span>
+          <select class="w-full bg-surface-container-highest border border-outline-variant text-on-surface rounded-lg px-sm py-sm text-body-sm outline-none focus:border-primary transition-colors" x-model="font">
+            <option value="Inter">Inter (System)</option>
+            <option value="Poppins">Poppins (Modern)</option>
+            <option value="Georgia">Serif (Classic)</option>
+          </select>
+        </div>
+        <div class="flex items-center gap-xs text-on-surface-variant">
+          <span class="material-symbols-outlined text-sm">info</span>
+          <p class="text-[10px] uppercase font-bold tracking-wider">Drag to reorder links in dashboard</p>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ======== FEATURES ======== -->
+  <section id="features" class="py-2xl border-t border-outline-variant">
+    <div class="text-center mb-xl">
+      <h2 class="text-headline-lg font-headline-lg text-on-surface">Everything you need to grow.</h2>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-lg">
+
+      <div class="bg-surface-container p-xl rounded-2xl border border-outline-variant hover:border-primary-container transition-colors group">
+        <div class="w-12 h-12 rounded-xl bg-primary-container/10 flex items-center justify-center mb-lg group-hover:scale-110 transition-transform">
+          <span class="material-symbols-outlined text-primary-container">link</span>
+        </div>
+        <h3 class="text-headline-md font-headline-md text-on-surface mb-sm">Your own link</h3>
+        <p class="text-on-surface-variant text-body-md">Get a professional <span class="text-primary font-bold">name.taplink.my</span> URL that looks great in any social media bio.</p>
+      </div>
+
+      <div class="bg-surface-container p-xl rounded-2xl border border-outline-variant hover:border-primary-container transition-colors group">
+        <div class="w-12 h-12 rounded-xl bg-primary-container/10 flex items-center justify-center mb-lg group-hover:scale-110 transition-transform">
+          <span class="material-symbols-outlined text-primary-container">palette</span>
+        </div>
+        <h3 class="text-headline-md font-headline-md text-on-surface mb-sm">Full customization</h3>
+        <p class="text-on-surface-variant text-body-md">Choose from hundreds of themes or build your own with colors, fonts, backgrounds, and button styles.</p>
+      </div>
+
+      <div class="bg-surface-container p-xl rounded-2xl border border-outline-variant hover:border-primary-container transition-colors group">
+        <div class="w-12 h-12 rounded-xl bg-primary-container/10 flex items-center justify-center mb-lg group-hover:scale-110 transition-transform">
+          <span class="material-symbols-outlined text-primary-container">location_on</span>
+        </div>
+        <h3 class="text-headline-md font-headline-md text-on-surface mb-sm">Built for Thailand</h3>
+        <p class="text-on-surface-variant text-body-md">Native integrations with LINE, Shopee, Lazada, Grab and all your favourite Thai platforms. Ready to use.</p>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ======== PRICING ======== -->
+  <section id="pricing" class="py-2xl">
+    <div class="text-center mb-xl">
+      <h2 class="text-headline-lg font-headline-lg text-on-surface">Simple pricing.</h2>
+      <p class="text-on-surface-variant text-body-md mt-sm">Start free. Upgrade when you're ready.</p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-xl max-w-[800px] mx-auto">
+
+      <!-- Free -->
+      <div class="bg-surface-container p-xl rounded-2xl border border-outline-variant flex flex-col">
+        <div class="mb-lg">
+          <h3 class="text-headline-md font-headline-md text-on-surface">Free</h3>
+          <div class="flex items-baseline gap-xs mt-sm">
+            <span class="text-display font-display text-on-surface">฿0</span>
+            <span class="text-on-surface-variant text-body-md">/mo</span>
+          </div>
+          <p class="text-body-sm text-on-surface-variant mt-sm">Perfect for beginners.</p>
+        </div>
+        <ul class="space-y-sm flex-grow">
+          <li class="flex items-center gap-sm text-body-md text-on-surface">
+            <span class="material-symbols-outlined text-primary-container text-sm" style="font-variation-settings:'FILL' 1">check</span>
+            2 links
+          </li>
+          <li class="flex items-center gap-sm text-body-md text-on-surface">
+            <span class="material-symbols-outlined text-primary-container text-sm" style="font-variation-settings:'FILL' 1">check</span>
+            Profile photo
+          </li>
+          <li class="flex items-center gap-sm text-body-md text-on-surface">
+            <span class="material-symbols-outlined text-primary-container text-sm" style="font-variation-settings:'FILL' 1">check</span>
+            Basic QR code
+          </li>
+          <li class="flex items-center gap-sm text-body-md text-on-surface-variant">
+            <span class="material-symbols-outlined text-outline text-sm">close</span>
+            taplink.my watermark
+          </li>
+        </ul>
+        <a href="{% url 'account_login' %}" class="mt-xl block text-center w-full py-3 rounded-xl border border-outline-variant font-bold text-on-surface hover:bg-surface-container-highest transition-colors">
+          Get started
+        </a>
+      </div>
+
+      <!-- Standard -->
+      <div class="bg-surface-container p-xl rounded-2xl border-2 border-primary-container flex flex-col relative brand-glow">
+        <div class="absolute -top-4 left-1/2 -translate-x-1/2 bg-primary-container text-on-primary-container px-4 py-1 rounded-full text-label-md font-bold whitespace-nowrap">
+          Most popular
+        </div>
+        <div class="mb-lg">
+          <h3 class="text-headline-md font-headline-md text-on-surface">Standard</h3>
+          <div class="flex items-baseline gap-xs mt-sm">
+            <span class="text-display font-display text-on-surface">฿99</span>
+            <span class="text-on-surface-variant text-body-md">/mo</span>
+          </div>
+          <p class="text-body-sm text-on-surface-variant mt-sm">For growing creators &amp; businesses.</p>
+        </div>
+        <ul class="space-y-sm flex-grow">
+          <li class="flex items-center gap-sm text-body-md text-on-surface">
+            <span class="material-symbols-outlined text-primary-container text-sm" style="font-variation-settings:'FILL' 1">check</span>
+            10 links
+          </li>
+          <li class="flex items-center gap-sm text-body-md text-on-surface">
+            <span class="material-symbols-outlined text-primary-container text-sm" style="font-variation-settings:'FILL' 1">check</span>
+            All themes + full customization
+          </li>
+          <li class="flex items-center gap-sm text-body-md text-on-surface">
+            <span class="material-symbols-outlined text-primary-container text-sm" style="font-variation-settings:'FILL' 1">check</span>
+            Background photo / video
+          </li>
+          <li class="flex items-center gap-sm text-body-md text-on-surface">
+            <span class="material-symbols-outlined text-primary-container text-sm" style="font-variation-settings:'FILL' 1">check</span>
+            Analytics (views, clicks, device, country)
+          </li>
+          <li class="flex items-center gap-sm text-body-md text-on-surface">
+            <span class="material-symbols-outlined text-primary-container text-sm" style="font-variation-settings:'FILL' 1">check</span>
+            Custom QR code
+          </li>
+          <li class="flex items-center gap-sm text-body-md text-on-surface">
+            <span class="material-symbols-outlined text-primary-container text-sm" style="font-variation-settings:'FILL' 1">check</span>
+            No watermark
+          </li>
+          <li class="flex items-center gap-sm text-body-md text-on-surface">
+            <span class="material-symbols-outlined text-primary-container text-sm" style="font-variation-settings:'FILL' 1">check</span>
+            Try 1 month free with gift code
+          </li>
+        </ul>
+        <a href="{% url 'account_login' %}" class="mt-xl block text-center w-full py-3 rounded-xl bg-primary-container text-on-primary-container font-bold hover:brightness-110 transition-all brand-glow">
+          Go Pro Now
+        </a>
+      </div>
+
+    </div>
+  </section>
+</main>
+
+<!-- ======== FOOTER ======== -->
+<footer class="w-full py-xl px-gutter flex flex-col items-center gap-md text-center border-t border-outline-variant mt-xl bg-surface-container-lowest">
+  <div class="text-headline-md font-bold text-on-surface">taplink<span class="text-primary-container">.my</span></div>
+  <div class="flex flex-wrap justify-center gap-xl mt-md">
+    <a href="{% url 'terms' %}" class="text-on-surface-variant hover:text-primary transition-colors text-label-md font-label-md">Terms of Service</a>
+    <a href="{% url 'privacy' %}" class="text-on-surface-variant hover:text-primary transition-colors text-label-md font-label-md">Privacy Policy</a>
+  </div>
+  <p class="text-body-sm text-on-surface-variant mt-lg opacity-60">© 2025 taplink.my. All rights reserved.</p>
+</footer>
+
+<!-- Ambient background glow -->
+<div class="fixed top-0 right-0 p-lg pointer-events-none opacity-20 hidden md:block">
+  <div class="w-[400px] h-[400px] bg-primary-container rounded-full blur-[150px]"></div>
+</div>
+<div class="fixed bottom-0 left-0 p-lg pointer-events-none opacity-10 hidden md:block">
+  <div class="w-[250px] h-[250px] bg-secondary-container rounded-full blur-[120px]"></div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+{% endblock %}

@@ -1,0 +1,1410 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — taplink.my{% endblock %}
+
+{% block extra_head %}
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Roboto:wght@300;400;500;700&family=DM+Sans:wght@300;400;500;600;700&family=Bebas+Neue&family=Fredoka:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+{% endblock %}
+
+{% block body %}
+<div
+  x-data="dashboardApp()"
+  x-init="init()"
+  class="flex h-screen overflow-hidden bg-surface text-on-surface"
+>
+
+  <!-- ===== SIDEBAR ===== -->
+  <aside
+    class="flex flex-col shrink-0 h-full border-r border-outline-variant bg-surface-container-low transition-all duration-300 z-30"
+    :class="sidebarOpen ? 'w-60' : 'w-20'"
+  >
+    <!-- Logo -->
+    <div class="flex items-center gap-3 px-4 py-5 border-b border-outline-variant">
+      <div class="w-9 h-9 rounded-xl bg-primary-container flex items-center justify-center shrink-0">
+        <span class="material-symbols-outlined text-on-primary-container text-lg" style="font-variation-settings:'FILL' 1">link</span>
+      </div>
+      <span class="font-bold text-primary text-lg whitespace-nowrap overflow-hidden transition-all duration-300" :class="sidebarOpen ? 'opacity-100 max-w-xs' : 'opacity-0 max-w-0'">taplink.my</span>
+      <button @click="sidebarOpen = !sidebarOpen" class="ml-auto text-on-surface-variant hover:text-on-surface transition-colors hidden lg:flex shrink-0">
+        <span class="material-symbols-outlined text-xl" x-text="sidebarOpen ? 'chevron_left' : 'chevron_right'"></span>
+      </button>
+    </div>
+
+    <!-- Nav items -->
+    <nav class="flex flex-col gap-1 p-3 flex-1">
+      <button @click="activeTab='links'"
+        class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors w-full text-left"
+        :class="activeTab==='links' ? 'bg-secondary-container text-on-secondary-container' : 'text-on-surface-variant hover:bg-surface-container hover:text-on-surface'">
+        <span class="material-symbols-outlined text-xl shrink-0" :style="activeTab==='links' ? 'font-variation-settings:\'FILL\' 1' : ''">add_link</span>
+        <span class="text-sm font-medium whitespace-nowrap overflow-hidden transition-all duration-300" :class="sidebarOpen ? 'opacity-100 max-w-xs' : 'opacity-0 max-w-0'">Links</span>
+      </button>
+      <button @click="activeTab='appearance'"
+        class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors w-full text-left"
+        :class="activeTab==='appearance' ? 'bg-secondary-container text-on-secondary-container' : 'text-on-surface-variant hover:bg-surface-container hover:text-on-surface'">
+        <span class="material-symbols-outlined text-xl shrink-0" :style="activeTab==='appearance' ? 'font-variation-settings:\'FILL\' 1' : ''">palette</span>
+        <span class="text-sm font-medium whitespace-nowrap overflow-hidden transition-all duration-300" :class="sidebarOpen ? 'opacity-100 max-w-xs' : 'opacity-0 max-w-0'">Appearance</span>
+      </button>
+      <button @click="activeTab='analytics'"
+        class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors w-full text-left"
+        :class="activeTab==='analytics' ? 'bg-secondary-container text-on-secondary-container' : 'text-on-surface-variant hover:bg-surface-container hover:text-on-surface'">
+        <span class="material-symbols-outlined text-xl shrink-0" :style="activeTab==='analytics' ? 'font-variation-settings:\'FILL\' 1' : ''">bar_chart</span>
+        <span class="text-sm font-medium whitespace-nowrap overflow-hidden transition-all duration-300" :class="sidebarOpen ? 'opacity-100 max-w-xs' : 'opacity-0 max-w-0'">Analytics</span>
+      </button>
+      <button @click="activeTab='settings'"
+        class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors w-full text-left"
+        :class="activeTab==='settings' ? 'bg-secondary-container text-on-secondary-container' : 'text-on-surface-variant hover:bg-surface-container hover:text-on-surface'">
+        <span class="material-symbols-outlined text-xl shrink-0" :style="activeTab==='settings' ? 'font-variation-settings:\'FILL\' 1' : ''">settings</span>
+        <span class="text-sm font-medium whitespace-nowrap overflow-hidden transition-all duration-300" :class="sidebarOpen ? 'opacity-100 max-w-xs' : 'opacity-0 max-w-0'">Settings</span>
+      </button>
+    </nav>
+
+    <!-- Plan badge + logout -->
+    <div class="p-3 border-t border-outline-variant space-y-2">
+      {% if not profile.is_standard %}
+      <a href="#" class="flex items-center gap-2 px-3 py-2 rounded-xl bg-tertiary/10 hover:bg-tertiary/20 transition-colors">
+        <span class="material-symbols-outlined text-tertiary text-xl shrink-0" style="font-variation-settings:'FILL' 1">workspace_premium</span>
+        <span class="text-xs font-semibold text-tertiary whitespace-nowrap overflow-hidden transition-all duration-300" :class="sidebarOpen ? 'opacity-100 max-w-xs' : 'opacity-0 max-w-0'">Upgrade to Standard</span>
+      </a>
+      {% else %}
+      <div class="flex items-center gap-2 px-3 py-2 rounded-xl bg-primary/10">
+        <span class="material-symbols-outlined text-primary text-xl shrink-0" style="font-variation-settings:'FILL' 1">workspace_premium</span>
+        <span class="text-xs font-semibold text-primary whitespace-nowrap overflow-hidden transition-all duration-300" :class="sidebarOpen ? 'opacity-100 max-w-xs' : 'opacity-0 max-w-0'">Standard Plan</span>
+      </div>
+      {% endif %}
+      <a href="{% url 'account_logout' %}" class="flex items-center gap-3 px-3 py-2 rounded-xl text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors">
+        <span class="material-symbols-outlined text-xl shrink-0">logout</span>
+        <span class="text-sm whitespace-nowrap overflow-hidden transition-all duration-300" :class="sidebarOpen ? 'opacity-100 max-w-xs' : 'opacity-0 max-w-0'">Log out</span>
+      </a>
+    </div>
+  </aside>
+
+  <!-- ===== MAIN EDITOR ===== -->
+  <main class="flex-1 flex flex-col min-w-0 overflow-hidden">
+
+    <!-- At-limit banner -->
+    {% if at_limit %}
+    <div class="flex items-center justify-center gap-3 bg-tertiary text-on-tertiary px-4 h-10 text-sm font-medium shrink-0">
+      <span class="material-symbols-outlined text-base" style="font-variation-settings:'FILL' 1">warning</span>
+      You've reached your {{ link_limit }} link limit.
+      <a href="#" class="underline font-semibold hover:no-underline">Upgrade to Standard &rarr;</a>
+    </div>
+    {% endif %}
+
+    <!-- Top bar (mobile only) -->
+    <div class="lg:hidden flex items-center gap-3 px-4 py-3 border-b border-outline-variant bg-surface-container-low shrink-0">
+      <div class="w-8 h-8 rounded-lg bg-primary-container flex items-center justify-center">
+        <span class="material-symbols-outlined text-on-primary-container text-base" style="font-variation-settings:'FILL' 1">link</span>
+      </div>
+      <span class="font-bold text-primary">taplink.my</span>
+      <button @click="previewOpen = !previewOpen" class="ml-auto text-on-surface-variant">
+        <span class="material-symbols-outlined">phone_android</span>
+      </button>
+    </div>
+
+    <!-- Editor scroll area -->
+    <div class="flex-1 overflow-y-auto custom-scrollbar">
+      <div class="max-w-2xl mx-auto px-4 py-6 pb-24 lg:pb-6">
+
+        <!-- ========== TAB: LINKS ========== -->
+        <div x-show="activeTab==='links'" x-cloak>
+          <!-- Header -->
+          <div class="flex items-center gap-3 mb-6">
+            <div>
+              <h1 class="text-xl font-bold text-on-surface">Links</h1>
+              <p class="text-sm text-on-surface-variant mt-0.5">
+                <span x-text="links.length"></span> links
+              </p>
+            </div>
+            <button
+              @click="addLink()"
+              class="ml-auto flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-on-primary text-sm font-semibold hover:opacity-90 transition-opacity"
+            >
+              <span class="material-symbols-outlined text-base">add</span>
+              Add link
+            </button>
+          </div>
+
+          <!-- Empty state -->
+          <div x-show="links.length === 0" class="flex flex-col items-center justify-center py-16 text-center">
+            <div class="w-20 h-20 rounded-2xl bg-surface-container-high flex items-center justify-center mb-4">
+              <span class="material-symbols-outlined text-4xl text-on-surface-variant">add_link</span>
+            </div>
+            <h3 class="text-lg font-semibold text-on-surface mb-2">No links yet</h3>
+            <p class="text-sm text-on-surface-variant mb-6 max-w-xs">Add your first link to get started. Share your social profiles, shop pages and more.</p>
+            <button @click="addLink()" class="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-on-primary text-sm font-semibold hover:opacity-90 transition-opacity">
+              <span class="material-symbols-outlined text-base">add</span>
+              Add your first link
+            </button>
+          </div>
+
+          <!-- Link cards -->
+          <div class="space-y-3" id="links-list">
+            <template x-for="link in links" :key="link.id">
+              <div
+                class="glass-card rounded-xl p-4 group hover:border-primary hover:shadow-lg transition-all duration-200"
+                :class="link.is_active ? '' : 'opacity-60'"
+              >
+                <div class="flex items-center gap-3">
+                  <!-- Drag handle -->
+                  <div class="text-on-surface-variant cursor-grab active:cursor-grabbing shrink-0">
+                    <span class="material-symbols-outlined text-xl">drag_indicator</span>
+                  </div>
+
+                  <!-- Icon button -->
+                  <button
+                    @click="openIconPicker(link.id)"
+                    class="w-10 h-10 rounded-lg flex items-center justify-center shrink-0 hover:opacity-80 transition-opacity"
+                    :style="`background-color: ${link.color}22; border: 1.5px solid ${link.color}`"
+                    title="Change icon"
+                  >
+                    <span class="material-symbols-outlined text-xl" :style="`color: ${link.icon_color}`" x-text="link.icon"></span>
+                  </button>
+
+                  <!-- Title + URL inputs -->
+                  <div class="flex-1 min-w-0 space-y-1.5">
+                    <input
+                      type="text"
+                      x-model="link.title"
+                      @change="updateLink(link)"
+                      placeholder="Title"
+                      class="w-full bg-transparent border-0 border-b border-outline-variant focus:border-primary outline-none text-sm font-medium text-on-surface placeholder-on-surface-variant/50 pb-0.5 transition-colors"
+                    />
+                    <input
+                      type="url"
+                      x-model="link.url"
+                      @change="updateLink(link)"
+                      placeholder="https://"
+                      class="w-full bg-transparent border-0 border-b border-outline-variant focus:border-primary outline-none text-xs text-on-surface-variant placeholder-on-surface-variant/50 pb-0.5 transition-colors"
+                    />
+                  </div>
+
+                  <!-- Active toggle -->
+                  <button
+                    @click="link.is_active = !link.is_active; updateLink(link)"
+                    class="shrink-0 w-11 h-6 rounded-full transition-colors relative"
+                    :class="link.is_active ? 'bg-primary' : 'bg-surface-container-highest'"
+                  >
+                    <span
+                      class="absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform"
+                      :class="link.is_active ? 'translate-x-5' : 'translate-x-0'"
+                    ></span>
+                  </button>
+
+                  <!-- Delete -->
+                  <button
+                    @click="deleteLink(link.id)"
+                    class="shrink-0 text-on-surface-variant hover:text-error transition-colors"
+                  >
+                    <span class="material-symbols-outlined text-xl">delete</span>
+                  </button>
+                </div>
+
+                <!-- Colour row -->
+                <div class="flex items-end gap-2 mt-3 pt-3 border-t border-outline-variant/50">
+                  <!-- Button color swatch -->
+                  <div class="flex-1 flex flex-col gap-1">
+                    <span class="text-xs text-on-surface-variant text-center">Button</span>
+                    <label class="relative h-8 rounded-lg cursor-pointer overflow-hidden border border-outline-variant/60 hover:border-primary transition-colors" :style="`background:${link.color}`">
+                      <input type="color" x-model="link.color" @input="updateLink(link)" class="absolute inset-0 opacity-0 w-full h-full cursor-pointer"/>
+                    </label>
+                  </div>
+                  <!-- Text color swatch -->
+                  <div class="flex-1 flex flex-col gap-1">
+                    <span class="text-xs text-on-surface-variant text-center">Text</span>
+                    <label class="relative h-8 rounded-lg cursor-pointer overflow-hidden border border-outline-variant/60 hover:border-primary transition-colors" :style="`background:${link.text_color}`">
+                      <input type="color" x-model="link.text_color" @input="updateLink(link)" class="absolute inset-0 opacity-0 w-full h-full cursor-pointer"/>
+                    </label>
+                  </div>
+                  <!-- Icon color swatch -->
+                  <div class="flex-1 flex flex-col gap-1">
+                    <span class="text-xs text-on-surface-variant text-center">Icon</span>
+                    <label class="relative h-8 rounded-lg cursor-pointer overflow-hidden border border-outline-variant/60 hover:border-primary transition-colors" :style="`background:${link.icon_color}`">
+                      <input type="color" x-model="link.icon_color" @input="updateLink(link)" class="absolute inset-0 opacity-0 w-full h-full cursor-pointer"/>
+                    </label>
+                  </div>
+                  <!-- Change icon button -->
+                  <button
+                    @click="openIconPicker(link.id)"
+                    class="flex flex-col items-center gap-1 px-3 shrink-0"
+                    title="Change icon"
+                  >
+                    <span class="text-xs text-on-surface-variant">Icon</span>
+                    <div class="h-8 w-10 rounded-lg border border-outline-variant/60 hover:border-primary flex items-center justify-center transition-colors">
+                      <span class="material-symbols-outlined text-on-surface-variant" style="font-size:16px" x-text="link.icon"></span>
+                    </div>
+                  </button>
+                </div>
+
+                <!-- Font row -->
+                <div class="mt-2 pt-2 border-t border-outline-variant/30">
+                  <p class="text-xs text-on-surface-variant mb-1.5">Font</p>
+                  <div class="flex gap-1.5 overflow-x-auto custom-scrollbar pb-1">
+                    <!-- Default -->
+                    <button
+                      @click="link.font_family = ''; updateLink(link)"
+                      class="shrink-0 px-2.5 py-1 rounded-lg text-xs border transition-colors whitespace-nowrap"
+                      :class="!link.font_family ? 'bg-primary text-on-primary border-primary' : 'border-outline-variant text-on-surface-variant hover:border-primary'"
+                    >Default</button>
+                    <!-- Free fonts -->
+                    <template x-for="f in FREE_FONTS" :key="f.name">
+                      <button
+                        @click="link.font_family = f.name; updateLink(link)"
+                        class="shrink-0 px-2.5 py-1 rounded-lg text-xs border transition-colors whitespace-nowrap"
+                        :class="link.font_family === f.name ? 'bg-primary text-on-primary border-primary' : 'border-outline-variant text-on-surface-variant hover:border-primary'"
+                        :style="`font-family:'${f.name}',sans-serif`"
+                        x-text="f.label"
+                      ></button>
+                    </template>
+                    <!-- Standard fonts -->
+                    <template x-for="f in STANDARD_FONTS" :key="f.name">
+                      <template x-if="isStandard">
+                        <button
+                          @click="link.font_family = f.name; updateLink(link)"
+                          class="shrink-0 px-2.5 py-1 rounded-lg text-xs border transition-colors whitespace-nowrap"
+                          :class="link.font_family === f.name ? 'bg-primary text-on-primary border-primary' : 'border-outline-variant text-on-surface-variant hover:border-primary'"
+                          :style="`font-family:'${f.name}',sans-serif`"
+                          :title="f.vibe"
+                          x-text="f.label"
+                        ></button>
+                      </template>
+                      <template x-if="!isStandard">
+                        <div
+                          class="shrink-0 px-2.5 py-1 rounded-lg text-xs border border-outline-variant/40 text-on-surface-variant/40 flex items-center gap-1 cursor-not-allowed whitespace-nowrap select-none"
+                          :style="`font-family:'${f.name}',sans-serif`"
+                          :title="`${f.vibe} — Standard only`"
+                        >
+                          <span x-text="f.label"></span>
+                          <span class="material-symbols-outlined" style="font-size:10px;vertical-align:middle">lock</span>
+                        </div>
+                      </template>
+                    </template>
+                  </div>
+                </div>
+              </div>
+            </template>
+          </div>
+        </div>
+
+        <!-- ========== TAB: APPEARANCE ========== -->
+        <div x-show="activeTab==='appearance'" x-cloak>
+          <div class="mb-6">
+            <h1 class="text-xl font-bold text-on-surface">Appearance</h1>
+            <p class="text-sm text-on-surface-variant mt-0.5">Customise how your page looks</p>
+          </div>
+
+          <div class="space-y-3">
+
+            <!-- PROFILE section -->
+            <div class="glass-card rounded-xl overflow-hidden">
+              <button @click="openSection = openSection === 'profile' ? '' : 'profile'" class="w-full flex items-center gap-3 px-5 py-4 text-left hover:bg-surface-container/50 transition-colors">
+                <span class="material-symbols-outlined text-primary text-xl" style="font-variation-settings:'FILL' 1">account_circle</span>
+                <span class="font-semibold text-on-surface">Profile</span>
+                <span class="material-symbols-outlined ml-auto text-on-surface-variant transition-transform" :class="openSection==='profile' ? 'rotate-180' : ''">expand_more</span>
+              </button>
+              <div x-show="openSection==='profile'" x-collapse class="px-5 pb-5 space-y-4 border-t border-outline-variant/50">
+                <!-- Avatar -->
+                <div class="flex items-center gap-4 pt-4">
+                  <div class="relative shrink-0">
+                    <div class="w-16 h-16 bg-surface-container-high flex items-center justify-center overflow-hidden"
+                         :style="`border: ${appearance.border_width}px solid ${appearance.border_color}; border-radius: ${appearance.avatar_shape === 'square' ? '12px' : '50%'}`">
+                      {% if profile.avatar %}
+                        <img src="{{ profile.avatar.url }}" alt="Avatar" class="w-full h-full object-cover">
+                      {% else %}
+                        <span class="material-symbols-outlined text-3xl text-on-surface-variant">person</span>
+                      {% endif %}
+                    </div>
+                    <label class="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-primary flex items-center justify-center cursor-pointer hover:opacity-90">
+                      <span class="material-symbols-outlined text-on-primary text-sm">edit</span>
+                      <input type="file" accept="image/*" class="hidden" @change="uploadAvatar($event)">
+                    </label>
+                  </div>
+                  <div>
+                    <p class="text-sm font-medium text-on-surface">Profile photo</p>
+                    <p class="text-xs text-on-surface-variant">JPG, PNG or GIF &middot; Max 2MB</p>
+                  </div>
+                </div>
+
+                <!-- Avatar shape -->
+                <div>
+                  <label class="text-xs font-semibold text-on-surface-variant uppercase tracking-wide mb-2 block">Shape</label>
+                  <div class="flex gap-2">
+                    <template x-for="shape in ['circle','square','hexagon']" :key="shape">
+                      <button
+                        @click="appearance.avatar_shape = shape"
+                        class="flex-1 py-2 rounded-lg text-xs font-medium transition-colors capitalize border"
+                        :class="appearance.avatar_shape === shape ? 'bg-primary text-on-primary border-primary' : 'bg-surface-container text-on-surface-variant border-outline-variant hover:border-primary'"
+                        x-text="shape"
+                      ></button>
+                    </template>
+                  </div>
+                </div>
+
+                <!-- Display name -->
+                <div>
+                  <label class="text-xs font-semibold text-on-surface-variant uppercase tracking-wide mb-1.5 block">Display name</label>
+                  <input type="text" x-model="profile.displayName" maxlength="60"
+                    class="w-full bg-surface-container rounded-lg px-3 py-2 text-sm text-on-surface border border-outline-variant focus:border-primary outline-none transition-colors" />
+                </div>
+
+                <!-- Bio -->
+                <div>
+                  <div class="flex justify-between items-center mb-1.5">
+                    <label class="text-xs font-semibold text-on-surface-variant uppercase tracking-wide">Bio</label>
+                    <span class="text-xs text-on-surface-variant" x-text="`${profile.bio.length}/160`"></span>
+                  </div>
+                  <textarea x-model="profile.bio" maxlength="160" rows="3"
+                    class="w-full bg-surface-container rounded-lg px-3 py-2 text-sm text-on-surface border border-outline-variant focus:border-primary outline-none transition-colors resize-none"></textarea>
+                </div>
+
+                <!-- Location -->
+                <div>
+                  <label class="text-xs font-semibold text-on-surface-variant uppercase tracking-wide mb-1.5 block">Location</label>
+                  <input type="text" x-model="profile.location" maxlength="60"
+                    class="w-full bg-surface-container rounded-lg px-3 py-2 text-sm text-on-surface border border-outline-variant focus:border-primary outline-none transition-colors" />
+                </div>
+              </div>
+            </div>
+
+            <!-- BACKGROUND section -->
+            <div class="glass-card rounded-xl overflow-hidden">
+              <button @click="openSection = openSection === 'bg' ? '' : 'bg'" class="w-full flex items-center gap-3 px-5 py-4 text-left hover:bg-surface-container/50 transition-colors">
+                <span class="material-symbols-outlined text-primary text-xl" style="font-variation-settings:'FILL' 1">wallpaper</span>
+                <span class="font-semibold text-on-surface">Background</span>
+                <span class="material-symbols-outlined ml-auto text-on-surface-variant transition-transform" :class="openSection==='bg' ? 'rotate-180' : ''">expand_more</span>
+              </button>
+              <div x-show="openSection==='bg'" x-collapse class="px-5 pb-5 space-y-4 border-t border-outline-variant/50">
+                <div class="pt-4">
+                  <label class="text-xs font-semibold text-on-surface-variant uppercase tracking-wide mb-2 block">Type</label>
+                  <div class="grid grid-cols-4 gap-2">
+                    <template x-for="type in ['color','gradient','image','video']" :key="type">
+                      <button
+                        @click="bg.type = type"
+                        class="py-2 rounded-lg text-xs font-medium transition-colors capitalize border"
+                        :class="bg.type === type ? 'bg-primary text-on-primary border-primary' : 'bg-surface-container text-on-surface-variant border-outline-variant hover:border-primary'"
+                        x-text="type"
+                      ></button>
+                    </template>
+                  </div>
+                </div>
+
+                <!-- Color -->
+                <div x-show="bg.type==='color'">
+                  <label class="text-xs font-semibold text-on-surface-variant uppercase tracking-wide mb-2 block">Color</label>
+                  <div class="flex items-center gap-3">
+                    <input type="color" x-model="bg.color" class="w-10 h-10 rounded-lg cursor-pointer border-0 p-0">
+                    <input type="text" x-model="bg.color" maxlength="7" class="flex-1 bg-surface-container rounded-lg px-3 py-2 text-sm font-mono text-on-surface border border-outline-variant focus:border-primary outline-none transition-colors">
+                  </div>
+                </div>
+
+                <!-- Gradient -->
+                <div x-show="bg.type==='gradient'" class="space-y-3">
+                  <div class="flex gap-3">
+                    <div class="flex-1">
+                      <label class="text-xs text-on-surface-variant mb-1.5 block">Color 1</label>
+                      <div class="flex items-center gap-2">
+                        <input type="color" x-model="bg.color" class="w-9 h-9 rounded-lg cursor-pointer border-0 p-0">
+                        <input type="text" x-model="bg.color" maxlength="7" class="flex-1 bg-surface-container rounded-lg px-2 py-1.5 text-xs font-mono text-on-surface border border-outline-variant focus:border-primary outline-none">
+                      </div>
+                    </div>
+                    <div class="flex-1">
+                      <label class="text-xs text-on-surface-variant mb-1.5 block">Color 2</label>
+                      <div class="flex items-center gap-2">
+                        <input type="color" x-model="bg.color2" class="w-9 h-9 rounded-lg cursor-pointer border-0 p-0">
+                        <input type="text" x-model="bg.color2" maxlength="7" class="flex-1 bg-surface-container rounded-lg px-2 py-1.5 text-xs font-mono text-on-surface border border-outline-variant focus:border-primary outline-none">
+                      </div>
+                    </div>
+                  </div>
+                  <div>
+                    <label class="text-xs text-on-surface-variant mb-1.5 block">Direction</label>
+                    <select x-model="bg.dir" class="w-full bg-surface-container rounded-lg px-3 py-2 text-sm text-on-surface border border-outline-variant focus:border-primary outline-none transition-colors">
+                      <option value="to bottom">Top to Bottom</option>
+                      <option value="to right">Left to Right</option>
+                      <option value="to bottom right">Diagonal (Down-Right)</option>
+                      <option value="to top right">Diagonal (Up-Right)</option>
+                    </select>
+                  </div>
+                </div>
+
+                <!-- Image -->
+                <div x-show="bg.type==='image'">
+                  {% if not profile.is_standard %}
+                  <div class="flex items-center gap-3 p-4 rounded-xl bg-surface-container-high border border-outline-variant/50">
+                    <span class="material-symbols-outlined text-tertiary" style="font-variation-settings:'FILL' 1">workspace_premium</span>
+                    <div class="flex-1">
+                      <p class="text-sm font-semibold text-on-surface">Standard only</p>
+                      <p class="text-xs text-on-surface-variant">Upgrade to upload a custom background image.</p>
+                    </div>
+                    <a href="#" class="px-3 py-1.5 rounded-lg bg-primary text-on-primary text-xs font-semibold whitespace-nowrap">Upgrade</a>
+                  </div>
+                  {% else %}
+                  <label class="flex flex-col items-center gap-2 py-8 rounded-xl border-2 border-dashed border-outline-variant hover:border-primary cursor-pointer transition-colors">
+                    <span class="material-symbols-outlined text-3xl text-on-surface-variant">upload</span>
+                    <span class="text-sm text-on-surface-variant">Click to upload background image</span>
+                    <input type="file" accept="image/*" class="hidden">
+                  </label>
+                  {% endif %}
+                </div>
+
+                <!-- Video -->
+                <div x-show="bg.type==='video'">
+                  {% if not profile.is_standard %}
+                  <div class="flex items-center gap-3 p-4 rounded-xl bg-surface-container-high border border-outline-variant/50">
+                    <span class="material-symbols-outlined text-tertiary" style="font-variation-settings:'FILL' 1">workspace_premium</span>
+                    <div class="flex-1">
+                      <p class="text-sm font-semibold text-on-surface">Standard only</p>
+                      <p class="text-xs text-on-surface-variant">Upgrade to use a video background.</p>
+                    </div>
+                    <a href="#" class="px-3 py-1.5 rounded-lg bg-primary text-on-primary text-xs font-semibold whitespace-nowrap">Upgrade</a>
+                  </div>
+                  {% else %}
+                  <div>
+                    <label class="text-xs text-on-surface-variant mb-1.5 block">Video URL (YouTube / MP4)</label>
+                    <input type="url" x-model="bg.videoUrl" placeholder="https://"
+                      class="w-full bg-surface-container rounded-lg px-3 py-2 text-sm text-on-surface border border-outline-variant focus:border-primary outline-none transition-colors">
+                  </div>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+
+            <!-- BUTTONS section -->
+            <div class="glass-card rounded-xl overflow-hidden">
+              <button @click="openSection = openSection === 'btn' ? '' : 'btn'" class="w-full flex items-center gap-3 px-5 py-4 text-left hover:bg-surface-container/50 transition-colors">
+                <span class="material-symbols-outlined text-primary text-xl" style="font-variation-settings:'FILL' 1">smart_button</span>
+                <span class="font-semibold text-on-surface">Buttons</span>
+                <span class="material-symbols-outlined ml-auto text-on-surface-variant transition-transform" :class="openSection==='btn' ? 'rotate-180' : ''">expand_more</span>
+              </button>
+              <div x-show="openSection==='btn'" x-collapse class="px-5 pb-5 space-y-4 border-t border-outline-variant/50">
+                <div class="pt-4">
+                  <label class="text-xs font-semibold text-on-surface-variant uppercase tracking-wide mb-2 block">Style</label>
+                  <div class="grid grid-cols-3 gap-2">
+                    <template x-for="style in ['filled','outline','soft','shadow','glass','gradient','plain']" :key="style">
+                      <button
+                        @click="btn.style = style"
+                        class="py-2 rounded-lg text-xs font-medium transition-colors capitalize border"
+                        :class="btn.style === style ? 'bg-primary text-on-primary border-primary' : 'bg-surface-container text-on-surface-variant border-outline-variant hover:border-primary'"
+                        x-text="style"
+                      ></button>
+                    </template>
+                  </div>
+                </div>
+
+                <div>
+                  <label class="text-xs text-on-surface-variant mb-1.5 block">Text color</label>
+                  <div class="flex items-center gap-2">
+                    <input type="color" x-model="btn.textColor" class="w-9 h-9 rounded-lg cursor-pointer border-0 p-0">
+                    <input type="text" x-model="btn.textColor" maxlength="7" class="flex-1 bg-surface-container rounded-lg px-2 py-1.5 text-xs font-mono text-on-surface border border-outline-variant focus:border-primary outline-none">
+                  </div>
+                </div>
+
+                <div>
+                  <div class="flex justify-between items-center mb-2">
+                    <label class="text-xs font-semibold text-on-surface-variant uppercase tracking-wide">Corner radius</label>
+                    <span class="text-xs text-primary font-semibold" x-text="`${btn.radius}px`"></span>
+                  </div>
+                  <input type="range" min="0" max="50" x-model="btn.radius" class="w-full accent-primary">
+                  <div class="flex justify-between text-xs text-on-surface-variant mt-1">
+                    <span>Square</span><span>Rounded</span><span>Pill</span>
+                  </div>
+                </div>
+
+                <div class="flex items-center justify-between">
+                  <div>
+                    <p class="text-sm font-medium text-on-surface">Hover animation</p>
+                    <p class="text-xs text-on-surface-variant">Subtle lift effect on mouse hover</p>
+                  </div>
+                  <button @click="btn.hover = !btn.hover"
+                    class="w-11 h-6 rounded-full transition-colors relative shrink-0"
+                    :class="btn.hover ? 'bg-primary' : 'bg-surface-container-highest'">
+                    <span class="absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform" :class="btn.hover ? 'translate-x-5' : 'translate-x-0'"></span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+
+          </div>
+
+          <!-- Sticky save -->
+          <div class="sticky bottom-0 pt-4 pb-2 bg-surface/90 backdrop-blur-sm mt-4">
+            <button @click="saveAppearance()" class="w-full py-3 rounded-xl bg-primary text-on-primary font-semibold text-sm hover:opacity-90 transition-opacity flex items-center justify-center gap-2">
+              <span class="material-symbols-outlined text-base">save</span>
+              Save changes
+            </button>
+          </div>
+        </div>
+
+        <!-- ========== TAB: ANALYTICS ========== -->
+        <div x-show="activeTab==='analytics'" x-cloak>
+          <div class="mb-6">
+            <h1 class="text-xl font-bold text-on-surface">Analytics</h1>
+            <p class="text-sm text-on-surface-variant mt-0.5">Track your page performance</p>
+          </div>
+
+          {% if not profile.is_standard %}
+          <div class="flex flex-col items-center justify-center py-20 text-center">
+            <div class="w-20 h-20 rounded-2xl bg-surface-container-high flex items-center justify-center mb-4">
+              <span class="material-symbols-outlined text-4xl text-on-surface-variant" style="font-variation-settings:'FILL' 1">lock</span>
+            </div>
+            <h3 class="text-lg font-semibold text-on-surface mb-2">Analytics is a Standard feature</h3>
+            <p class="text-sm text-on-surface-variant mb-6 max-w-xs">Unlock detailed views, clicks, and conversion tracking with a Standard plan.</p>
+            <a href="#" class="flex items-center gap-2 px-6 py-3 rounded-xl bg-primary text-on-primary text-sm font-semibold hover:opacity-90 transition-opacity">
+              <span class="material-symbols-outlined text-base" style="font-variation-settings:'FILL' 1">workspace_premium</span>
+              Upgrade to Standard
+            </a>
+          </div>
+          {% else %}
+          <div class="grid grid-cols-2 gap-3 mb-6">
+            <div class="glass-card rounded-xl p-4">
+              <p class="text-xs text-on-surface-variant uppercase tracking-wide font-semibold mb-1">Total views</p>
+              <p class="text-2xl font-bold text-on-surface">0</p>
+              <p class="text-xs text-on-surface-variant mt-1">Last 30 days</p>
+            </div>
+            <div class="glass-card rounded-xl p-4">
+              <p class="text-xs text-on-surface-variant uppercase tracking-wide font-semibold mb-1">Total clicks</p>
+              <p class="text-2xl font-bold text-on-surface">0</p>
+              <p class="text-xs text-on-surface-variant mt-1">Last 30 days</p>
+            </div>
+            <div class="glass-card rounded-xl p-4">
+              <p class="text-xs text-on-surface-variant uppercase tracking-wide font-semibold mb-1">CTR</p>
+              <p class="text-2xl font-bold text-on-surface">0%</p>
+              <p class="text-xs text-on-surface-variant mt-1">Click-through rate</p>
+            </div>
+            <div class="glass-card rounded-xl p-4">
+              <p class="text-xs text-on-surface-variant uppercase tracking-wide font-semibold mb-1">Most clicked</p>
+              <p class="text-lg font-bold text-on-surface truncate">&mdash;</p>
+              <p class="text-xs text-on-surface-variant mt-1">Top performing link</p>
+            </div>
+          </div>
+          <div class="glass-card rounded-xl p-8 flex flex-col items-center justify-center text-center">
+            <span class="material-symbols-outlined text-4xl text-on-surface-variant mb-3">bar_chart</span>
+            <p class="text-sm text-on-surface-variant">No data yet. Share your page to start collecting analytics.</p>
+          </div>
+          {% endif %}
+        </div>
+
+        <!-- ========== TAB: SETTINGS ========== -->
+        <div x-show="activeTab==='settings'" x-cloak>
+          <div class="mb-6">
+            <h1 class="text-xl font-bold text-on-surface">Settings</h1>
+            <p class="text-sm text-on-surface-variant mt-0.5">Manage your account and preferences</p>
+          </div>
+
+          <div class="space-y-4">
+
+            <!-- Username -->
+            <div class="glass-card rounded-xl p-5 space-y-4">
+              <h2 class="text-sm font-semibold text-on-surface flex items-center gap-2">
+                <span class="material-symbols-outlined text-primary text-base" style="font-variation-settings:'FILL' 1">alternate_email</span>
+                Username
+              </h2>
+              <!-- Current URL display -->
+              <div class="flex items-center gap-2 px-3 py-2.5 rounded-lg bg-surface-container-high border border-outline-variant/50">
+                <span class="text-xs text-on-surface-variant shrink-0">taplink.my/</span>
+                <span class="text-sm font-semibold text-primary" x-text="settings.username"></span>
+              </div>
+              <!-- New username input -->
+              <div>
+                <label class="text-xs text-on-surface-variant mb-1.5 block">New username</label>
+                <div class="relative">
+                  <span class="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-on-surface-variant pointer-events-none">taplink.my/</span>
+                  <input
+                    type="text"
+                    x-model="settings.newUsername"
+                    @input.debounce.400ms="checkNewUsername()"
+                    placeholder="{{ profile.username }}"
+                    maxlength="30"
+                    class="w-full bg-surface-container rounded-lg pl-24 pr-10 py-2 text-sm text-on-surface border border-outline-variant focus:border-primary outline-none transition-colors"
+                  >
+                  <span class="absolute right-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-base"
+                    :class="{
+                      'text-green-400': settings.usernameStatus === 'available',
+                      'text-error': settings.usernameStatus === 'taken' || settings.usernameStatus === 'invalid',
+                      'text-on-surface-variant animate-spin': settings.usernameStatus === 'checking',
+                      'hidden': !settings.usernameStatus
+                    }"
+                    x-text="settings.usernameStatus === 'available' ? 'check_circle' : settings.usernameStatus === 'checking' ? 'progress_activity' : 'cancel'"
+                  ></span>
+                </div>
+                <p class="text-xs mt-1.5"
+                  :class="settings.usernameStatus === 'available' ? 'text-green-400' : 'text-error'"
+                  x-show="settings.usernameStatus && settings.usernameStatus !== 'checking'"
+                  x-text="settings.usernameStatus === 'available' ? 'Available!' : settings.usernameError"
+                ></p>
+              </div>
+              <button
+                @click="showUsernameModal = true"
+                :disabled="settings.usernameStatus !== 'available'"
+                class="w-full py-2.5 rounded-xl bg-primary text-on-primary font-semibold text-sm hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                Change username
+              </button>
+            </div>
+
+            <!-- SEO -->
+            <div class="glass-card rounded-xl p-5 space-y-4">
+              <h2 class="text-sm font-semibold text-on-surface flex items-center gap-2">
+                <span class="material-symbols-outlined text-primary text-base" style="font-variation-settings:'FILL' 1">travel_explore</span>
+                SEO settings
+              </h2>
+              <div class="space-y-3">
+                <div>
+                  <div class="flex justify-between mb-1">
+                    <label class="text-xs text-on-surface-variant">SEO title</label>
+                    <span class="text-xs text-on-surface-variant" x-text="`${settings.seoTitle.length}/60`"></span>
+                  </div>
+                  <input type="text" x-model="settings.seoTitle" maxlength="60"
+                    class="w-full bg-surface-container rounded-lg px-3 py-2 text-sm text-on-surface border border-outline-variant focus:border-primary outline-none transition-colors">
+                </div>
+                <div>
+                  <div class="flex justify-between mb-1">
+                    <label class="text-xs text-on-surface-variant">SEO description</label>
+                    <span class="text-xs text-on-surface-variant" x-text="`${settings.seoDescription.length}/160`"></span>
+                  </div>
+                  <textarea x-model="settings.seoDescription" rows="3" maxlength="160"
+                    class="w-full bg-surface-container rounded-lg px-3 py-2 text-sm text-on-surface border border-outline-variant focus:border-primary outline-none transition-colors resize-none"></textarea>
+                </div>
+              </div>
+              <button @click="saveSettings()" class="w-full py-2.5 rounded-xl bg-primary text-on-primary font-semibold text-sm hover:opacity-90 transition-opacity">
+                Save SEO
+              </button>
+            </div>
+
+            <!-- Visibility -->
+            <div class="glass-card rounded-xl p-5 space-y-4">
+              <h2 class="text-sm font-semibold text-on-surface flex items-center gap-2">
+                <span class="material-symbols-outlined text-primary text-base" style="font-variation-settings:'FILL' 1">visibility</span>
+                Visibility
+              </h2>
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-sm font-medium text-on-surface">Pause my page</p>
+                  <p class="text-xs text-on-surface-variant">Temporarily hide your page from visitors</p>
+                </div>
+                <button @click="settings.isPaused = !settings.isPaused; saveSettings()"
+                  class="w-11 h-6 rounded-full transition-colors relative shrink-0"
+                  :class="settings.isPaused ? 'bg-error' : 'bg-surface-container-highest'">
+                  <span class="absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform" :class="settings.isPaused ? 'translate-x-5' : 'translate-x-0'"></span>
+                </button>
+              </div>
+              <div x-show="settings.isPaused" class="flex items-center gap-2 p-3 rounded-lg bg-error/10 border border-error/20 text-xs text-error">
+                <span class="material-symbols-outlined text-sm">warning</span>
+                Your page is currently paused and not visible to visitors.
+              </div>
+            </div>
+
+            <!-- Custom domain -->
+            <div class="glass-card rounded-xl p-5 space-y-3">
+              <div class="flex items-center gap-2">
+                <h2 class="text-sm font-semibold text-on-surface flex items-center gap-2">
+                  <span class="material-symbols-outlined text-primary text-base" style="font-variation-settings:'FILL' 1">domain</span>
+                  Custom domain
+                </h2>
+                <span class="px-2 py-0.5 rounded-full bg-surface-container-high text-xs font-semibold text-on-surface-variant">Coming soon</span>
+              </div>
+              <input type="text" disabled placeholder="yourdomain.com"
+                class="w-full bg-surface-container/50 rounded-lg px-3 py-2 text-sm text-on-surface-variant border border-outline-variant/50 outline-none cursor-not-allowed opacity-60">
+              <p class="text-xs text-on-surface-variant">Custom domain support is coming in a future update.</p>
+            </div>
+
+            <!-- Email preferences -->
+            <div class="glass-card rounded-xl p-5 space-y-4">
+              <h2 class="text-sm font-semibold text-on-surface flex items-center gap-2">
+                <span class="material-symbols-outlined text-primary text-base" style="font-variation-settings:'FILL' 1">mail</span>
+                Email preferences
+              </h2>
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-sm font-medium text-on-surface">Marketing emails</p>
+                  <p class="text-xs text-on-surface-variant">Tips, new features, and product updates</p>
+                </div>
+                <button @click="settings.marketing = !settings.marketing; saveSettings()"
+                  class="w-11 h-6 rounded-full transition-colors relative shrink-0"
+                  :class="settings.marketing ? 'bg-primary' : 'bg-surface-container-highest'">
+                  <span class="absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform" :class="settings.marketing ? 'translate-x-5' : 'translate-x-0'"></span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Account -->
+            <div class="glass-card rounded-xl p-5 space-y-4">
+              <h2 class="text-sm font-semibold text-on-surface flex items-center gap-2">
+                <span class="material-symbols-outlined text-primary text-base" style="font-variation-settings:'FILL' 1">account_circle</span>
+                Account
+              </h2>
+              <div class="flex items-center gap-3 p-3 rounded-lg bg-surface-container-high">
+                <div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-on-primary text-sm font-bold shrink-0">
+                  {{ request.user.email|first|upper }}
+                </div>
+                <div class="min-w-0">
+                  <p class="text-sm font-medium text-on-surface truncate">{{ request.user.email }}</p>
+                  <p class="text-xs text-on-surface-variant">Connected account</p>
+                </div>
+              </div>
+              <button @click="showDeleteModal = true" class="w-full py-2.5 rounded-xl bg-error/10 border border-error/20 text-error text-sm font-semibold hover:bg-error/20 transition-colors flex items-center justify-center gap-2">
+                <span class="material-symbols-outlined text-base">delete_forever</span>
+                Delete account
+              </button>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Mobile bottom nav -->
+    <nav class="lg:hidden shrink-0 border-t border-outline-variant bg-surface-container-low">
+      <div class="flex">
+        <button @click="activeTab='links'" class="flex-1 flex flex-col items-center gap-1 py-3 text-xs transition-colors" :class="activeTab==='links' ? 'text-primary' : 'text-on-surface-variant'">
+          <span class="material-symbols-outlined text-xl" :style="activeTab==='links' ? 'font-variation-settings:\'FILL\' 1' : ''">add_link</span>
+          Links
+        </button>
+        <button @click="activeTab='appearance'" class="flex-1 flex flex-col items-center gap-1 py-3 text-xs transition-colors" :class="activeTab==='appearance' ? 'text-primary' : 'text-on-surface-variant'">
+          <span class="material-symbols-outlined text-xl" :style="activeTab==='appearance' ? 'font-variation-settings:\'FILL\' 1' : ''">palette</span>
+          Look
+        </button>
+        <button @click="activeTab='analytics'" class="flex-1 flex flex-col items-center gap-1 py-3 text-xs transition-colors" :class="activeTab==='analytics' ? 'text-primary' : 'text-on-surface-variant'">
+          <span class="material-symbols-outlined text-xl" :style="activeTab==='analytics' ? 'font-variation-settings:\'FILL\' 1' : ''">bar_chart</span>
+          Stats
+        </button>
+        <button @click="activeTab='settings'" class="flex-1 flex flex-col items-center gap-1 py-3 text-xs transition-colors" :class="activeTab==='settings' ? 'text-primary' : 'text-on-surface-variant'">
+          <span class="material-symbols-outlined text-xl" :style="activeTab==='settings' ? 'font-variation-settings:\'FILL\' 1' : ''">settings</span>
+          Settings
+        </button>
+      </div>
+    </nav>
+  </main>
+
+  <!-- ===== RIGHT PREVIEW PANEL ===== -->
+  <aside
+    class="hidden lg:flex flex-col shrink-0 w-[400px] border-l border-outline-variant bg-surface-container-lowest overflow-hidden"
+  >
+    <!-- Panel header -->
+    <div class="flex items-center gap-3 px-5 py-4 border-b border-outline-variant shrink-0">
+      <span class="text-sm font-semibold text-on-surface">Live Preview</span>
+      <div class="flex items-center gap-1 ml-auto">
+        <button @click="copyPageUrl()" title="Copy link" class="p-2 rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors">
+          <span class="material-symbols-outlined text-base">share</span>
+        </button>
+        <a href="/{{ profile.username }}" target="_blank" title="Open page" class="p-2 rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors">
+          <span class="material-symbols-outlined text-base">open_in_new</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- Phone mockup -->
+    <div class="flex-1 flex items-center justify-center p-6 overflow-y-auto custom-scrollbar">
+      <div class="relative" style="width:240px">
+        <!-- Phone frame -->
+        <div class="rounded-[40px] border-[8px] border-surface-container-highest overflow-hidden shadow-2xl" style="aspect-ratio:9/19.5">
+          <!-- Phone screen -->
+          <div class="h-full overflow-y-auto" :style="previewBgStyle()">
+            <!-- Notch -->
+            <div class="h-7 flex items-center justify-center" style="background:rgba(0,0,0,0.2)">
+              <div class="w-16 h-3 bg-black rounded-full"></div>
+            </div>
+
+            <!-- Profile -->
+            <div class="flex flex-col items-center px-4 pt-4 pb-3">
+              <div class="mb-2 flex items-center justify-center"
+                :style="`width:64px;height:64px;border:${appearance.border_width}px solid ${appearance.border_color};border-radius:${appearance.avatar_shape==='square' ? '12px' : '50%'};overflow:hidden;background:#292932`">
+                {% if profile.avatar %}
+                <img src="{{ profile.avatar.url }}" alt="Avatar" style="width:100%;height:100%;object-fit:cover">
+                {% else %}
+                <span class="material-symbols-outlined" style="color:#908fa0;font-size:28px">person</span>
+                {% endif %}
+              </div>
+              <p class="font-bold text-center leading-tight mb-1"
+                :style="`font-family:'${font.family}',sans-serif;font-size:${font.size==='small'?'13px':font.size==='large'?'17px':'15px'};color:${font.textColor}`"
+                x-text="profile.displayName || '{{ profile.display_name|default:profile.username|escapejs }}'"></p>
+              <p class="text-center leading-snug px-2 mb-1 opacity-80"
+                :style="`font-family:'${font.family}',sans-serif;font-size:10px;color:${font.textColor}`"
+                x-text="profile.bio || '{{ profile.bio|escapejs }}'"></p>
+              <template x-if="profile.location">
+                <p class="flex items-center gap-0.5 opacity-60" :style="`font-size:9px;color:${font.textColor}`">
+                  <span class="material-symbols-outlined" style="font-size:10px">location_on</span>
+                  <span x-text="profile.location"></span>
+                </p>
+              </template>
+            </div>
+
+            <!-- Links preview -->
+            <div class="px-3 space-y-2 pb-4">
+              <template x-for="link in links.filter(l => l.is_active)" :key="link.id">
+                <div
+                  class="flex items-center gap-2 px-3 py-2.5 cursor-pointer"
+                  :style="previewBtnStyle(link)"
+                  style="transition: transform 0.18s ease, box-shadow 0.18s ease;"
+                  @mouseenter="if(btn.hover) $el.style.transform='translateY(-2px)'"
+                  @mouseleave="if(btn.hover) $el.style.transform='translateY(0)'"
+                >
+                  <span class="material-symbols-outlined" :style="`font-size:14px;color:${link.icon_color}`" x-text="link.icon"></span>
+                  <span class="text-xs font-medium flex-1 truncate"
+                    :style="`font-family:'${link.font_family || font.family}',sans-serif;color:${link.text_color}`"
+                    x-text="link.title"></span>
+                </div>
+              </template>
+              <template x-if="links.filter(l=>l.is_active).length===0">
+                <div class="text-center py-4 opacity-40" style="font-size:10px" :style="`color:${font.textColor}`">Your links appear here</div>
+              </template>
+            </div>
+
+            <!-- Watermark -->
+            {% if not profile.is_standard %}
+            <div class="px-3 pb-4 flex justify-center">
+              <span class="opacity-40" style="font-size:9px" :style="`color:${font.textColor}`">taplink.my</span>
+            </div>
+            {% endif %}
+          </div>
+        </div>
+        <!-- Gloss overlay -->
+        <div class="absolute inset-0 rounded-[40px] pointer-events-none" style="background:linear-gradient(135deg,rgba(255,255,255,0.06) 0%,transparent 60%)"></div>
+      </div>
+    </div>
+
+    <!-- URL bar -->
+    <div class="px-5 py-4 border-t border-outline-variant shrink-0">
+      <div class="flex items-center gap-2 px-3 py-2 rounded-lg bg-surface-container border border-outline-variant">
+        <span class="material-symbols-outlined text-sm text-on-surface-variant">public</span>
+        <span class="text-xs text-on-surface-variant flex-1 truncate">taplink.my/{{ profile.username }}</span>
+        <button @click="copyPageUrl()" class="text-primary hover:opacity-80 transition-opacity">
+          <span class="material-symbols-outlined text-sm">content_copy</span>
+        </button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ===== ICON PICKER MODAL ===== -->
+  <div
+    x-show="showIconPicker"
+    x-cloak
+    @keydown.escape.window="showIconPicker = false"
+    class="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4"
+  >
+    <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" @click="showIconPicker = false"></div>
+    <div class="relative w-full max-w-md glass-card rounded-2xl overflow-hidden shadow-2xl">
+      <div class="flex items-center gap-3 px-5 py-4 border-b border-outline-variant">
+        <h3 class="font-semibold text-on-surface">Choose icon</h3>
+        <button @click="showIconPicker = false" class="ml-auto text-on-surface-variant hover:text-on-surface transition-colors">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+      <div class="px-4 py-3 border-b border-outline-variant">
+        <div class="flex items-center gap-2 px-3 py-2 rounded-lg bg-surface-container">
+          <span class="material-symbols-outlined text-on-surface-variant text-base">search</span>
+          <input type="text" x-model="iconSearch" placeholder="Search icons&hellip;" class="flex-1 bg-transparent text-sm text-on-surface outline-none placeholder-on-surface-variant">
+        </div>
+      </div>
+      <div class="overflow-y-auto max-h-[60vh] custom-scrollbar p-4 space-y-4">
+        <template x-for="cat in iconCategories" :key="cat.name">
+          <div x-show="filteredIconsForCat(cat).length > 0">
+            <p class="text-xs font-semibold text-on-surface-variant uppercase tracking-wide mb-2" x-text="cat.name"></p>
+            <div class="grid grid-cols-5 gap-2">
+              <template x-for="icon in filteredIconsForCat(cat)" :key="icon.id">
+                <button
+                  @click="selectIcon(icon)"
+                  class="flex flex-col items-center gap-1 p-2 rounded-xl hover:bg-surface-container transition-colors group"
+                  :title="icon.label"
+                >
+                  <span class="material-symbols-outlined text-2xl text-on-surface-variant group-hover:text-primary transition-colors" x-text="icon.icon"></span>
+                  <span class="text-[9px] text-on-surface-variant text-center leading-tight truncate w-full" x-text="icon.label"></span>
+                </button>
+              </template>
+            </div>
+          </div>
+        </template>
+        <div>
+          <p class="text-xs font-semibold text-on-surface-variant uppercase tracking-wide mb-2">Common</p>
+          <div class="grid grid-cols-5 gap-2">
+            <template x-for="ic in filteredCommonIcons" :key="ic.name">
+              <button
+                @click="selectIcon({icon: ic.name, label: ic.label, id: ic.name})"
+                class="flex flex-col items-center gap-1 p-2 rounded-xl hover:bg-surface-container transition-colors group"
+                :title="ic.label"
+              >
+                <span class="material-symbols-outlined text-2xl text-on-surface-variant group-hover:text-primary transition-colors" x-text="ic.name"></span>
+                <span class="text-[9px] text-on-surface-variant text-center leading-tight truncate w-full" x-text="ic.label"></span>
+              </button>
+            </template>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== USERNAME CHANGE MODAL ===== -->
+  <div
+    x-show="showUsernameModal"
+    x-cloak
+    @keydown.escape.window="showUsernameModal = false"
+    class="fixed inset-0 z-50 flex items-center justify-center p-4"
+  >
+    <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" @click="showUsernameModal = false"></div>
+    <div class="relative w-full max-w-sm glass-card rounded-2xl p-6 shadow-2xl">
+      <div class="flex flex-col items-center text-center mb-5">
+        <div class="w-14 h-14 rounded-full bg-tertiary/10 flex items-center justify-center mb-3">
+          <span class="material-symbols-outlined text-3xl text-tertiary" style="font-variation-settings:'FILL' 1">warning</span>
+        </div>
+        <h3 class="text-lg font-bold text-on-surface mb-1">Change username?</h3>
+        <p class="text-sm text-on-surface-variant">Your current link will stop working:</p>
+        <div class="mt-2 px-3 py-1.5 rounded-lg bg-error/10 border border-error/20">
+          <span class="text-xs font-mono text-error line-through" x-text="`taplink.my/${settings.username}`"></span>
+        </div>
+        <div class="mt-1.5 px-3 py-1.5 rounded-lg bg-green-500/10 border border-green-500/20">
+          <span class="text-xs font-mono text-green-400" x-text="`taplink.my/${settings.newUsername}`"></span>
+        </div>
+      </div>
+      <div class="mb-4">
+        <label class="text-xs text-on-surface-variant mb-1.5 block">Type your current username to confirm: <strong class="text-on-surface" x-text="settings.username"></strong></label>
+        <input type="text" x-model="settings.usernameConfirm"
+          :placeholder="settings.username"
+          class="w-full bg-surface-container rounded-lg px-3 py-2 text-sm text-on-surface border border-outline-variant focus:border-primary outline-none transition-colors">
+      </div>
+      <div class="flex gap-3">
+        <button @click="showUsernameModal = false; settings.usernameConfirm = ''" class="flex-1 py-2.5 rounded-xl bg-surface-container text-on-surface text-sm font-semibold hover:bg-surface-container-high transition-colors">
+          Cancel
+        </button>
+        <button
+          @click="confirmUsernameChange()"
+          :disabled="settings.usernameConfirm !== settings.username"
+          class="flex-1 py-2.5 rounded-xl bg-primary text-on-primary text-sm font-semibold hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
+        >
+          Confirm
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== DELETE ACCOUNT MODAL ===== -->
+  <div
+    x-show="showDeleteModal"
+    x-cloak
+    @keydown.escape.window="showDeleteModal = false"
+    class="fixed inset-0 z-50 flex items-center justify-center p-4"
+  >
+    <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" @click="showDeleteModal = false"></div>
+    <div class="relative w-full max-w-sm glass-card rounded-2xl p-6 shadow-2xl">
+      <div class="flex flex-col items-center text-center mb-5">
+        <div class="w-14 h-14 rounded-full bg-error/10 flex items-center justify-center mb-3">
+          <span class="material-symbols-outlined text-3xl text-error" style="font-variation-settings:'FILL' 1">warning</span>
+        </div>
+        <h3 class="text-lg font-bold text-on-surface mb-1">Delete account?</h3>
+        <p class="text-sm text-on-surface-variant">This will permanently delete your account and all your links. This cannot be undone.</p>
+      </div>
+      <div class="mb-4">
+        <label class="text-xs text-on-surface-variant mb-1.5 block">Type your username to confirm: <strong class="text-on-surface">{{ profile.username }}</strong></label>
+        <input type="text" x-model="deleteConfirmUsername" placeholder="{{ profile.username }}"
+          class="w-full bg-surface-container rounded-lg px-3 py-2 text-sm text-on-surface border border-error/50 focus:border-error outline-none transition-colors">
+      </div>
+      <div class="flex gap-3">
+        <button @click="showDeleteModal = false" class="flex-1 py-2.5 rounded-xl bg-surface-container text-on-surface text-sm font-semibold hover:bg-surface-container-high transition-colors">
+          Cancel
+        </button>
+        <button
+          @click="confirmDeleteAccount()"
+          :disabled="deleteConfirmUsername !== '{{ profile.username }}'"
+          class="flex-1 py-2.5 rounded-xl bg-error text-white text-sm font-semibold hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
+        >
+          Delete
+        </button>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const CSRF_TOKEN = (function() {
+  const name = 'csrftoken';
+  const c = document.cookie.split(';').map(s => s.trim()).find(s => s.startsWith(name + '='));
+  return c ? decodeURIComponent(c.split('=')[1]) : '{{ csrf_token }}';
+})();
+
+const PLATFORM_ICONS = {{ platform_icons_json|safe }};
+
+const FREE_FONTS = [
+  { name: 'Inter',       label: 'Inter' },
+  { name: 'Poppins',     label: 'Poppins' },
+  { name: 'Kanit',       label: 'Kanit' },
+  { name: 'Montserrat',  label: 'Montserrat' },
+  { name: 'Lato',        label: 'Lato' },
+  { name: 'Roboto Mono', label: 'Roboto Mono' },
+];
+
+const STANDARD_FONTS = [
+  { name: 'Nunito',           label: 'Nunito',           vibe: 'TikTok / Spotify' },
+  { name: 'Plus Jakarta Sans',label: 'Plus Jakarta Sans', vibe: 'Instagram' },
+  { name: 'Roboto',           label: 'Roboto',           vibe: 'YouTube' },
+  { name: 'DM Sans',          label: 'DM Sans',          vibe: 'Twitter / X' },
+  { name: 'Bebas Neue',       label: 'Bebas Neue',       vibe: 'Netflix' },
+  { name: 'Fredoka',          label: 'Fredoka',          vibe: 'Snapchat' },
+  { name: 'Playfair Display', label: 'Playfair Display', vibe: 'Pinterest' },
+  { name: 'Space Grotesk',    label: 'Space Grotesk',    vibe: 'Spotify' },
+  { name: 'Outfit',           label: 'Outfit',           vibe: 'LinkedIn' },
+  { name: 'DM Mono',          label: 'DM Mono',          vibe: 'Discord' },
+];
+
+const INITIAL_LINKS = [
+  {% for link in links %}{
+    id: {{ link.id }},
+    title: "{{ link.title|escapejs }}",
+    url: "{{ link.url|escapejs }}",
+    icon: "{{ link.icon|escapejs }}",
+    color: "{{ link.color|escapejs }}",
+    text_color: "{{ link.text_color|escapejs }}",
+    icon_color: "{{ link.icon_color|escapejs }}",
+    font_family: "{{ link.font_family|escapejs }}",
+    is_active: {{ link.is_active|yesno:"true,false" }},
+    order: {{ link.order }},
+    display_style: "{{ link.display_style|escapejs }}",
+    thumbnail_url: "{{ link.thumbnail_url|escapejs }}",
+  },{% endfor %}
+];
+
+function dashboardApp() {
+  return {
+    activeTab: 'links',
+    sidebarOpen: true,
+    previewOpen: true,
+    isStandard: {{ profile.is_standard|yesno:"true,false" }},
+
+    // Links
+    links: INITIAL_LINKS,
+    showIconPicker: false,
+    iconPickerLinkId: null,
+    iconSearch: '',
+
+    // Appearance
+    openSection: 'profile',
+    profile: {
+      displayName: "{{ profile.display_name|escapejs }}",
+      bio: "{{ profile.bio|escapejs }}",
+      location: "{{ profile.location|escapejs }}",
+    },
+    appearance: {
+      avatar_shape: "{{ appearance.avatar_shape|escapejs }}",
+      border_color: "{{ appearance.border_color|escapejs }}",
+      border_width: {{ appearance.border_width }},
+    },
+    bg: {
+      type: "{{ appearance.bg_type|escapejs }}",
+      color: "{{ appearance.bg_color|escapejs }}",
+      color2: "{{ appearance.bg_color2|escapejs }}",
+      dir: "{{ appearance.bg_gradient_dir|escapejs }}",
+      videoUrl: "{{ appearance.bg_video_url|escapejs }}",
+    },
+    btn: {
+      style: "{{ appearance.btn_style|escapejs }}",
+      color: "{{ appearance.btn_color|escapejs }}",
+      textColor: "{{ appearance.btn_text_color|escapejs }}",
+      radius: {{ appearance.btn_radius }},
+      hover: {{ appearance.btn_hover|yesno:"true,false" }},
+    },
+    font: {
+      family: "{{ appearance.font_family|escapejs }}",
+      size: "{{ appearance.font_size|escapejs }}",
+      textColor: "{{ appearance.text_color|escapejs }}",
+    },
+
+    // Settings
+    showUsernameModal: false,
+    settings: {
+      username: "{{ profile.username|escapejs }}",
+      newUsername: '',
+      usernameStatus: '',   // '', 'checking', 'available', 'taken', 'invalid'
+      usernameError: '',
+      usernameConfirm: '',
+      displayName: "{{ profile.display_name|escapejs }}",
+      bio: "{{ profile.bio|escapejs }}",
+      location: "{{ profile.location|escapejs }}",
+      birthYear: {% if profile.birth_year %}{{ profile.birth_year }}{% else %}''{% endif %},
+      seoTitle: "{{ profile.seo_title|escapejs }}",
+      seoDescription: "{{ profile.seo_description|escapejs }}",
+      isPaused: {{ profile.is_paused|yesno:"true,false" }},
+      marketing: {{ profile.marketing|yesno:"true,false" }},
+    },
+
+    showDeleteModal: false,
+    deleteConfirmUsername: '',
+
+    iconCategories: [
+      { name: 'Social',   icons: PLATFORM_ICONS.filter(i => i.category === 'Social') },
+      { name: 'Shopping', icons: PLATFORM_ICONS.filter(i => i.category === 'Shopping') },
+      { name: 'Food',     icons: PLATFORM_ICONS.filter(i => i.category === 'Food') },
+      { name: 'Travel',   icons: PLATFORM_ICONS.filter(i => i.category === 'Travel') },
+      { name: 'Music',    icons: PLATFORM_ICONS.filter(i => i.category === 'Music') },
+      { name: 'Other',    icons: PLATFORM_ICONS.filter(i => i.category === 'Other') },
+    ],
+    commonIcons: [
+      {name:'link',label:'Link'},{name:'star',label:'Star'},{name:'favorite',label:'Heart'},
+      {name:'bolt',label:'Bolt'},{name:'celebration',label:'Party'},{name:'emoji_events',label:'Trophy'},
+      {name:'payments',label:'Pay'},{name:'card_giftcard',label:'Gift'},{name:'store',label:'Store'},
+      {name:'subscriptions',label:'Subscribe'},{name:'play_circle',label:'Play'},{name:'photo_library',label:'Gallery'},
+      {name:'article',label:'Blog'},{name:'podcasts',label:'Podcast'},{name:'school',label:'Course'},
+      {name:'science',label:'Lab'},{name:'rocket_launch',label:'Rocket'},{name:'local_fire_department',label:'Hot'},
+    ],
+
+    init() {
+      // keep profile.avatarShape in sync with appearance.avatar_shape
+      this.$watch('appearance.avatar_shape', v => {});
+    },
+
+    // ---- PREVIEW ----
+    previewBgStyle() {
+      if (this.bg.type === 'gradient') {
+        return `background: linear-gradient(${this.bg.dir}, ${this.bg.color}, ${this.bg.color2}); height:100%; overflow-y:auto`;
+      }
+      return `background-color: ${this.bg.color}; height:100%; overflow-y:auto`;
+    },
+
+    previewBtnStyle(link) {
+      const r = `${this.btn.radius}px`;
+      const c = (link && link.color) ? link.color : '#8083ff';
+      switch(this.btn.style) {
+        case 'filled':
+          return `border-radius:${r};background:${c};`;
+        case 'outline':
+          return `border-radius:${r};border:1.5px solid ${c};`;
+        case 'soft':
+          return `border-radius:${r};background:${c}33;`;
+        case 'shadow':
+          return `border-radius:${r};background:${c};box-shadow:0 4px 12px ${c}66;`;
+        case 'glass':
+          return `border-radius:${r};background:rgba(255,255,255,0.08);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,0.15);`;
+        case 'gradient':
+          return `border-radius:${r};background:linear-gradient(135deg,${c},${c}99);`;
+        case 'plain':
+          return `border-radius:${r};background:transparent;`;
+        default:
+          return `border-radius:${r};background:${c};`;
+      }
+    },
+
+    // ---- LINKS ----
+    async addLink() {
+      try {
+        const res = await fetch('{% url "dashboard:link_create" %}', {
+          method: 'POST',
+          headers: { 'X-CSRFToken': CSRF_TOKEN, 'Content-Type': 'application/json' },
+          body: JSON.stringify({}),
+        });
+        const data = await res.json();
+        if (data.ok) {
+          this.links.push(data);
+          showToast('Link added!', 'success');
+        } else {
+          showToast(data.error || 'Could not add link.', 'error');
+        }
+      } catch(e) {
+        showToast('Network error.', 'error');
+      }
+    },
+
+    async updateLink(link) {
+      try {
+        await fetch(`/dashboard/links/${link.id}/update/`, {
+          method: 'POST',
+          headers: { 'X-CSRFToken': CSRF_TOKEN, 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            title: link.title,
+            url: link.url,
+            icon: link.icon,
+            color: link.color,
+            text_color: link.text_color,
+            icon_color: link.icon_color,
+            font_family: link.font_family,
+            display_style: link.display_style,
+            thumbnail_url: link.thumbnail_url,
+            is_active: link.is_active,
+          }),
+        });
+      } catch(e) {}
+    },
+
+    async deleteLink(linkId) {
+      if (!confirm('Delete this link?')) return;
+      try {
+        const res = await fetch(`/dashboard/links/${linkId}/delete/`, {
+          method: 'POST',
+          headers: { 'X-CSRFToken': CSRF_TOKEN, 'Content-Type': 'application/json' },
+          body: JSON.stringify({}),
+        });
+        const data = await res.json();
+        if (data.ok) {
+          this.links = this.links.filter(l => l.id !== linkId);
+          showToast('Link deleted.', 'success');
+        }
+      } catch(e) {
+        showToast('Network error.', 'error');
+      }
+    },
+
+    // ---- ICON PICKER ----
+    openIconPicker(linkId) {
+      this.iconPickerLinkId = linkId;
+      this.iconSearch = '';
+      this.showIconPicker = true;
+    },
+
+    filteredIconsForCat(cat) {
+      if (!this.iconSearch) return cat.icons;
+      const q = this.iconSearch.toLowerCase();
+      return cat.icons.filter(i => i.label.toLowerCase().includes(q) || i.icon.toLowerCase().includes(q));
+    },
+
+    get filteredCommonIcons() {
+      if (!this.iconSearch) return this.commonIcons;
+      const q = this.iconSearch.toLowerCase();
+      return this.commonIcons.filter(i => i.name.toLowerCase().includes(q) || (i.label||'').toLowerCase().includes(q));
+    },
+
+    selectIcon(iconObj) {
+      const link = this.links.find(l => l.id === this.iconPickerLinkId);
+      if (link) {
+        link.icon = iconObj.icon;
+        this.updateLink(link);
+      }
+      this.showIconPicker = false;
+    },
+
+    // ---- APPEARANCE ----
+    async saveAppearance() {
+      try {
+        const res = await fetch('{% url "dashboard:appearance_save" %}', {
+          method: 'POST',
+          headers: { 'X-CSRFToken': CSRF_TOKEN, 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            avatar_shape: this.appearance.avatar_shape,
+            border_color: this.appearance.border_color,
+            border_width: parseInt(this.appearance.border_width),
+            bg_type: this.bg.type,
+            bg_color: this.bg.color,
+            bg_color2: this.bg.color2,
+            bg_gradient_dir: this.bg.dir,
+            btn_style: this.btn.style,
+            btn_color: this.btn.color,
+            btn_text_color: this.btn.textColor,
+            btn_radius: parseInt(this.btn.radius),
+            btn_hover: this.btn.hover,
+            font_family: this.font.family,
+            font_size: this.font.size,
+            text_color: this.font.textColor,
+            display_name: this.profile.displayName,
+            bio: this.profile.bio,
+            location: this.profile.location,
+          }),
+        });
+        const data = await res.json();
+        if (data.ok) showToast('Appearance saved!', 'success');
+        else showToast('Could not save.', 'error');
+      } catch(e) {
+        showToast('Network error.', 'error');
+      }
+    },
+
+    // ---- SETTINGS ----
+    async saveSettings() {
+      try {
+        const res = await fetch('{% url "dashboard:settings_save" %}', {
+          method: 'POST',
+          headers: { 'X-CSRFToken': CSRF_TOKEN, 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            display_name: this.settings.displayName,
+            bio: this.settings.bio,
+            location: this.settings.location,
+            birth_year: this.settings.birthYear ? parseInt(this.settings.birthYear) : null,
+            seo_title: this.settings.seoTitle,
+            seo_description: this.settings.seoDescription,
+            is_paused: this.settings.isPaused,
+            marketing: this.settings.marketing,
+          }),
+        });
+        const data = await res.json();
+        if (data.ok) showToast('Settings saved!', 'success');
+        else showToast('Could not save.', 'error');
+      } catch(e) {
+        showToast('Network error.', 'error');
+      }
+    },
+
+    // ---- USERNAME CHANGE ----
+    async checkNewUsername() {
+      const u = this.settings.newUsername.trim().toLowerCase();
+      if (!u || u === this.settings.username) { this.settings.usernameStatus = ''; return; }
+      if (!/^[a-z0-9_\-]{3,30}$/.test(u)) {
+        this.settings.usernameStatus = 'invalid';
+        this.settings.usernameError = 'Letters, numbers, _ and - only. 3–30 chars.';
+        return;
+      }
+      this.settings.usernameStatus = 'checking';
+      try {
+        const res = await fetch(`{% url "accounts:check_username" %}?username=${encodeURIComponent(u)}`);
+        const data = await res.json();
+        if (this.settings.newUsername.trim().toLowerCase() !== u) return; // stale
+        if (data.available) {
+          this.settings.usernameStatus = 'available';
+        } else {
+          this.settings.usernameStatus = 'taken';
+          this.settings.usernameError = 'Username is already taken.';
+        }
+      } catch(e) { this.settings.usernameStatus = ''; }
+    },
+
+    async confirmUsernameChange() {
+      if (this.settings.usernameConfirm !== this.settings.username) return;
+      try {
+        const res = await fetch('{% url "dashboard:username_change" %}', {
+          method: 'POST',
+          headers: { 'X-CSRFToken': CSRF_TOKEN, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username: this.settings.newUsername.trim().toLowerCase() }),
+        });
+        const data = await res.json();
+        if (data.ok) {
+          this.settings.username = data.username;
+          this.settings.newUsername = '';
+          this.settings.usernameStatus = '';
+          this.settings.usernameConfirm = '';
+          this.showUsernameModal = false;
+          showToast('Username changed!', 'success');
+        } else {
+          showToast(data.error || 'Could not change username.', 'error');
+          this.showUsernameModal = false;
+        }
+      } catch(e) {
+        showToast('Network error.', 'error');
+      }
+    },
+
+    // ---- ACCOUNT DELETE ----
+    async confirmDeleteAccount() {
+      try {
+        const res = await fetch('{% url "dashboard:account_delete" %}', {
+          method: 'POST',
+          headers: { 'X-CSRFToken': CSRF_TOKEN, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username: this.deleteConfirmUsername }),
+        });
+        const data = await res.json();
+        if (data.ok) {
+          window.location.href = data.redirect || '/';
+        } else {
+          showToast(data.error || 'Could not delete account.', 'error');
+        }
+      } catch(e) {
+        showToast('Network error.', 'error');
+      }
+    },
+
+    // ---- UTILS ----
+    copyPageUrl() {
+      const url = `${window.location.origin}/{{ profile.username }}`;
+      navigator.clipboard.writeText(url).then(() => showToast('Link copied!', 'success'));
+    },
+
+    uploadAvatar(event) {
+      showToast('Avatar upload coming soon.', 'warning');
+    },
+  };
+}
+</script>
+{% endblock %}
