@@ -1,0 +1,125 @@
+{% extends "admin/base_site.html" %}
+{% block title %}Generate Gift Codes{% endblock %}
+
+{% block content %}
+<h1>Generate Gift Codes</h1>
+
+{% if messages %}
+  {% for message in messages %}
+    <p class="{% if message.tags %}{{ message.tags }}{% endif %}">{{ message }}</p>
+  {% endfor %}
+{% endif %}
+
+<div style="max-width:520px; margin-top:1.5rem;">
+  <form method="post" id="gen-form">
+    {% csrf_token %}
+
+    <fieldset class="module aligned">
+      <h2>How many codes?</h2>
+      <div class="form-row" style="display:flex; gap:12px; padding:16px 0;">
+        {% for n in "1 5 10" %}
+        {% endfor %}
+        <button type="button" onclick="setCount(1)"  id="btn-1"  class="count-btn">1 code</button>
+        <button type="button" onclick="setCount(5)"  id="btn-5"  class="count-btn">5 codes</button>
+        <button type="button" onclick="setCount(10)" id="btn-10" class="count-btn">10 codes</button>
+        <input type="hidden" name="count" id="count-input" value="1">
+      </div>
+
+      <h2 style="margin-top:12px;">Duration (days)</h2>
+      <div class="form-row" style="padding:12px 0;">
+        <input type="number" name="duration_days" value="30" min="1" max="365"
+          style="width:100px; padding:6px 10px; font-size:14px; border:1px solid #ccc; border-radius:4px;">
+        <span style="margin-left:8px; color:#666; font-size:13px;">days of Standard plan</span>
+      </div>
+    </fieldset>
+
+    <div style="margin-top:16px;">
+      <input type="submit" value="Generate" class="default" style="padding:8px 24px; font-size:14px; cursor:pointer;">
+      <a href="../" style="margin-left:16px; color:#447e9b;">← Back to Gift Codes</a>
+    </div>
+  </form>
+</div>
+
+{% if generated %}
+<div style="margin-top:2rem; max-width:520px;">
+  <h2 style="margin-bottom:12px;">Generated Codes ({{ generated|length }})</h2>
+  <table style="width:100%; border-collapse:collapse; background:#fff; border-radius:6px; overflow:hidden; box-shadow:0 1px 4px rgba(0,0,0,0.1);">
+    <thead>
+      <tr style="background:#f8f8f8;">
+        <th style="padding:10px 16px; text-align:left; font-size:13px; border-bottom:1px solid #eee;">Code</th>
+        <th style="padding:10px 16px; text-align:center; font-size:13px; border-bottom:1px solid #eee;">Duration</th>
+        <th style="padding:10px 16px; text-align:center; font-size:13px; border-bottom:1px solid #eee;">Copy</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for gc in generated %}
+      <tr style="border-bottom:1px solid #f0f0f0;">
+        <td style="padding:10px 16px;">
+          <code id="code-{{ forloop.counter }}" style="font-size:15px; letter-spacing:2px; font-weight:600; color:#1a1a2e;">{{ gc.code }}</code>
+        </td>
+        <td style="padding:10px 16px; text-align:center; color:#666; font-size:13px;">{{ gc.duration_days }} days</td>
+        <td style="padding:10px 16px; text-align:center;">
+          <button onclick="copyCode('{{ gc.code }}', this)"
+            style="padding:4px 12px; font-size:12px; border:1px solid #ccc; border-radius:4px; cursor:pointer; background:#fff;">
+            Copy
+          </button>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <div style="margin-top:12px; display:flex; gap:12px;">
+    <button onclick="copyAll()" style="padding:7px 16px; font-size:13px; border:1px solid #ccc; border-radius:4px; cursor:pointer; background:#fff;">
+      Copy all codes
+    </button>
+    <a href="../" style="padding:7px 16px; font-size:13px; background:#447e9b; color:#fff; border-radius:4px; text-decoration:none;">
+      View all Gift Codes →
+    </a>
+  </div>
+</div>
+{% endif %}
+
+<style>
+.count-btn {
+  padding: 8px 20px;
+  font-size: 14px;
+  border: 2px solid #ccc;
+  border-radius: 6px;
+  cursor: pointer;
+  background: #fff;
+  transition: all 0.15s;
+}
+.count-btn.active {
+  border-color: #447e9b;
+  background: #447e9b;
+  color: #fff;
+  font-weight: 600;
+}
+</style>
+
+<script>
+function setCount(n) {
+  document.getElementById('count-input').value = n;
+  document.querySelectorAll('.count-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('btn-' + n).classList.add('active');
+}
+
+function copyCode(code, btn) {
+  navigator.clipboard.writeText(code).then(() => {
+    btn.textContent = 'Copied!';
+    setTimeout(() => btn.textContent = 'Copy', 1500);
+  });
+}
+
+function copyAll() {
+  const codes = [{% for gc in generated %}'{{ gc.code }}'{% if not forloop.last %}, {% endif %}{% endfor %}];
+  navigator.clipboard.writeText(codes.join('\n')).then(() => {
+    alert('All codes copied to clipboard!');
+  });
+}
+
+// Set initial active state
+setCount(1);
+</script>
+{% endblock %}
