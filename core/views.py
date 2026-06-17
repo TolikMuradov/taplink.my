@@ -6,6 +6,7 @@ from django.http import JsonResponse
 from django.utils import timezone
 from django.conf import settings
 from datetime import timedelta
+from django_ratelimit.decorators import ratelimit
 
 
 def landing(request):
@@ -50,7 +51,10 @@ def upgrade(request):
 
 
 @login_required
+@ratelimit(key='user', rate='5/h', method='POST')
 def redeem_gift_code(request):
+    if getattr(request, 'limited', False):
+        return JsonResponse({'error': 'Too many attempts. Please wait before trying again.'}, status=429)
     if request.method != 'POST':
         return JsonResponse({'error': 'Method not allowed'}, status=405)
 

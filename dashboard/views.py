@@ -10,6 +10,7 @@ import io
 import base64
 from accounts.models import UserProfile, Link, Appearance
 from analytics_app.models import ProfileView, LinkClick
+from django_ratelimit.decorators import ratelimit
 
 FREE_LINK_LIMIT = 9999  # temporarily unlimited for dev
 STANDARD_LINK_LIMIT = 10
@@ -223,7 +224,10 @@ def account_delete(request):
 
 @login_required
 @require_POST
+@ratelimit(key='user', rate='20/h')
 def avatar_upload(request):
+    if getattr(request, 'limited', False):
+        return JsonResponse({'ok': False, 'error': 'Too many uploads. Try again later.'}, status=429)
     from PIL import Image
     from django.core.files.base import ContentFile
 
@@ -259,7 +263,10 @@ def avatar_upload(request):
 
 @login_required
 @require_POST
+@ratelimit(key='user', rate='20/h')
 def background_upload(request):
+    if getattr(request, 'limited', False):
+        return JsonResponse({'ok': False, 'error': 'Too many uploads. Try again later.'}, status=429)
     from PIL import Image
     from django.core.files.base import ContentFile
 
