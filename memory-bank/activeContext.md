@@ -1,62 +1,59 @@
 # Active Context — taplink.my
 
 ## Current Status
-**Phase: Active Development — Pages 1-6 complete, Pages 7-8 remaining**
+**Phase: Active Development — Pages 1-7 complete, Page 8 (Admin Panel) remaining**
 
-Django project is running. All core models migrated. Dev login bypass active (`/dev-login/`). testuser has Standard plan for testing.
+## What Was Built (2026-06-17, Session 3)
 
-## What Was Just Built (2026-06-17, Session 3)
-
-### Sayfa 5 — Upgrade (`/upgrade/`)
-- `GiftCode` model added to `accounts/models.py` (code, plan, duration_days, is_used, used_by, used_at)
-- Migration `0006_giftcode` applied
-- `/upgrade/` view: 3 hover-reveal feature cards, comparison table, gift code input, PromptPay placeholder
-- `/upgrade/redeem/` AJAX endpoint: validates code, activates Standard, extends expiry if already Standard
-- Dashboard sidebar "Upgrade" button wired to `/upgrade/`
-- GiftCode registered in Django admin with custom generator
+### Page 5 — Upgrade (`/upgrade/`)
+- GiftCode model + migration 0006
+- 3 hover-reveal feature cards, comparison table, gift code input, PromptPay placeholder
+- `/upgrade/redeem/` AJAX endpoint — validates, activates/extends Standard
+- Dashboard sidebar Upgrade button wired
 
 ### Gift Code Generator (Django Admin)
-- `/admin/accounts/giftcode/generate/` — custom admin view
-- Format: `XXXX-XXXX-XXXX` (12 chars, no ambiguous 0/O/1/I/L)
-- Generate 1 / 5 / 10 codes per click
-- Configurable duration (default 30 days, max 365)
-- Copy individual or all codes to clipboard
-- Test code: `TEST-2026-FREE` (pre-seeded)
+- `/admin/accounts/giftcode/generate/` custom admin view
+- Format: `XXXX-XXXX-XXXX` (no ambiguous chars), 1/5/10 per click, default 30 days
+- Test code: `TEST-2026-FREE`
 
-### Sayfa 6 — Public Profile (`/@username/` dev, `username.taplink.my` prod)
-- `profiles/views.py`: `public_profile()` + `link_redirect()` (analytics hook)
-- `profiles/urls.py`: `/@<username>/` and `/@<username>/r/<link_id>/`
-- `profiles/middleware.py`: `SubdomainMiddleware` — detects `username.taplink.my` host, routes to profile view
-- `config/settings.py`: SubdomainMiddleware added, `.localhost` added to ALLOWED_HOSTS
-- Full appearance rendering: bg color/gradient/image/video, avatar shape (circle/square/hexagon) + border
-- Per-link button styles computed in view (`_build_btn_css`) → passed as inline CSS
-- `icon_only` links → compact social icon row (top), `icon_text` links → full button list
-- Standard: ripple effect + 0.5s splash screen on click; Free: direct window.open + watermark
-- SEO: `<title>`, meta description, Open Graph tags, JSON-LD Person schema
-- Error pages: `not_found.html` (404), `paused.html` (is_paused=True)
+### Page 6 — Public Profile (`/@username/` dev, `username.taplink.my` prod)
+- `profiles/views.py`: public_profile + link_redirect
+- `profiles/middleware.py`: SubdomainMiddleware
+- Full appearance: bg color/gradient/image/video, avatar shape + border
+- `icon_only` links → social icon row; `icon_text` → full button list
+- Standard: ripple + 0.5s splash screen; Free: direct redirect + watermark
+- SEO: title, OG tags, JSON-LD; 404 + paused pages
 
-## Current State of Models
+### Page 7 — QR Code (`/dashboard/qr/`)
+- `qrcode[pil]` already installed (Pillow + qrcode packages present)
+- Free: B&W QR, PNG download, upgrade banner
+- Standard: live editor (350ms debounce AJAX preview)
+  - Color pickers (fg/bg), corner styles (square/rounded/dot via StyledPilImage)
+  - Logo: none / taplink.my / upload own (base64)
+  - Logo size slider (10-35%), padding slider (1-8)
+  - PNG (512×512) + SVG download
+- `/dashboard/qr/preview/` — POST, returns base64 PNG
+- `/dashboard/qr/download/` — GET, serves file
+- QR link added to dashboard sidebar
+- **Fix**: import was `colormask` → correct is `colormasks` (plural)
 
-### accounts app models
-- `UserProfile`: username, display_name, bio, location, birth_year, avatar, plan, plan_expires, is_paused, onboarded, marketing, seo_title, seo_description
-- `Link`: user, title, url, icon, icon_type, color, text_color, icon_color, font_family, display_style, thumbnail_url, is_active, order
-- `Appearance`: avatar_shape, border_color/width, bg_*, btn_*, font_*, social_icon_*
-- `GiftCode`: code, plan, duration_days, is_used, used_by, used_at, created_at
-
-### Migrations (accounts)
-0001_initial → 0002 → 0003_link_text_color → 0004_link_icon_color → 0005_link_font_family → 0006_giftcode
+### UX Fixes (same session)
+- Hexagon avatar shape removed — only circle + square remain
+- Font picker redesigned: compact single-line display → click → 3-col grid panel
+  - Free section (Default + 6 fonts) + Standard section (10 fonts, locked for Free)
+  - Alpine state: `openFontPicker: null` (link.id when open)
 
 ## Next Steps
-1. **Page 7: QR Code** (`/dashboard/qr/`) — Free: B&W QR + download; Standard: color/logo/style editor
-2. **Page 8: Admin Panel** (`/admin-panel/`) — custom admin UI (not Django admin), superuser only
+1. **Page 8: Admin Panel** (`/admin-panel/`) — deferred, not priority yet
+2. Drag & drop reorder (SortableJS — handle + API exist, not wired)
+3. Avatar upload + crop
+4. Background image/video upload
+5. Analytics tracking + charts
+6. Free plan link limit restore to 2 before launch
 
 ## Active Decisions
-- **Per-link appearance** is the design philosophy: each link controls its own color, text_color, icon_color, font
-- **Global Appearance** is for background, button style/radius/hover, avatar/profile section only
-- **Free plan link limit** temporarily set to 9999 for dev — will restore to 2 before launch
-- **testuser** has Standard plan, expires 2027-06-16
-- **Dev login** at `/dev-login/` — active in DEBUG only
-- **Subdomain routing**: `SubdomainMiddleware` for prod; `/@username/` path for dev testing
-- **Platform icons**: `icon_type='material'` → Material Symbols; platform name → colored initial badge (SVGs to be added later)
-- **Settings tab** has username change (not in original plan.txt) — deliberate addition
-- **Typography in Appearance** removed — font is per-link only
+- Per-link appearance is the design philosophy
+- testuser Standard plan until 2027-06-16, dev limit 9999 links
+- SubdomainMiddleware for prod; `/@username/` path for dev
+- colormasks import (plural) — qrcode library quirk
+- Hexagon removed permanently — border CSS broken with clip-path
