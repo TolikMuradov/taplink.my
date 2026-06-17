@@ -1227,7 +1227,7 @@ function dashboardApp() {
     },
 
     // Avatar & background
-    avatarUrl: "{{ profile.avatar.url|default:''|escapejs }}",
+    avatarUrl: "{% if profile.avatar %}{{ profile.avatar.url|escapejs }}{% endif %}",
     bgImageUrl: "{% if appearance.bg_image %}{{ appearance.bg_image.url|escapejs }}{% endif %}",
 
     // Settings
