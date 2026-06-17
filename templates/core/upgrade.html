@@ -1,0 +1,297 @@
+{% extends "base.html" %}
+{% block title %}Upgrade to Standard — taplink.my{% endblock %}
+
+{% block body %}
+<div x-data="upgradeApp()" class="min-h-screen bg-surface text-on-surface">
+
+  <!-- Navbar -->
+  <nav class="border-b border-outline-variant bg-surface-container-low sticky top-0 z-10">
+    <div class="max-w-5xl mx-auto px-4 h-14 flex items-center gap-3">
+      <a href="{% url 'dashboard:home' %}" class="flex items-center gap-2 text-on-surface-variant hover:text-on-surface transition-colors">
+        <span class="material-symbols-outlined text-xl">arrow_back</span>
+        <span class="text-sm">Back to dashboard</span>
+      </a>
+      <div class="flex-1"></div>
+      <div class="w-7 h-7 rounded-lg bg-primary-container flex items-center justify-center">
+        <span class="material-symbols-outlined text-on-primary-container text-base" style="font-variation-settings:'FILL' 1">link</span>
+      </div>
+      <span class="font-bold text-primary text-sm">taplink.my</span>
+    </div>
+  </nav>
+
+  <div class="max-w-5xl mx-auto px-4 py-12 space-y-16">
+
+    <!-- Header -->
+    <div class="text-center space-y-3">
+      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-tertiary/10 border border-tertiary/20 text-tertiary text-xs font-semibold">
+        <span class="material-symbols-outlined text-sm" style="font-variation-settings:'FILL' 1">workspace_premium</span>
+        Standard Plan
+      </div>
+      <h1 class="text-4xl font-bold text-on-surface">Unlock your full potential</h1>
+      <p class="text-on-surface-variant text-lg max-w-xl mx-auto">Everything you need to grow your audience and track what works.</p>
+    </div>
+
+    <!-- Feature cards (3, hover reveals detail) -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+      <!-- Card 1 -->
+      <div class="group relative glass-card rounded-2xl p-6 cursor-default overflow-hidden transition-all duration-300 hover:border-primary/40 hover:shadow-lg hover:shadow-primary/10">
+        <div class="space-y-3">
+          <div class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+            <span class="material-symbols-outlined text-primary text-2xl" style="font-variation-settings:'FILL' 1">palette</span>
+          </div>
+          <h3 class="text-lg font-semibold text-on-surface">Full Customization</h3>
+          <p class="text-on-surface-variant text-sm">Your page, your brand. Every pixel your way.</p>
+        </div>
+        <!-- Hover detail -->
+        <div class="mt-4 space-y-2 max-h-0 overflow-hidden group-hover:max-h-40 transition-all duration-500">
+          <div class="h-px bg-outline-variant"></div>
+          <ul class="space-y-1.5 pt-1">
+            <li class="flex items-center gap-2 text-sm text-on-surface-variant">
+              <span class="material-symbols-outlined text-primary text-base">check_circle</span> Background video support
+            </li>
+            <li class="flex items-center gap-2 text-sm text-on-surface-variant">
+              <span class="material-symbols-outlined text-primary text-base">check_circle</span> 10 platform-inspired fonts
+            </li>
+            <li class="flex items-center gap-2 text-sm text-on-surface-variant">
+              <span class="material-symbols-outlined text-primary text-base">check_circle</span> Gradient & glass button styles
+            </li>
+            <li class="flex items-center gap-2 text-sm text-on-surface-variant">
+              <span class="material-symbols-outlined text-primary text-base">check_circle</span> No watermark
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Card 2 -->
+      <div class="group relative glass-card rounded-2xl p-6 cursor-default overflow-hidden transition-all duration-300 hover:border-primary/40 hover:shadow-lg hover:shadow-primary/10">
+        <div class="space-y-3">
+          <div class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+            <span class="material-symbols-outlined text-primary text-2xl" style="font-variation-settings:'FILL' 1">bar_chart</span>
+          </div>
+          <h3 class="text-lg font-semibold text-on-surface">Analytics</h3>
+          <p class="text-on-surface-variant text-sm">See who visits, where they're from, what they click.</p>
+        </div>
+        <div class="mt-4 space-y-2 max-h-0 overflow-hidden group-hover:max-h-40 transition-all duration-500">
+          <div class="h-px bg-outline-variant"></div>
+          <ul class="space-y-1.5 pt-1">
+            <li class="flex items-center gap-2 text-sm text-on-surface-variant">
+              <span class="material-symbols-outlined text-primary text-base">check_circle</span> Profile view tracking
+            </li>
+            <li class="flex items-center gap-2 text-sm text-on-surface-variant">
+              <span class="material-symbols-outlined text-primary text-base">check_circle</span> Per-link click counts
+            </li>
+            <li class="flex items-center gap-2 text-sm text-on-surface-variant">
+              <span class="material-symbols-outlined text-primary text-base">check_circle</span> Device & country breakdown
+            </li>
+            <li class="flex items-center gap-2 text-sm text-on-surface-variant">
+              <span class="material-symbols-outlined text-primary text-base">check_circle</span> 7 / 30 day / all-time filters
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Card 3 -->
+      <div class="group relative glass-card rounded-2xl p-6 cursor-default overflow-hidden transition-all duration-300 hover:border-primary/40 hover:shadow-lg hover:shadow-primary/10">
+        <div class="space-y-3">
+          <div class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+            <span class="material-symbols-outlined text-primary text-2xl" style="font-variation-settings:'FILL' 1">qr_code_2</span>
+          </div>
+          <h3 class="text-lg font-semibold text-on-surface">Custom QR Code</h3>
+          <p class="text-on-surface-variant text-sm">Your brand, your QR. With logo, color and style.</p>
+        </div>
+        <div class="mt-4 space-y-2 max-h-0 overflow-hidden group-hover:max-h-40 transition-all duration-500">
+          <div class="h-px bg-outline-variant"></div>
+          <ul class="space-y-1.5 pt-1">
+            <li class="flex items-center gap-2 text-sm text-on-surface-variant">
+              <span class="material-symbols-outlined text-primary text-base">check_circle</span> Custom foreground & background color
+            </li>
+            <li class="flex items-center gap-2 text-sm text-on-surface-variant">
+              <span class="material-symbols-outlined text-primary text-base">check_circle</span> Round / square / dot corner styles
+            </li>
+            <li class="flex items-center gap-2 text-sm text-on-surface-variant">
+              <span class="material-symbols-outlined text-primary text-base">check_circle</span> Embed your own logo
+            </li>
+            <li class="flex items-center gap-2 text-sm text-on-surface-variant">
+              <span class="material-symbols-outlined text-primary text-base">check_circle</span> Download PNG & SVG
+            </li>
+          </ul>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Comparison table -->
+    <div class="glass-card rounded-2xl overflow-hidden">
+      <div class="px-6 py-4 border-b border-outline-variant">
+        <h2 class="text-lg font-semibold text-on-surface">Plan comparison</h2>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="border-b border-outline-variant">
+              <th class="text-left px-6 py-4 text-on-surface-variant font-medium w-1/2">Feature</th>
+              <th class="px-6 py-4 text-on-surface-variant font-medium text-center">Free</th>
+              <th class="px-6 py-4 text-primary font-semibold text-center">
+                <div class="flex items-center justify-center gap-1">
+                  <span class="material-symbols-outlined text-base" style="font-variation-settings:'FILL' 1">workspace_premium</span>
+                  Standard
+                </div>
+              </th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-outline-variant">
+            {% for row in comparison_rows %}
+            <tr class="hover:bg-surface-container/40 transition-colors">
+              <td class="px-6 py-3.5 text-on-surface">{{ row.feature }}</td>
+              <td class="px-6 py-3.5 text-center text-on-surface-variant">{{ row.free }}</td>
+              <td class="px-6 py-3.5 text-center font-medium text-primary">{{ row.standard }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+          <tfoot>
+            <tr class="bg-surface-container/50">
+              <td class="px-6 py-4 font-semibold text-on-surface">Price</td>
+              <td class="px-6 py-4 text-center text-on-surface-variant">Free forever</td>
+              <td class="px-6 py-4 text-center">
+                <span class="text-primary font-bold text-lg">99 THB</span>
+                <span class="text-on-surface-variant text-xs">/month</span>
+              </td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+
+    <!-- Gift code + Payment -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+      <!-- Gift code card -->
+      <div class="glass-card rounded-2xl p-6 space-y-4">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-tertiary/10 flex items-center justify-center">
+            <span class="material-symbols-outlined text-tertiary text-xl" style="font-variation-settings:'FILL' 1">redeem</span>
+          </div>
+          <div>
+            <h3 class="font-semibold text-on-surface">Have a gift code?</h3>
+            <p class="text-xs text-on-surface-variant">Try Standard for free — no card needed</p>
+          </div>
+        </div>
+
+        <!-- Success / error alerts -->
+        <div x-show="redeemSuccess" x-cloak x-transition
+          class="flex items-start gap-3 px-4 py-3 rounded-xl bg-green-500/10 border border-green-500/20 text-green-400 text-sm">
+          <span class="material-symbols-outlined text-base mt-0.5" style="font-variation-settings:'FILL' 1">check_circle</span>
+          <div>
+            <div class="font-semibold" x-text="redeemMessage"></div>
+            <div class="text-xs opacity-75 mt-0.5" x-text="redeemExpiry ? 'Active until ' + redeemExpiry : ''"></div>
+          </div>
+        </div>
+        <div x-show="redeemError" x-cloak x-transition
+          class="flex items-center gap-2 px-4 py-3 rounded-xl bg-error/10 border border-error/20 text-error text-sm">
+          <span class="material-symbols-outlined text-base" style="font-variation-settings:'FILL' 1">error</span>
+          <span x-text="redeemError"></span>
+        </div>
+
+        <!-- Already Standard -->
+        {% if profile.is_standard %}
+        <div class="flex items-center gap-2 px-4 py-3 rounded-xl bg-primary/10 border border-primary/20 text-primary text-sm">
+          <span class="material-symbols-outlined text-base" style="font-variation-settings:'FILL' 1">workspace_premium</span>
+          <span>You're already on Standard. A code will extend your plan.</span>
+        </div>
+        {% endif %}
+
+        <div class="flex gap-2">
+          <input
+            x-model="giftCode"
+            @keydown.enter="redeemCode()"
+            type="text"
+            placeholder="GIFT-CODE-HERE"
+            class="flex-1 bg-surface-container border border-outline-variant rounded-xl px-4 py-2.5 text-sm text-on-surface placeholder-on-surface-variant/50 focus:outline-none focus:border-primary uppercase tracking-widest"
+          >
+          <button
+            @click="redeemCode()"
+            :disabled="redeemLoading || !giftCode.trim()"
+            class="px-4 py-2.5 rounded-xl bg-tertiary text-on-tertiary text-sm font-semibold hover:opacity-90 transition-opacity disabled:opacity-40 flex items-center gap-2 shrink-0"
+          >
+            <span x-show="redeemLoading" class="w-4 h-4 border-2 border-on-tertiary/30 border-t-on-tertiary rounded-full animate-spin"></span>
+            <span x-text="redeemLoading ? 'Activating…' : 'Activate'"></span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Payment card (placeholder) -->
+      <div class="glass-card rounded-2xl p-6 space-y-4">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+            <span class="material-symbols-outlined text-primary text-xl" style="font-variation-settings:'FILL' 1">payments</span>
+          </div>
+          <div>
+            <h3 class="font-semibold text-on-surface">Pay with PromptPay</h3>
+            <p class="text-xs text-on-surface-variant">99 THB / month, cancel anytime</p>
+          </div>
+        </div>
+
+        <button disabled class="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-primary/20 text-primary/50 text-sm font-semibold cursor-not-allowed relative">
+          <span class="material-symbols-outlined text-base">qr_code</span>
+          Pay with PromptPay — 99 THB/month
+          <span class="absolute -top-2 -right-2 px-2 py-0.5 rounded-full bg-outline-variant text-on-surface-variant text-xs font-semibold">Soon</span>
+        </button>
+
+        <p class="text-xs text-on-surface-variant text-center leading-relaxed">
+          Payment system launching soon.<br>
+          Use a gift code above to try Standard for free.
+        </p>
+      </div>
+
+    </div>
+
+  </div><!-- /max-w-5xl -->
+</div>
+
+<script>
+const CSRF_TOKEN = '{{ csrf_token }}';
+const REDEEM_URL = '{% url "redeem_gift_code" %}';
+
+function upgradeApp() {
+  return {
+    giftCode: '',
+    redeemLoading: false,
+    redeemSuccess: false,
+    redeemError: '',
+    redeemMessage: '',
+    redeemExpiry: '',
+
+    async redeemCode() {
+      const code = this.giftCode.trim();
+      if (!code) return;
+
+      this.redeemLoading = true;
+      this.redeemError = '';
+      this.redeemSuccess = false;
+
+      try {
+        const res = await fetch(REDEEM_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF_TOKEN },
+          body: JSON.stringify({ code }),
+        });
+        const data = await res.json();
+        if (data.success) {
+          this.redeemSuccess = true;
+          this.redeemMessage = data.message;
+          this.redeemExpiry = data.expires;
+          this.giftCode = '';
+        } else {
+          this.redeemError = data.error || 'Something went wrong.';
+        }
+      } catch {
+        this.redeemError = 'Network error. Please try again.';
+      } finally {
+        this.redeemLoading = false;
+      }
+    },
+  };
+}
+</script>
+{% endblock %}

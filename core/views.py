@@ -1,6 +1,11 @@
+import json
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login
+from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
+from django.utils import timezone
 from django.conf import settings
+from datetime import timedelta
 
 
 def landing(request):
@@ -26,3 +31,64 @@ def dev_login(request):
     if user:
         login(request, user, backend='django.contrib.auth.backends.ModelBackend')
     return redirect('dashboard:home')
+
+
+@login_required
+def upgrade(request):
+    profile = request.user.profile
+    comparison_rows = [
+        {'feature': 'Links', 'free': '2', 'standard': '10'},
+        {'feature': 'Themes', 'free': '1', 'standard': 'All'},
+        {'feature': 'Background video', 'free': '✗', 'standard': '✓'},
+        {'feature': 'Custom fonts', 'free': '6 basic', 'standard': '16 fonts'},
+        {'feature': 'Analytics', 'free': '✗', 'standard': '✓'},
+        {'feature': 'Custom QR code', 'free': '✗', 'standard': '✓'},
+        {'feature': 'Animated redirect', 'free': '✗', 'standard': '✓'},
+        {'feature': 'Watermark', 'free': '✓', 'standard': '✗'},
+    ]
+    return render(request, 'core/upgrade.html', {'profile': profile, 'comparison_rows': comparison_rows})
+
+
+@login_required
+def redeem_gift_code(request):
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+
+    from accounts.models import GiftCode
+    data = json.loads(request.body)
+    code_str = data.get('code', '').strip().upper()
+
+    if not code_str:
+        return JsonResponse({'error': 'Please enter a gift code.'}, status=400)
+
+    try:
+        gift = GiftCode.objects.get(code=code_str)
+    except GiftCode.DoesNotExist:
+        return JsonResponse({'error': 'Invalid or already used code.'}, status=400)
+
+    if gift.is_used:
+        return JsonResponse({'error': 'Invalid or already used code.'}, status=400)
+
+    profile = request.user.profile
+    now = timezone.now()
+
+    # If already Standard and not expired, extend from current expiry
+    if profile.plan == 'standard' and profile.plan_expires and profile.plan_expires > now:
+        new_expiry = profile.plan_expires + timedelta(days=gift.duration_days)
+    else:
+        new_expiry = now + timedelta(days=gift.duration_days)
+
+    profile.plan = gift.plan
+    profile.plan_expires = new_expiry
+    profile.save()
+
+    gift.is_used = True
+    gift.used_by = request.user
+    gift.used_at = now
+    gift.save()
+
+    return JsonResponse({
+        'success': True,
+        'message': f'🎉 {gift.duration_days} days of Standard activated!',
+        'expires': new_expiry.strftime('%B %d, %Y'),
+    })

@@ -59,7 +59,7 @@
     <!-- Plan badge + logout -->
     <div class="p-3 border-t border-outline-variant space-y-2">
       {% if not profile.is_standard %}
-      <a href="#" class="flex items-center gap-2 px-3 py-2 rounded-xl bg-tertiary/10 hover:bg-tertiary/20 transition-colors">
+      <a href="{% url 'upgrade' %}" class="flex items-center gap-2 px-3 py-2 rounded-xl bg-tertiary/10 hover:bg-tertiary/20 transition-colors">
         <span class="material-symbols-outlined text-tertiary text-xl shrink-0" style="font-variation-settings:'FILL' 1">workspace_premium</span>
         <span class="text-xs font-semibold text-tertiary whitespace-nowrap overflow-hidden transition-all duration-300" :class="sidebarOpen ? 'opacity-100 max-w-xs' : 'opacity-0 max-w-0'">Upgrade to Standard</span>
       </a>

@@ -96,6 +96,20 @@ class Appearance(models.Model):
         return f'Appearance({self.user})'
 
 
+class GiftCode(models.Model):
+    code         = models.CharField(max_length=32, unique=True)
+    plan         = models.CharField(max_length=10, default='standard')
+    duration_days = models.PositiveIntegerField(default=30)
+    is_used      = models.BooleanField(default=False)
+    used_by      = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='gift_codes')
+    used_at      = models.DateTimeField(null=True, blank=True)
+    created_at   = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        status = f'used by {self.used_by}' if self.is_used else 'unused'
+        return f'{self.code} ({status})'
+
+
 @receiver(post_save, sender=User)
 def create_appearance(sender, instance, created, **kwargs):
     if created:
