@@ -6,7 +6,7 @@
 
 ### Foundation
 - [x] Django project initialized (`config/` settings, `manage.py`)
-- [x] App structure: `core`, `accounts`, `dashboard` (profiles/analytics/admin_panel stubs)
+- [x] App structure: `core`, `accounts`, `dashboard`, `profiles`, `analytics_app` (stub)
 - [x] Dependencies installed: django-allauth, Pillow, PyJWT, etc.
 - [x] Settings: DB (SQLite dev), allauth (SOCIALACCOUNT_ONLY=True), MEDIA_ROOT, STATIC_ROOT
 - [x] TailwindCSS CDN + Alpine.js CDN (no build pipeline needed for now)
@@ -20,10 +20,10 @@
 
 ### Database Models (all migrated)
 - [x] UserProfile (username, display_name, bio, location, birth_year, avatar, plan, plan_expires, is_paused, onboarded, marketing, seo_title, seo_description)
-- [x] Link (title, url, icon, icon_type, **color, text_color, icon_color, font_family**, display_style, thumbnail_url, is_active, order)
+- [x] Link (title, url, icon, icon_type, color, text_color, icon_color, font_family, display_style, thumbnail_url, is_active, order)
 - [x] Appearance (avatar_shape, border_color/width, bg_*, btn_*, font_*, social_icon_*)
-- [ ] Analytics model
-- [ ] GiftCode model
+- [x] GiftCode (code, plan, duration_days, is_used, used_by, used_at, created_at)
+- [ ] Analytics model (PageView, LinkClick)
 - [ ] Announcement model
 
 ### Auth & Onboarding
@@ -42,25 +42,35 @@
   - Per-link: color (button bg), text_color, icon_color — swatch pickers
   - Per-link font: scrollable selector, own typeface preview
   - Free fonts: Inter, Poppins, Kanit, Montserrat, Lato, Roboto Mono
-  - Standard fonts: Nunito, Plus Jakarta Sans, Roboto, DM Sans, Bebas Neue, Fredoka, Playfair Display, Space Grotesk, Outfit, DM Mono (locked + greyed for Free)
-- [x] Page 5: Dashboard — Appearance tab
+  - Standard fonts: Nunito, Plus Jakarta Sans, Roboto, DM Sans, Bebas Neue, Fredoka, Playfair Display, Space Grotesk, Outfit, DM Mono (locked for Free)
+- [x] Page 4: Dashboard — Appearance tab
   - Profile accordion: avatar shape, border color/width, display name, bio, location
   - Background accordion: color/gradient/image/video (image+video Standard only)
-  - Buttons accordion: style (filled/outline/soft/shadow/glass/gradient/plain), text color, corner radius, hover animation toggle
-  - Typography accordion: REMOVED (now per-link)
+  - Buttons accordion: style (filled/outline/soft/shadow/glass/gradient/plain), text color, corner radius, hover toggle
   - Sticky Save button
-- [x] Page 6: Dashboard — Analytics tab (locked state for Free, 4 stat cards for Standard)
-- [x] Page 7: Dashboard — Settings tab
-  - Username card: current URL display, new username input with live check, confirmation modal (requires typing current username)
+- [x] Page 4: Dashboard — Analytics tab (locked state for Free, 4 stat cards for Standard)
+- [x] Page 4: Dashboard — Settings tab
+  - Username card: current URL display, new username input with live check, confirmation modal
   - SEO card: title + description with char counters
   - Visibility: pause toggle
   - Custom domain: coming soon placeholder
   - Email preferences: marketing toggle
   - Account: email display + delete account modal
-- [ ] Page 8: Public profile (subdomain)
-- [ ] Page 9: Upgrade page
-- [ ] Page 10: QR Code page
-- [ ] Page 11: Admin panel
+- [x] Page 5: Upgrade page (`/upgrade/`)
+  - 3 hover-reveal feature cards (Full Customization, Analytics, Custom QR)
+  - Plan comparison table
+  - Gift code input + AJAX redemption endpoint
+  - PromptPay placeholder (Coming soon)
+  - Sidebar Upgrade button wired
+- [x] Page 6: Public Profile (`/@username/` dev, `username.taplink.my` prod)
+  - SubdomainMiddleware for prod routing
+  - Full appearance rendering (bg, avatar, buttons, fonts)
+  - Social icons row (icon_only) + main link buttons (icon_text)
+  - Standard: ripple + splash screen; Free: direct redirect + watermark
+  - SEO: title, OG tags, JSON-LD
+  - 404 + paused error pages
+- [ ] Page 7: QR Code (`/dashboard/qr/`)
+- [ ] Page 8: Admin Panel (`/admin-panel/`)
 
 ### Dashboard — Right Preview Panel
 - [x] Phone mockup showing live reactive preview
@@ -80,34 +90,32 @@
 - [x] Per-link font selector (Free + Standard tiers)
 - [x] Button styles: filled, outline, soft, shadow, glass, gradient, plain
 - [x] Hover animation toggle
+- [x] Gift code generation (admin) + redemption (upgrade page)
 - [x] Drag handle (UI ready, reorder API exists)
-- [x] Free plan watermark (UI)
-- [ ] Drag-and-drop reorder (JS SortableJS not wired yet)
+- [ ] Drag-and-drop reorder (SortableJS not wired yet)
 - [ ] Avatar upload + cropping
 - [ ] Background image/video upload
 - [ ] QR code generator
 - [ ] Analytics tracking (view + click events)
 - [ ] Analytics charts
-- [ ] Gift code redemption
-- [ ] SEO meta tags on public profile
+- [ ] SEO meta tags applied on public profile ✅ (done in Page 6)
 - [ ] Rate limiting on login
-- [ ] Splash screen redirect (Standard plan)
+- [ ] Splash screen redirect ✅ (done in Page 6)
 
-### Admin Panel
-- [ ] All sections (not started)
+### Admin
+- [x] Django admin: UserProfile, Link, Appearance, GiftCode registered
+- [x] Gift code generator at `/admin/accounts/giftcode/generate/`
+- [ ] Custom admin panel (Page 8: `/admin-panel/`)
 
 ## Known Issues / Dev Notes
 - Free plan limit set to 9999 (unlimited) for dev — restore to 2 before launch
 - testuser has Standard plan until 2027-06-16
 - `btn_color`, `font_family`, `font_size`, `text_color` still in Appearance DB but not shown in UI
 - Drag-and-drop: handle exists, `link_reorder` API exists, but SortableJS not wired to DOM
+- Platform brand icons rendered as initial-letter badges — real SVGs to be added later
+- `qrcode` pip package not yet installed (needed for Page 7)
 
 ## Evolution of Decisions
-- 2026-06-16 (Session 1): Project initialized, Indigo Dark design applied, Pages 1-7 implemented
-- 2026-06-16 (Session 2):
-  - Per-link appearance model: each link has own color, text_color, icon_color, font_family
-  - Global "default button color" removed from Appearance (per-link color is source of truth)
-  - Typography accordion removed from Appearance (font now per-link only)
-  - Settings profile fields removed (duplicated Appearance; username change added instead)
-  - Button styles expanded with "plain" (text only, no bg/border)
-  - Free plan fonts: 6 basics; Standard: 10 platform-inspired fonts
+- 2026-06-16 (Session 1): Project initialized, Indigo Dark design applied, Pages 1-4 (dashboard) implemented
+- 2026-06-16 (Session 2): Per-link appearance model, font system, username change feature, "plain" button style
+- 2026-06-17 (Session 3): Pages 5-6, GiftCode model, upgrade page, gift code generator, public profile with subdomain routing
