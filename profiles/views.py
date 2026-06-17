@@ -74,7 +74,6 @@ def public_profile(request, username):
     shape_css = {
         'circle': 'border-radius:50%;',
         'square': 'border-radius:12px;',
-        'hexagon': 'clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);',
     }.get(bg.avatar_shape, 'border-radius:50%;')
 
     # Icon size for social row

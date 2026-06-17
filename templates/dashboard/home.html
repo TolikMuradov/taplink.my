@@ -235,47 +235,77 @@
 
                 <!-- Font row -->
                 <div class="mt-2 pt-2 border-t border-outline-variant/30">
-                  <p class="text-xs text-on-surface-variant mb-1.5">Font</p>
-                  <div class="flex gap-1.5 overflow-x-auto custom-scrollbar pb-1">
-                    <!-- Default -->
+                  <div class="flex items-center gap-2">
+                    <span class="text-xs text-on-surface-variant shrink-0">Font</span>
+                    <!-- Current selection display -->
+                    <div class="flex-1 px-3 py-1.5 rounded-lg bg-surface-container border border-outline-variant text-sm text-on-surface truncate"
+                         :style="link.font_family ? `font-family:'${link.font_family}',sans-serif` : ''"
+                         x-text="link.font_family || 'Default'">
+                    </div>
                     <button
-                      @click="link.font_family = ''; updateLink(link)"
-                      class="shrink-0 px-2.5 py-1 rounded-lg text-xs border transition-colors whitespace-nowrap"
-                      :class="!link.font_family ? 'bg-primary text-on-primary border-primary' : 'border-outline-variant text-on-surface-variant hover:border-primary'"
-                    >Default</button>
+                      @click="openFontPicker = (openFontPicker === link.id ? null : link.id)"
+                      class="shrink-0 px-3 py-1.5 rounded-lg text-xs border border-outline-variant text-on-surface-variant hover:border-primary transition-colors"
+                      :class="openFontPicker === link.id ? 'border-primary text-primary' : ''"
+                    >
+                      <span class="material-symbols-outlined" style="font-size:14px;vertical-align:middle">expand_more</span>
+                    </button>
+                  </div>
+
+                  <!-- Font picker panel -->
+                  <div x-show="openFontPicker === link.id" x-cloak
+                       class="mt-2 p-3 rounded-xl bg-surface-container border border-outline-variant space-y-3">
                     <!-- Free fonts -->
-                    <template x-for="f in FREE_FONTS" :key="f.name">
-                      <button
-                        @click="link.font_family = f.name; updateLink(link)"
-                        class="shrink-0 px-2.5 py-1 rounded-lg text-xs border transition-colors whitespace-nowrap"
-                        :class="link.font_family === f.name ? 'bg-primary text-on-primary border-primary' : 'border-outline-variant text-on-surface-variant hover:border-primary'"
-                        :style="`font-family:'${f.name}',sans-serif`"
-                        x-text="f.label"
-                      ></button>
-                    </template>
-                    <!-- Standard fonts -->
-                    <template x-for="f in STANDARD_FONTS" :key="f.name">
-                      <template x-if="isStandard">
+                    <div>
+                      <p class="text-xs font-semibold text-on-surface-variant uppercase tracking-wide mb-2">Free</p>
+                      <div class="grid grid-cols-3 gap-1.5">
                         <button
-                          @click="link.font_family = f.name; updateLink(link)"
-                          class="shrink-0 px-2.5 py-1 rounded-lg text-xs border transition-colors whitespace-nowrap"
-                          :class="link.font_family === f.name ? 'bg-primary text-on-primary border-primary' : 'border-outline-variant text-on-surface-variant hover:border-primary'"
-                          :style="`font-family:'${f.name}',sans-serif`"
-                          :title="f.vibe"
-                          x-text="f.label"
-                        ></button>
-                      </template>
-                      <template x-if="!isStandard">
-                        <div
-                          class="shrink-0 px-2.5 py-1 rounded-lg text-xs border border-outline-variant/40 text-on-surface-variant/40 flex items-center gap-1 cursor-not-allowed whitespace-nowrap select-none"
-                          :style="`font-family:'${f.name}',sans-serif`"
-                          :title="`${f.vibe} — Standard only`"
-                        >
-                          <span x-text="f.label"></span>
-                          <span class="material-symbols-outlined" style="font-size:10px;vertical-align:middle">lock</span>
-                        </div>
-                      </template>
-                    </template>
+                          @click="link.font_family = ''; updateLink(link); openFontPicker = null"
+                          class="py-2 rounded-lg text-xs border transition-colors"
+                          :class="!link.font_family ? 'bg-primary text-on-primary border-primary' : 'border-outline-variant text-on-surface-variant hover:border-primary'"
+                        >Default</button>
+                        <template x-for="f in FREE_FONTS" :key="f.name">
+                          <button
+                            @click="link.font_family = f.name; updateLink(link); openFontPicker = null"
+                            class="py-2 rounded-lg text-xs border transition-colors truncate px-1"
+                            :class="link.font_family === f.name ? 'bg-primary text-on-primary border-primary' : 'border-outline-variant text-on-surface-variant hover:border-primary'"
+                            :style="`font-family:'${f.name}',sans-serif`"
+                            x-text="f.label"
+                          ></button>
+                        </template>
+                      </div>
+                    </div>
+                    <!-- Standard fonts -->
+                    <div>
+                      <div class="flex items-center gap-2 mb-2">
+                        <p class="text-xs font-semibold text-on-surface-variant uppercase tracking-wide">Standard</p>
+                        <template x-if="!isStandard">
+                          <a href="{% url 'upgrade' %}" class="text-xs text-tertiary hover:underline">Upgrade to unlock →</a>
+                        </template>
+                      </div>
+                      <div class="grid grid-cols-3 gap-1.5">
+                        <template x-for="f in STANDARD_FONTS" :key="f.name">
+                          <template x-if="isStandard">
+                            <button
+                              @click="link.font_family = f.name; updateLink(link); openFontPicker = null"
+                              class="py-2 rounded-lg text-xs border transition-colors truncate px-1"
+                              :class="link.font_family === f.name ? 'bg-primary text-on-primary border-primary' : 'border-outline-variant text-on-surface-variant hover:border-primary'"
+                              :style="`font-family:'${f.name}',sans-serif`"
+                              :title="f.vibe"
+                              x-text="f.label"
+                            ></button>
+                          </template>
+                          <template x-if="!isStandard">
+                            <div
+                              class="py-2 rounded-lg text-xs border border-outline-variant/30 text-on-surface-variant/30 flex items-center justify-center gap-1 cursor-not-allowed truncate px-1 select-none"
+                              :style="`font-family:'${f.name}',sans-serif`"
+                            >
+                              <span x-text="f.label"></span>
+                              <span class="material-symbols-outlined" style="font-size:10px">lock</span>
+                            </div>
+                          </template>
+                        </template>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -326,7 +356,7 @@
                 <div>
                   <label class="text-xs font-semibold text-on-surface-variant uppercase tracking-wide mb-2 block">Shape</label>
                   <div class="flex gap-2">
-                    <template x-for="shape in ['circle','square','hexagon']" :key="shape">
+                    <template x-for="shape in ['circle','square']" :key="shape">
                       <button
                         @click="appearance.avatar_shape = shape"
                         class="flex-1 py-2 rounded-lg text-xs font-medium transition-colors capitalize border"
@@ -1127,6 +1157,7 @@ function dashboardApp() {
 
     showDeleteModal: false,
     deleteConfirmUsername: '',
+    openFontPicker: null,
 
     iconCategories: [
       { name: 'Social',   icons: PLATFORM_ICONS.filter(i => i.category === 'Social') },
