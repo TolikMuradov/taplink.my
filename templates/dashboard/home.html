@@ -3,6 +3,13 @@
 
 {% block extra_head %}
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Roboto:wght@300;400;500;700&family=DM+Sans:wght@300;400;500;600;700&family=Bebas+Neue&family=Fredoka:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
+<style>
+  .sortable-ghost   { opacity: 0.25 !important; background: rgba(192,193,255,0.06) !important; }
+  .sortable-chosen  { box-shadow: 0 0 0 2px rgba(192,193,255,0.35), 0 8px 24px rgba(0,0,0,0.4) !important; }
+  .sortable-drag    { box-shadow: 0 16px 40px rgba(0,0,0,0.5) !important; }
+  .drag-handle      { touch-action: none; }
+</style>
 {% endblock %}
 
 {% block body %}
@@ -155,10 +162,11 @@
                 x-transition:leave-end="opacity-0 scale-[0.98]"
                 class="glass-card rounded-xl p-4 group hover:border-primary/60 hover:shadow-lg hover:shadow-primary/5 transition-all duration-200"
                 :class="link.is_active ? '' : 'opacity-50'"
+                :data-link-id="link.id"
               >
                 <div class="flex items-center gap-3">
                   <!-- Drag handle -->
-                  <div class="text-on-surface-variant cursor-grab active:cursor-grabbing shrink-0">
+                  <div class="drag-handle text-on-surface-variant cursor-grab active:cursor-grabbing shrink-0 hover:text-primary transition-colors">
                     <span class="material-symbols-outlined text-xl">drag_indicator</span>
                   </div>
 
@@ -350,13 +358,14 @@
                 <!-- Avatar -->
                 <div class="flex items-center gap-4 pt-4">
                   <div class="relative shrink-0">
-                    <div class="w-16 h-16 bg-surface-container-high flex items-center justify-center overflow-hidden"
+                    <div class="w-16 h-16 bg-surface-container-high flex items-center justify-center overflow-hidden transition-all duration-300"
                          :style="`border: ${appearance.border_width}px solid ${appearance.border_color}; border-radius: ${appearance.avatar_shape === 'square' ? '12px' : '50%'}`">
-                      {% if profile.avatar %}
-                        <img src="{{ profile.avatar.url }}" alt="Avatar" class="w-full h-full object-cover">
-                      {% else %}
+                      <template x-if="avatarUrl">
+                        <img :src="avatarUrl" alt="Avatar" class="w-full h-full object-cover">
+                      </template>
+                      <template x-if="!avatarUrl">
                         <span class="material-symbols-outlined text-3xl text-on-surface-variant">person</span>
-                      {% endif %}
+                      </template>
                     </div>
                     <label class="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-primary flex items-center justify-center cursor-pointer hover:opacity-90">
                       <span class="material-symbols-outlined text-on-primary text-sm">edit</span>
@@ -482,11 +491,29 @@
                     <a href="#" class="px-3 py-1.5 rounded-lg bg-primary text-on-primary text-xs font-semibold whitespace-nowrap">Upgrade</a>
                   </div>
                   {% else %}
-                  <label class="flex flex-col items-center gap-2 py-8 rounded-xl border-2 border-dashed border-outline-variant hover:border-primary cursor-pointer transition-colors">
-                    <span class="material-symbols-outlined text-3xl text-on-surface-variant">upload</span>
-                    <span class="text-sm text-on-surface-variant">Click to upload background image</span>
-                    <input type="file" accept="image/*" class="hidden">
-                  </label>
+                  <div class="space-y-3">
+                    <label class="flex flex-col items-center gap-2 py-8 rounded-xl border-2 border-dashed border-outline-variant hover:border-primary cursor-pointer transition-colors"
+                      :class="bgImageUrl ? 'border-primary/40' : ''">
+                      <template x-if="!bgImageUrl">
+                        <div class="flex flex-col items-center gap-2">
+                          <span class="material-symbols-outlined text-3xl text-on-surface-variant">upload</span>
+                          <span class="text-sm text-on-surface-variant">Click to upload background image</span>
+                        </div>
+                      </template>
+                      <template x-if="bgImageUrl">
+                        <div class="relative w-full">
+                          <img :src="bgImageUrl" class="w-full h-24 object-cover rounded-lg" alt="Background">
+                          <div class="absolute inset-0 bg-black/40 rounded-lg flex items-center justify-center">
+                            <span class="text-white text-xs font-medium">Click to change</span>
+                          </div>
+                        </div>
+                      </template>
+                      <input type="file" accept="image/*" class="hidden" @change="uploadBackground($event)">
+                    </label>
+                    <template x-if="bgImageUrl">
+                      <button @click="bgImageUrl=''; bg.imageUrl=''" class="text-xs text-error hover:underline">Remove image</button>
+                    </template>
+                  </div>
                   {% endif %}
                 </div>
 
@@ -860,11 +887,12 @@
             <div class="flex flex-col items-center px-4 pt-4 pb-3">
               <div class="mb-2 flex items-center justify-center"
                 :style="`width:64px;height:64px;border:${appearance.border_width}px solid ${appearance.border_color};border-radius:${appearance.avatar_shape==='square' ? '12px' : '50%'};overflow:hidden;background:#292932`">
-                {% if profile.avatar %}
-                <img src="{{ profile.avatar.url }}" alt="Avatar" style="width:100%;height:100%;object-fit:cover">
-                {% else %}
-                <span class="material-symbols-outlined" style="color:#908fa0;font-size:28px">person</span>
-                {% endif %}
+                <template x-if="avatarUrl">
+                  <img :src="avatarUrl" alt="Avatar" style="width:100%;height:100%;object-fit:cover">
+                </template>
+                <template x-if="!avatarUrl">
+                  <span class="material-symbols-outlined" style="color:#908fa0;font-size:28px">person</span>
+                </template>
               </div>
               <p class="font-bold text-center leading-tight mb-1"
                 :style="`font-family:'${font.family}',sans-serif;font-size:${font.size==='small'?'13px':font.size==='large'?'17px':'15px'};color:${font.textColor}`"
@@ -1199,6 +1227,10 @@ function dashboardApp() {
       textColor: "{{ appearance.text_color|escapejs }}",
     },
 
+    // Avatar & background
+    avatarUrl: "{{ profile.avatar.url|default:''|escapejs }}",
+    bgImageUrl: "{% if appearance.bg_image %}{{ appearance.bg_image.url|escapejs }}{% endif %}",
+
     // Settings
     showUsernameModal: false,
     settings: {
@@ -1239,8 +1271,30 @@ function dashboardApp() {
     ],
 
     init() {
-      // keep profile.avatarShape in sync with appearance.avatar_shape
-      this.$watch('appearance.avatar_shape', v => {});
+      this.$nextTick(() => {
+        const listEl = document.getElementById('links-list');
+        if (listEl && typeof Sortable !== 'undefined') {
+          const self = this;
+          Sortable.create(listEl, {
+            handle: '.drag-handle',
+            animation: 150,
+            ghostClass: 'sortable-ghost',
+            chosenClass: 'sortable-chosen',
+            dragClass: 'sortable-drag',
+            onEnd(evt) {
+              // Read new order from DOM after animation
+              const ids = [...listEl.querySelectorAll('[data-link-id]')]
+                .map(el => parseInt(el.getAttribute('data-link-id')));
+              // Sync Alpine array AFTER SortableJS animation (150ms)
+              setTimeout(() => {
+                self.links = ids.map(id => self.links.find(l => l.id === id)).filter(Boolean);
+              }, 160);
+              // Persist to server immediately
+              self.reorderLinks(ids);
+            },
+          });
+        }
+      });
     },
 
     // ---- PREVIEW ----
@@ -1331,6 +1385,16 @@ function dashboardApp() {
       } catch(e) {
         showToast('Network error.', 'error');
       }
+    },
+
+    async reorderLinks(ids) {
+      try {
+        await fetch('{% url "dashboard:link_reorder" %}', {
+          method: 'POST',
+          headers: { 'X-CSRFToken': CSRF_TOKEN, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ order: ids }),
+        });
+      } catch(e) {}
     },
 
     // ---- ICON PICKER ----
@@ -1494,8 +1558,62 @@ function dashboardApp() {
       navigator.clipboard.writeText(url).then(() => showToast('Link copied!', 'success'));
     },
 
-    uploadAvatar(event) {
-      showToast('Avatar upload coming soon.', 'warning');
+    async uploadAvatar(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      if (file.size > 2 * 1024 * 1024) {
+        showToast('File too large. Max 2 MB.', 'error');
+        return;
+      }
+      const formData = new FormData();
+      formData.append('avatar', file);
+      showToast('Uploading photo…', 'warning');
+      try {
+        const res = await fetch('{% url "dashboard:avatar_upload" %}', {
+          method: 'POST',
+          headers: { 'X-CSRFToken': CSRF_TOKEN },
+          body: formData,
+        });
+        const data = await res.json();
+        if (data.ok) {
+          this.avatarUrl = data.url + '?t=' + Date.now();
+          showToast('Profile photo updated!', 'success');
+        } else {
+          showToast(data.error || 'Upload failed.', 'error');
+        }
+      } catch(e) {
+        showToast('Network error.', 'error');
+      }
+      event.target.value = '';
+    },
+
+    async uploadBackground(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      if (file.size > 8 * 1024 * 1024) {
+        showToast('File too large. Max 8 MB.', 'error');
+        return;
+      }
+      const formData = new FormData();
+      formData.append('background', file);
+      showToast('Uploading background…', 'warning');
+      try {
+        const res = await fetch('{% url "dashboard:background_upload" %}', {
+          method: 'POST',
+          headers: { 'X-CSRFToken': CSRF_TOKEN },
+          body: formData,
+        });
+        const data = await res.json();
+        if (data.ok) {
+          this.bgImageUrl = data.url + '?t=' + Date.now();
+          showToast('Background updated!', 'success');
+        } else {
+          showToast(data.error || 'Upload failed.', 'error');
+        }
+      } catch(e) {
+        showToast('Network error.', 'error');
+      }
+      event.target.value = '';
     },
   };
 }

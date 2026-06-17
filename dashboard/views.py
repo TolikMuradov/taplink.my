@@ -215,6 +215,75 @@ def account_delete(request):
     return JsonResponse({'ok': True, 'redirect': '/'})
 
 
+# ─── AVATAR UPLOAD ────────────────────────────────────────────────────────────
+
+@login_required
+@require_POST
+def avatar_upload(request):
+    from PIL import Image
+    from django.core.files.base import ContentFile
+
+    f = request.FILES.get('avatar')
+    if not f:
+        return JsonResponse({'ok': False, 'error': 'No file provided.'}, status=400)
+    if f.size > 2 * 1024 * 1024:
+        return JsonResponse({'ok': False, 'error': 'File too large. Max 2 MB.'}, status=400)
+
+    try:
+        img = Image.open(f).convert('RGB')
+    except Exception:
+        return JsonResponse({'ok': False, 'error': 'Invalid image file.'}, status=400)
+
+    # Center-crop to square then resize to 400×400
+    w, h = img.size
+    side = min(w, h)
+    img = img.crop(((w - side) // 2, (h - side) // 2, (w + side) // 2, (h + side) // 2))
+    img = img.resize((400, 400), Image.LANCZOS)
+
+    buf = io.BytesIO()
+    img.save(buf, format='JPEG', quality=88, optimize=True)
+    buf.seek(0)
+
+    profile = request.user.profile
+    if profile.avatar:
+        profile.avatar.delete(save=False)
+    profile.avatar.save(f'av_{request.user.id}.jpg', ContentFile(buf.read()), save=True)
+    return JsonResponse({'ok': True, 'url': profile.avatar.url})
+
+
+# ─── BACKGROUND UPLOAD ─────────────────────────────────────────────────────────
+
+@login_required
+@require_POST
+def background_upload(request):
+    from PIL import Image
+    from django.core.files.base import ContentFile
+
+    f = request.FILES.get('background')
+    if not f:
+        return JsonResponse({'ok': False, 'error': 'No file provided.'}, status=400)
+    if f.size > 8 * 1024 * 1024:
+        return JsonResponse({'ok': False, 'error': 'File too large. Max 8 MB.'}, status=400)
+
+    try:
+        img = Image.open(f).convert('RGB')
+    except Exception:
+        return JsonResponse({'ok': False, 'error': 'Invalid image file.'}, status=400)
+
+    # Resize to max 1920×1080 keeping aspect ratio
+    img.thumbnail((1920, 1080), Image.LANCZOS)
+
+    buf = io.BytesIO()
+    img.save(buf, format='JPEG', quality=85, optimize=True)
+    buf.seek(0)
+
+    appearance, _ = Appearance.objects.get_or_create(user=request.user)
+    if appearance.bg_image:
+        appearance.bg_image.delete(save=False)
+    appearance.bg_image.save(f'bg_{request.user.id}.jpg', ContentFile(buf.read()), save=True)
+    return JsonResponse({'ok': True, 'url': appearance.bg_image.url})
+
+
 # ─── QR CODE ──────────────────────────────────────────────────────────────────
 
 def _hex_to_rgb(hex_color, fallback=(0, 0, 0)):
