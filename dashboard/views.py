@@ -1,8 +1,10 @@
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.views.decorators.http import require_POST, require_GET
 import json
+import io
+import base64
 from accounts.models import UserProfile, Link, Appearance
 
 FREE_LINK_LIMIT = 9999  # temporarily unlimited for dev
@@ -211,3 +213,170 @@ def account_delete(request):
         return JsonResponse({'ok': False, 'error': 'Username does not match.'}, status=400)
     request.user.delete()
     return JsonResponse({'ok': True, 'redirect': '/'})
+
+
+# ─── QR CODE ──────────────────────────────────────────────────────────────────
+
+def _hex_to_rgb(hex_color, fallback=(0, 0, 0)):
+    try:
+        h = hex_color.lstrip('#')
+        return tuple(int(h[i:i+2], 16) for i in (0, 2, 4))
+    except Exception:
+        return fallback
+
+
+def _make_qr_image(url, fg='#000000', bg='#ffffff', style='square', padding=4):
+    import qrcode
+    from qrcode.image.styledpil import StyledPilImage
+    from qrcode.image.styles.moduledrawers.pil import (
+        SquareModuleDrawer, RoundedModuleDrawer, CircleModuleDrawer,
+    )
+    from qrcode.image.styles.colormasks import SolidFillColorMask
+
+    drawer = {
+        'square':  SquareModuleDrawer(),
+        'rounded': RoundedModuleDrawer(),
+        'dot':     CircleModuleDrawer(),
+    }.get(style, SquareModuleDrawer())
+
+    qr = qrcode.QRCode(
+        error_correction=qrcode.constants.ERROR_CORRECT_H,
+        box_size=10,
+        border=max(1, int(padding)),
+    )
+    qr.add_data(url)
+    qr.make(fit=True)
+
+    img = qr.make_image(
+        image_factory=StyledPilImage,
+        module_drawer=drawer,
+        color_mask=SolidFillColorMask(
+            front_color=_hex_to_rgb(fg),
+            back_color=_hex_to_rgb(bg, (255, 255, 255)),
+        ),
+    )
+    return img.convert('RGBA')
+
+
+def _embed_logo(qr_img, logo_file, logo_ratio=0.25):
+    from PIL import Image
+    logo = Image.open(logo_file).convert('RGBA')
+    qw, qh = qr_img.size
+    size = int(min(qw, qh) * max(0.1, min(0.4, logo_ratio)))
+    logo = logo.resize((size, size), Image.LANCZOS)
+    # White padding behind logo
+    pad = 8
+    bg = Image.new('RGBA', (size + pad * 2, size + pad * 2), (255, 255, 255, 255))
+    bg.paste(logo, (pad, pad), logo)
+    x = (qw - bg.width) // 2
+    y = (qh - bg.height) // 2
+    qr_img.paste(bg, (x, y), bg)
+    return qr_img
+
+
+def _qr_to_base64(img):
+    buf = io.BytesIO()
+    img.save(buf, format='PNG')
+    return 'data:image/png;base64,' + base64.b64encode(buf.getvalue()).decode()
+
+
+@login_required
+def qr_page(request):
+    profile = request.user.profile
+    url = f'https://{profile.username}.taplink.my/'
+    img = _make_qr_image(url)
+    initial_qr = _qr_to_base64(img)
+    return render(request, 'dashboard/qr.html', {
+        'profile': profile,
+        'qr_url': url,
+        'initial_qr': initial_qr,
+    })
+
+
+@login_required
+@require_POST
+def qr_preview(request):
+    profile = request.user.profile
+    if not profile.is_standard:
+        return JsonResponse({'error': 'Standard only'}, status=403)
+
+    data = json.loads(request.body)
+    url   = f'https://{profile.username}.taplink.my/'
+    fg    = data.get('fg', '#000000')
+    bg    = data.get('bg', '#ffffff')
+    style = data.get('style', 'square')
+    pad   = int(data.get('padding', 4))
+
+    img = _make_qr_image(url, fg=fg, bg=bg, style=style, padding=pad)
+
+    if data.get('logo') == 'taplink':
+        import os
+        from django.conf import settings as dj_settings
+        logo_path = os.path.join(dj_settings.BASE_DIR, 'static', 'img', 'taplink-logo.png')
+        if os.path.exists(logo_path):
+            img = _embed_logo(img, logo_path, float(data.get('logo_size', 0.25)))
+    elif data.get('logo') == 'custom' and data.get('logo_data'):
+        logo_bytes = base64.b64decode(data['logo_data'].split(',')[-1])
+        img = _embed_logo(img, io.BytesIO(logo_bytes), float(data.get('logo_size', 0.25)))
+
+    return JsonResponse({'data_url': _qr_to_base64(img)})
+
+
+@login_required
+def qr_download(request):
+    profile = request.user.profile
+    fmt    = request.GET.get('format', 'png')
+    fg     = request.GET.get('fg', '#000000')
+    bg     = request.GET.get('bg', '#ffffff')
+    style  = request.GET.get('style', 'square')
+    pad    = int(request.GET.get('padding', 4))
+    logo   = request.GET.get('logo', 'none')
+
+    url = f'https://{profile.username}.taplink.my/'
+
+    if fmt == 'svg' and not profile.is_standard:
+        return HttpResponse('Standard plan required', status=403)
+    if style != 'square' and not profile.is_standard:
+        style = 'square'
+    if fg != '#000000' and not profile.is_standard:
+        fg = '#000000'
+    if bg != '#ffffff' and not profile.is_standard:
+        bg = '#ffffff'
+
+    if fmt == 'svg':
+        import qrcode
+        import qrcode.image.svg
+        qr = qrcode.QRCode(border=pad)
+        qr.add_data(url)
+        qr.make(fit=True)
+        svg_img = qr.make_image(image_factory=qrcode.image.svg.SvgPathImage)
+        buf = io.BytesIO()
+        svg_img.save(buf)
+        return HttpResponse(
+            buf.getvalue(),
+            content_type='image/svg+xml',
+            headers={'Content-Disposition': f'attachment; filename="taplink-qr.svg"'},
+        )
+
+    img = _make_qr_image(url, fg=fg, bg=bg, style=style, padding=pad)
+
+    if logo == 'taplink' and profile.is_standard:
+        import os
+        from django.conf import settings as dj_settings
+        logo_path = os.path.join(dj_settings.BASE_DIR, 'static', 'img', 'taplink-logo.png')
+        if os.path.exists(logo_path):
+            img = _embed_logo(img, logo_path, float(request.GET.get('logo_size', 0.25)))
+
+    # 512×512 PNG
+    from PIL import Image
+    img_rgb = Image.new('RGB', img.size, (int(bg[1:3], 16), int(bg[3:5], 16), int(bg[5:7], 16)))
+    img_rgb.paste(img, mask=img.split()[3] if img.mode == 'RGBA' else None)
+    img_512 = img_rgb.resize((512, 512), Image.LANCZOS)
+
+    buf = io.BytesIO()
+    img_512.save(buf, format='PNG')
+    return HttpResponse(
+        buf.getvalue(),
+        content_type='image/png',
+        headers={'Content-Disposition': 'attachment; filename="taplink-qr.png"'},
+    )

@@ -13,4 +13,7 @@ urlpatterns = [
     path('settings/save/', views.settings_save, name='settings_save'),
     path('settings/username/', views.username_change, name='username_change'),
     path('account/delete/', views.account_delete, name='account_delete'),
+    path('qr/', views.qr_page, name='qr'),
+    path('qr/preview/', views.qr_preview, name='qr_preview'),
+    path('qr/download/', views.qr_download, name='qr_download'),
 ]
