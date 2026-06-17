@@ -2,10 +2,14 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse, HttpResponse
 from django.views.decorators.http import require_POST, require_GET
+from django.utils import timezone
+from datetime import timedelta
+from collections import defaultdict
 import json
 import io
 import base64
 from accounts.models import UserProfile, Link, Appearance
+from analytics_app.models import ProfileView, LinkClick
 
 FREE_LINK_LIMIT = 9999  # temporarily unlimited for dev
 STANDARD_LINK_LIMIT = 10
@@ -449,3 +453,95 @@ def qr_download(request):
         content_type='image/png',
         headers={'Content-Disposition': 'attachment; filename="taplink-qr.png"'},
     )
+
+
+# ─── ANALYTICS ────────────────────────────────────────────────────────────────
+
+@login_required
+def analytics(request):
+    profile = request.user.profile
+    if not profile.is_standard:
+        return redirect('dashboard:home')
+
+    period = request.GET.get('period', '7')
+    now = timezone.now()
+
+    if period == '30':
+        since = now - timedelta(days=30)
+        days = 30
+    elif period == 'all':
+        since = None
+        days = None
+    else:
+        period = '7'
+        since = now - timedelta(days=7)
+        days = 7
+
+    views_qs = ProfileView.objects.filter(user=request.user)
+    clicks_qs = LinkClick.objects.filter(user=request.user)
+
+    if since:
+        views_qs = views_qs.filter(created_at__gte=since)
+        clicks_qs = clicks_qs.filter(created_at__gte=since)
+
+    total_views = views_qs.count()
+    total_clicks = clicks_qs.count()
+    ctr = round((total_clicks / total_views * 100), 1) if total_views else 0
+
+    # Device breakdown for views
+    device_counts = defaultdict(int)
+    for v in views_qs.values('device'):
+        device_counts[v['device']] += 1
+
+    # Daily chart data (only for 7/30 day periods)
+    chart_labels = []
+    chart_views = []
+    chart_clicks = []
+
+    if days:
+        daily_views = defaultdict(int)
+        daily_clicks = defaultdict(int)
+
+        for v in views_qs.values('created_at'):
+            day = v['created_at'].astimezone(timezone.get_current_timezone()).strftime('%Y-%m-%d')
+            daily_views[day] += 1
+
+        for c in clicks_qs.values('created_at'):
+            day = c['created_at'].astimezone(timezone.get_current_timezone()).strftime('%Y-%m-%d')
+            daily_clicks[day] += 1
+
+        for i in range(days - 1, -1, -1):
+            d = (now - timedelta(days=i)).strftime('%Y-%m-%d')
+            label = (now - timedelta(days=i)).strftime('%b %d')
+            chart_labels.append(label)
+            chart_views.append(daily_views.get(d, 0))
+            chart_clicks.append(daily_clicks.get(d, 0))
+
+    # Per-link click breakdown
+    link_stats = defaultdict(lambda: {'title': '', 'clicks': 0})
+    for c in clicks_qs.values('link_id', 'link_title'):
+        lid = c['link_id']
+        link_stats[lid]['title'] = c['link_title']
+        link_stats[lid]['clicks'] += 1
+
+    link_rows = sorted(link_stats.values(), key=lambda x: x['clicks'], reverse=True)
+
+    device_rows = [
+        {'label': 'Mobile',  'count': device_counts.get('mobile', 0)},
+        {'label': 'Desktop', 'count': device_counts.get('desktop', 0)},
+        {'label': 'Tablet',  'count': device_counts.get('tablet', 0)},
+    ]
+
+    return render(request, 'dashboard/analytics.html', {
+        'profile': profile,
+        'period': period,
+        'total_views': total_views,
+        'total_clicks': total_clicks,
+        'ctr': ctr,
+        'device_rows': device_rows,
+        'mobile_count': device_counts.get('mobile', 0),
+        'chart_labels': json.dumps(chart_labels),
+        'chart_views': json.dumps(chart_views),
+        'chart_clicks': json.dumps(chart_clicks),
+        'link_rows': link_rows,
+    })

@@ -1,5 +1,25 @@
+import hashlib
 from django.shortcuts import render, redirect
 from accounts.models import UserProfile, Link, Appearance
+from analytics_app.models import ProfileView, LinkClick
+
+
+def _get_ip(request):
+    xff = request.META.get('HTTP_X_FORWARDED_FOR', '')
+    return xff.split(',')[0].strip() if xff else request.META.get('REMOTE_ADDR', '')
+
+
+def _hash_ip(ip):
+    return hashlib.sha256(ip.encode()).hexdigest()[:32]
+
+
+def _get_device(ua):
+    ua = ua.lower()
+    if any(x in ua for x in ('mobile', 'android', 'iphone')):
+        return 'mobile'
+    if any(x in ua for x in ('tablet', 'ipad')):
+        return 'tablet'
+    return 'desktop'
 
 
 # Platform brand colors for icon badges
@@ -48,6 +68,15 @@ def public_profile(request, username):
 
     if profile.is_paused:
         return render(request, 'profiles/paused.html', {'profile': profile})
+
+    # Track profile view (skip owner's own visits)
+    if not (request.user.is_authenticated and request.user == profile.user):
+        ua = request.META.get('HTTP_USER_AGENT', '')
+        ProfileView.objects.create(
+            user=profile.user,
+            ip_hash=_hash_ip(_get_ip(request)),
+            device=_get_device(ua),
+        )
 
     try:
         appearance = profile.user.appearance
@@ -146,5 +175,12 @@ def link_redirect(request, username, link_id):
         link = Link.objects.get(id=link_id, user=profile.user, is_active=True)
     except (UserProfile.DoesNotExist, Link.DoesNotExist):
         return redirect('/')
-    # TODO: record click event when analytics model is ready
+    ua = request.META.get('HTTP_USER_AGENT', '')
+    LinkClick.objects.create(
+        user=profile.user,
+        link_id=link.id,
+        link_title=link.title,
+        ip_hash=_hash_ip(_get_ip(request)),
+        device=_get_device(ua),
+    )
     return redirect(link.url)

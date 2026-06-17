@@ -15,6 +15,7 @@ urlpatterns = [
     path('account/delete/', views.account_delete, name='account_delete'),
     path('avatar/upload/', views.avatar_upload, name='avatar_upload'),
     path('background/upload/', views.background_upload, name='background_upload'),
+    path('analytics/', views.analytics, name='analytics'),
     path('qr/', views.qr_page, name='qr'),
     path('qr/preview/', views.qr_preview, name='qr_preview'),
     path('qr/download/', views.qr_download, name='qr_download'),
