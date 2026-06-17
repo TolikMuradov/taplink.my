@@ -5,46 +5,76 @@
 {% block extra_head %}
 <style>
   body {
-    background-color: #0a0a0a;
-    background-image: radial-gradient(#1a1a1a 1px, transparent 1px);
-    background-size: 24px 24px;
+    background-color: #080811;
+    background-image:
+      radial-gradient(ellipse 70% 50% at 50% 0%, rgba(99,102,241,0.16) 0%, transparent 55%),
+      radial-gradient(rgba(255,255,255,0.045) 1px, transparent 1px);
+    background-size: auto, 28px 28px;
   }
-  .glass-card {
-    background: rgba(17, 17, 17, 0.8);
-    backdrop-filter: blur(12px);
-    border: 1px solid rgba(144, 143, 160, 0.1);
+  .login-card {
+    background: linear-gradient(150deg, rgba(25,25,40,0.92) 0%, rgba(14,14,24,0.96) 100%);
+    border: 1px solid rgba(192,193,255,0.1);
+    backdrop-filter: blur(20px);
+    box-shadow: 0 40px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.03), 0 0 60px rgba(99,102,241,0.07);
   }
-  .brand-glow-google:hover {
-    box-shadow: 0 0 15px rgba(255, 255, 255, 0.1);
+  .google-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    width: 100%;
+    background: #fff;
+    color: #111;
+    font-weight: 700;
+    font-size: 15px;
+    padding: 14px 24px;
+    border-radius: 12px;
+    transition: all 0.2s cubic-bezier(0.16,1,0.3,1);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+    letter-spacing: -0.01em;
   }
+  .google-btn:hover {
+    box-shadow: 0 6px 20px rgba(0,0,0,0.35);
+    transform: translateY(-1px) scale(1.005);
+  }
+  .google-btn:active { transform: scale(0.97); }
 </style>
 {% endblock %}
 
 {% block body %}
-<div class="min-h-screen flex flex-col items-center justify-center p-gutter text-on-surface">
+<div class="min-h-screen flex flex-col items-center justify-center px-4 py-12">
 
-  <!-- Login container -->
-  <main class="w-full max-w-[400px] flex flex-col items-center">
+  <!-- Back to home -->
+  <a href="/" class="absolute top-6 left-6 flex items-center gap-1.5 text-[13px] font-medium transition-colors" style="color:#6b6b8a" onmouseover="this.style.color='#e4e1ed'" onmouseout="this.style.color='#6b6b8a'">
+    <span class="material-symbols-outlined" style="font-size:16px">arrow_back</span>
+    Back
+  </a>
+
+  <main class="w-full max-w-[400px]">
 
     <!-- Brand -->
-    <div class="mb-xl flex flex-col items-center gap-sm">
-      <a href="/" class="text-headline-md font-bold text-on-surface">
-        taplink<span class="text-primary-container">.my</span>
+    <div class="flex flex-col items-center mb-8">
+      <a href="/" class="flex items-center gap-2.5 mb-5">
+        <div class="w-9 h-9 rounded-xl sidebar-logo-mark flex items-center justify-center">
+          <span class="material-symbols-outlined text-white" style="font-variation-settings:'FILL' 1;font-size:18px">link</span>
+        </div>
+        <span class="font-black text-white text-[20px] tracking-tight" style="font-family:'Plus Jakarta Sans','Inter',sans-serif">
+          taplink<span class="text-gradient">.my</span>
+        </span>
       </a>
-      <p class="text-on-surface-variant font-body-sm text-body-sm">Create your link-in-bio page in minutes.</p>
+      <h1 class="text-white font-bold text-[22px] tracking-tight mb-1.5" style="font-family:'Plus Jakarta Sans','Inter',sans-serif">Welcome back</h1>
+      <p class="text-[14px] text-center" style="color:#6b6b8a">Create your link-in-bio page in minutes.</p>
     </div>
 
-    <!-- Auth card -->
-    <div class="glass-card w-full rounded-xl p-xl shadow-sm">
-      <h2 class="text-headline-md font-headline-md text-on-surface text-center mb-lg">Welcome back</h2>
+    <!-- Card -->
+    <div class="login-card rounded-2xl p-8">
 
-      <!-- Google OAuth button -->
+      <!-- Google OAuth -->
       {% get_providers as socialaccount_providers %}
       {% for provider in socialaccount_providers %}
         {% if provider.id == "google" %}
-          <a href="{% provider_login_url provider.id %}"
-             class="w-full bg-white text-[#1f1f1f] py-3 px-4 rounded-lg flex items-center justify-center gap-md font-bold text-body-md transition-all hover:scale-[0.98] active:scale-95 brand-glow-google">
-            <svg class="w-5 h-5 flex-shrink-0" viewBox="0 0 24 24">
+          <a href="{% provider_login_url provider.id %}" class="google-btn">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
               <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
               <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
               <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
@@ -56,42 +86,39 @@
       {% endfor %}
 
       <!-- Divider -->
-      <div class="relative flex items-center py-lg">
-        <div class="flex-grow border-t border-outline-variant"></div>
-        <span class="flex-shrink mx-4 text-on-surface-variant font-label-md text-label-md">New here?</span>
-        <div class="flex-grow border-t border-outline-variant"></div>
+      <div class="relative flex items-center py-7">
+        <div class="flex-grow" style="border-top:1px solid rgba(255,255,255,0.07)"></div>
+        <span class="mx-4 text-[12px] font-semibold uppercase tracking-wider" style="color:#4a4a62">New here?</span>
+        <div class="flex-grow" style="border-top:1px solid rgba(255,255,255,0.07)"></div>
       </div>
 
-      <!-- Info text -->
-      <p class="text-center text-on-surface-variant text-body-sm font-body-sm">
-        Signing in with Google automatically creates your free account if you don't have one yet.
-      </p>
+      <!-- Info -->
+      <div class="rounded-xl p-4 text-center" style="background:rgba(99,102,241,0.07);border:1px solid rgba(99,102,241,0.15)">
+        <p class="text-[13px] leading-relaxed" style="color:#9090aa">
+          Signing in with Google automatically creates your free account if you don't have one yet. No password needed.
+        </p>
+      </div>
     </div>
 
-    <!-- Legal footer -->
-    <footer class="mt-xl w-full flex flex-col items-center gap-md text-center">
-      <p class="text-on-surface-variant text-body-sm font-body-sm">
-        By continuing, you agree to our
-        <a href="{% url 'terms' %}" class="text-primary hover:underline">Terms of Service</a>
+    <!-- Legal -->
+    <div class="mt-6 text-center space-y-3">
+      <p class="text-[12px]" style="color:#4a4a62">
+        By continuing you agree to our
+        <a href="{% url 'terms' %}" class="transition-colors" style="color:#818cf8" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">Terms</a>
         and
-        <a href="{% url 'privacy' %}" class="text-primary hover:underline">Privacy Policy</a>.
+        <a href="{% url 'privacy' %}" class="transition-colors" style="color:#818cf8" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">Privacy Policy</a>.
       </p>
-      <div class="flex gap-lg">
-        <a href="{% url 'terms' %}" class="text-on-surface-variant font-label-md text-label-md hover:text-primary transition-colors">Terms of Service</a>
-        <a href="{% url 'privacy' %}" class="text-on-surface-variant font-label-md text-label-md hover:text-primary transition-colors">Privacy Policy</a>
-      </div>
-      <p class="text-on-surface-variant text-body-sm font-body-sm opacity-60">© 2025 taplink.my. All rights reserved.</p>
-    </footer>
+    </div>
 
   </main>
 </div>
 
 <!-- Ambient glows -->
-<div class="fixed top-0 right-0 p-lg pointer-events-none opacity-20 hidden md:block">
-  <div class="w-[300px] h-[300px] bg-primary-container rounded-full blur-[120px]"></div>
+<div class="fixed top-0 right-0 pointer-events-none opacity-20 hidden md:block" style="padding:40px">
+  <div style="width:280px;height:280px;background:radial-gradient(circle,rgba(99,102,241,1) 0%,transparent 70%);border-radius:50%;filter:blur(80px)"></div>
 </div>
-<div class="fixed bottom-0 left-0 p-lg pointer-events-none opacity-10 hidden md:block">
-  <div class="w-[200px] h-[200px] bg-secondary-container rounded-full blur-[100px]"></div>
+<div class="fixed bottom-0 left-0 pointer-events-none opacity-15 hidden md:block" style="padding:40px">
+  <div style="width:200px;height:200px;background:radial-gradient(circle,rgba(139,92,246,1) 0%,transparent 70%);border-radius:50%;filter:blur(60px)"></div>
 </div>
 
 {% endblock %}

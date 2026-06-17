@@ -1,310 +1,548 @@
 {% extends "base.html" %}
-{% block title %}taplink.my — Your links, your brand{% endblock %}
+{% block title %}taplink.my — One link. Every audience.{% endblock %}
+{% block meta_description %}The link-in-bio tool built for Thai creators and businesses. Connect your TikTok, Shopee, LINE and more — all in one beautiful page. Free to start.{% endblock %}
 
 {% block extra_head %}
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
-  body { background-color: #0a0a0a; }
-  .interactive-mockup {
-    width: 280px; height: 560px;
-    border: 12px solid #1a1a1a;
+  body {
+    background-color: #080811;
+    background-image: radial-gradient(ellipse 90% 55% at 50% -10%, rgba(99,102,241,0.14) 0%, transparent 65%);
+  }
+  .dot-grid {
+    background-image: radial-gradient(rgba(255,255,255,0.055) 1px, transparent 1px);
+    background-size: 28px 28px;
+  }
+  .phone-chrome {
+    width: 272px;
+    border: 9px solid #14142a;
     border-radius: 40px;
+    background: linear-gradient(165deg, #13132a 0%, #0b0b1a 100%);
     overflow: hidden;
-    background: #111;
+    box-shadow:
+      0 0 0 1px rgba(255,255,255,0.04),
+      0 40px 80px rgba(0,0,0,0.75),
+      0 0 80px rgba(99,102,241,0.18),
+      inset 0 1px 0 rgba(255,255,255,0.04);
+  }
+  .floating-badge {
+    background: rgba(15,15,28,0.82);
+    border: 1px solid rgba(255,255,255,0.09);
+    backdrop-filter: blur(16px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.04);
+  }
+  .nav-link {
+    color: #9090aa;
+    font-size: 14px;
+    font-weight: 500;
+    transition: color 0.18s ease;
+  }
+  .nav-link:hover { color: #e4e1ed; }
+  .feature-icon-wrap {
+    width: 44px; height: 44px;
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 20px;
+    border: 1px solid;
+  }
+  .check-circle {
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
   }
 </style>
 {% endblock %}
 
 {% block body %}
+<div class="min-h-screen">
 
-<!-- ======== NAVBAR ======== -->
-<nav class="sticky top-0 z-50 flex justify-between items-center px-gutter w-full h-16 bg-surface/80 backdrop-blur-md border-b border-outline-variant">
-  <div class="text-headline-md font-bold text-on-surface tracking-tight">
-    taplink<span class="text-primary-container">.my</span>
-  </div>
-  <div class="hidden md:flex items-center gap-xl">
-    <a href="#features" class="text-on-surface-variant hover:text-on-surface transition-colors text-body-md">Features</a>
-    <a href="#pricing" class="text-on-surface-variant hover:text-on-surface transition-colors text-body-md">Pricing</a>
-  </div>
-  <div class="flex items-center gap-md">
-    <a href="{% url 'account_login' %}" class="text-primary font-body-md hover:opacity-80 transition-opacity">Log in</a>
-    <a href="{% url 'account_login' %}" class="bg-primary-container text-on-primary-container px-4 py-2 rounded-xl font-bold text-body-md transition-all active:scale-95 brand-glow hover:brightness-110">
-      Create your page
+<!-- ═══════════ NAVBAR ═══════════ -->
+<nav class="sticky top-0 z-50 border-b border-white/[0.06] bg-[#080811]/85 backdrop-blur-xl">
+  <div class="max-w-6xl mx-auto px-6 h-[60px] flex items-center justify-between gap-8">
+
+    <!-- Logo -->
+    <a href="/" class="flex items-center gap-2.5 shrink-0">
+      <div class="w-[30px] h-[30px] rounded-[8px] sidebar-logo-mark flex items-center justify-center">
+        <span class="material-symbols-outlined text-white" style="font-variation-settings:'FILL' 1;font-size:15px">link</span>
+      </div>
+      <span class="font-bold text-white text-[16px] tracking-tight" style="font-family:'Plus Jakarta Sans','Inter',sans-serif">
+        taplink<span class="text-gradient">.my</span>
+      </span>
     </a>
+
+    <!-- Center nav -->
+    <div class="hidden md:flex items-center gap-7">
+      <a href="#features" class="nav-link">Features</a>
+      <a href="#pricing"  class="nav-link">Pricing</a>
+    </div>
+
+    <!-- CTA group -->
+    <div class="flex items-center gap-3">
+      <a href="{% url 'account_login' %}" class="nav-link hidden sm:block font-semibold">Log in</a>
+      <a href="{% url 'account_login' %}" class="btn-primary" style="padding:10px 20px;font-size:14px">
+        Get started
+        <span class="material-symbols-outlined" style="font-size:15px">arrow_forward</span>
+      </a>
+    </div>
+
   </div>
 </nav>
 
-<!-- ======== HERO ======== -->
-<main class="max-w-[1200px] mx-auto px-gutter pt-xl">
-  <section class="grid grid-cols-1 md:grid-cols-2 gap-2xl items-center py-2xl">
+<!-- ═══════════ HERO ═══════════ -->
+<section class="relative overflow-hidden">
+  <div class="absolute inset-0 dot-grid pointer-events-none opacity-70"></div>
+
+  <div class="relative max-w-6xl mx-auto px-6 pt-[88px] pb-[80px] grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-10 items-center">
 
     <!-- Left: Copy -->
-    <div class="space-y-lg">
-      <span class="hero-item hero-d1 inline-flex items-center gap-sm px-3 py-1 rounded-full bg-secondary-container text-on-secondary-container text-label-md font-label-md">
-        <span class="w-1.5 h-1.5 bg-on-secondary-container rounded-full animate-pulse"></span>
-        Free to start
+    <div class="space-y-7 max-w-xl">
+
+      <!-- Badge -->
+      <span class="hero-item hero-d1 inline-flex items-center gap-2 px-4 py-[6px] rounded-full text-[13px] font-semibold text-indigo-300"
+            style="border:1px solid rgba(99,102,241,0.28);background:rgba(99,102,241,0.09)">
+        <span class="w-[6px] h-[6px] rounded-full bg-indigo-400 animate-pulse"></span>
+        Free forever · No credit card
       </span>
 
-      <h1 class="hero-item hero-d2 text-display font-display leading-tight">
-        Your links,<br><span class="text-primary-container">your brand.</span>
+      <!-- Headline -->
+      <h1 class="hero-item hero-d2 font-black tracking-tight leading-[1.05]"
+          style="font-family:'Plus Jakarta Sans','Inter',sans-serif;font-size:clamp(46px,5.8vw,78px);letter-spacing:-0.03em;">
+        One link.<br>
+        <span class="text-gradient">Every audience.</span>
       </h1>
 
-      <p class="hero-item hero-d3 text-body-lg font-body-lg text-on-surface-variant max-w-md">
-        The only link-in-bio tool designed for the Thai creative ecosystem. Consolidate your TikTok shop, Shopee store, and LINE contact into one beautiful page.
+      <!-- Subtext -->
+      <p class="hero-item hero-d3 text-[#9090aa] leading-relaxed max-w-md" style="font-size:17px">
+        The link-in-bio tool built for Thai creators and businesses. Your TikTok, Shopee, and LINE — all in one beautiful page, ready in minutes.
       </p>
 
-      <div class="hero-item hero-d4 pt-md">
-        <a href="{% url 'account_login' %}" class="inline-flex items-center gap-sm bg-primary-container text-on-primary-container px-8 py-4 rounded-xl font-bold text-headline-md hover:brightness-110 transition-all brand-glow active:scale-95">
-          Create your page
-          <span class="material-symbols-outlined">arrow_forward</span>
+      <!-- CTAs -->
+      <div class="hero-item hero-d4 flex flex-wrap items-center gap-4 pt-1">
+        <a href="{% url 'account_login' %}" class="btn-primary" style="font-size:15px">
+          Create your free page
+          <span class="material-symbols-outlined" style="font-size:18px">arrow_forward</span>
         </a>
-        <p class="mt-md text-body-sm text-on-surface-variant">Free forever. No credit card needed.</p>
+        <a href="#features" class="btn-ghost" style="font-size:15px">See features</a>
+      </div>
+
+      <!-- Social proof -->
+      <div class="hero-item hero-d4 flex items-center gap-3 pt-1">
+        <div class="flex -space-x-2.5">
+          <div class="w-8 h-8 rounded-full border-2 border-[#080811] flex items-center justify-center text-white text-[11px] font-bold" style="background:linear-gradient(135deg,#7c3aed,#6366f1)">A</div>
+          <div class="w-8 h-8 rounded-full border-2 border-[#080811] flex items-center justify-center text-white text-[11px] font-bold" style="background:linear-gradient(135deg,#ec4899,#f43f5e)">B</div>
+          <div class="w-8 h-8 rounded-full border-2 border-[#080811] flex items-center justify-center text-white text-[11px] font-bold" style="background:linear-gradient(135deg,#f59e0b,#f97316)">C</div>
+          <div class="w-8 h-8 rounded-full border-2 border-[#080811] flex items-center justify-center text-white text-[11px] font-bold" style="background:linear-gradient(135deg,#10b981,#0ea5e9)">D</div>
+          <div class="w-8 h-8 rounded-full border-2 border-[#080811] flex items-center justify-center text-[#9090aa] text-[11px] font-bold" style="background:#1c1c2a">+</div>
+        </div>
+        <p class="text-sm text-[#9090aa]">
+          Joined by <strong class="text-white font-semibold">2,000+</strong> Thai creators
+        </p>
       </div>
     </div>
 
-    <!-- Right: Interactive Demo -->
-    <div class="flex flex-col items-center gap-lg"
-         x-data="{
-           bg: '#111111',
-           font: 'Inter',
-           dragSrc: null,
-           links: [
-             { id: 1, icon: 'shopping_cart', label: 'Shopee Shop' },
-             { id: 2, icon: 'chat',          label: 'LINE Contact' },
-             { id: 3, icon: 'videocam',      label: 'TikTok Feed' },
-           ],
-           dragStart(i) { this.dragSrc = i; },
-           drop(i) {
-             if (this.dragSrc === null || this.dragSrc === i) return;
-             const moved = this.links.splice(this.dragSrc, 1)[0];
-             this.links.splice(i, 0, moved);
-             this.dragSrc = null;
-           }
-         }">
+    <!-- Right: Phone + floating badges -->
+    <div class="flex justify-center lg:justify-end relative">
+
+      <!-- Glow -->
+      <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+        <div class="w-72 h-72 rounded-full blur-[72px]" style="background:radial-gradient(circle,rgba(99,102,241,0.22) 0%,transparent 70%)"></div>
+      </div>
+
+      <!-- Floating badge: Shopee -->
+      <div class="floating-badge absolute top-10 -left-2 lg:-left-10 px-3 py-2 rounded-2xl flex items-center gap-2.5 animate-float z-10" style="animation-delay:0.3s">
+        <span class="text-[18px]">🛍️</span>
+        <div class="leading-tight">
+          <p class="text-white text-xs font-semibold">Shopee Shop</p>
+          <p class="text-[10px]" style="color:#6b6b8a">Connected</p>
+        </div>
+      </div>
+
+      <!-- Floating badge: Analytics -->
+      <div class="floating-badge absolute top-[42%] -left-4 lg:-left-12 px-3 py-2 rounded-2xl flex items-center gap-2.5 animate-float z-10" style="animation-delay:1.1s">
+        <span class="text-[18px]">📊</span>
+        <div class="leading-tight">
+          <p class="text-white text-xs font-semibold">Views today</p>
+          <p class="text-[10px] font-bold" style="color:#818cf8">↑ 342</p>
+        </div>
+      </div>
+
+      <!-- Floating badge: LINE -->
+      <div class="floating-badge absolute bottom-14 -right-2 lg:-right-10 px-3 py-2 rounded-2xl flex items-center gap-2.5 animate-float z-10" style="animation-delay:1.9s">
+        <span class="text-[18px]">💬</span>
+        <div class="leading-tight">
+          <p class="text-white text-xs font-semibold">LINE Official</p>
+          <p class="text-[10px]" style="color:#6b6b8a">1.2k followers</p>
+        </div>
+      </div>
 
       <!-- Phone -->
-      <div class="interactive-mockup shadow-2xl transition-colors duration-500 animate-float" :style="`background-color: ${bg}`">
-        <div class="p-md text-center h-full overflow-y-auto custom-scrollbar">
-          <!-- Avatar -->
-          <div class="w-20 h-20 bg-surface-container-highest rounded-full mx-auto mb-md border-2 border-primary overflow-hidden flex items-center justify-center">
-            <span class="material-symbols-outlined text-on-surface-variant" style="font-size:40px">person</span>
+      <div class="phone-chrome animate-float relative z-0" style="height:558px">
+        <div class="px-4 py-3 h-full flex flex-col">
+          <!-- Status bar -->
+          <div class="flex justify-between items-center text-[9px] mb-3 px-1" style="color:rgba(255,255,255,0.28)">
+            <span class="font-semibold">9:41</span>
+            <div class="flex gap-1.5 items-center">
+              <span>●●●●</span>
+              <span>WiFi</span>
+              <span>100%</span>
+            </div>
           </div>
-          <h2 class="font-bold text-headline-md text-white" :style="`font-family: ${font}, sans-serif`">@thecreativeth</h2>
-          <p class="text-on-surface-variant text-body-sm mb-lg">Bkk Digital Creator 🇹🇭</p>
 
-          <!-- Links -->
-          <div class="space-y-sm">
-            <template x-for="(link, i) in links" :key="link.id">
-              <div
-                class="flex items-center justify-between p-md bg-white/10 backdrop-blur-md rounded-xl border border-white/5 hover:scale-[1.02] transition-all cursor-grab active:cursor-grabbing select-none"
-                draggable="true"
-                @dragstart="dragStart(i)"
-                @dragover.prevent
-                @drop.prevent="drop(i)"
-              >
-                <div class="flex items-center gap-md">
-                  <span class="material-symbols-outlined text-white/90" x-text="link.icon"></span>
-                  <span class="font-bold text-white text-body-sm" :style="`font-family: ${font}, sans-serif`" x-text="link.label"></span>
-                </div>
-                <span class="material-symbols-outlined text-white/30 text-xs">open_in_new</span>
+          <!-- Profile -->
+          <div class="flex-1">
+            <div class="w-[68px] h-[68px] rounded-full mx-auto mb-3 flex items-center justify-center border-2" style="background:linear-gradient(135deg,#7c3aed,#6366f1);border-color:rgba(255,255,255,0.12)">
+              <span class="material-symbols-outlined text-white text-3xl" style="font-variation-settings:'FILL' 1">person</span>
+            </div>
+            <div class="text-center mb-4">
+              <p class="text-white font-bold text-[13px] mb-0.5">@thecreativeth</p>
+              <p class="text-[11px]" style="color:rgba(255,255,255,0.4)">✨ Digital Creator · Bangkok 🇹🇭</p>
+            </div>
+
+            <!-- Links -->
+            <div class="space-y-2">
+              <div class="flex items-center gap-3 px-3 py-2.5 rounded-xl cursor-pointer" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.08)">
+                <span class="text-[15px] shrink-0">🛍️</span>
+                <span class="text-white text-[11px] font-semibold flex-1">Shopee Shop</span>
+                <span class="material-symbols-outlined" style="font-size:12px;color:rgba(255,255,255,0.22)">open_in_new</span>
               </div>
-            </template>
+              <div class="flex items-center gap-3 px-3 py-2.5 rounded-xl cursor-pointer" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.08)">
+                <span class="text-[15px] shrink-0">💬</span>
+                <span class="text-white text-[11px] font-semibold flex-1">LINE Official</span>
+                <span class="material-symbols-outlined" style="font-size:12px;color:rgba(255,255,255,0.22)">open_in_new</span>
+              </div>
+              <div class="flex items-center gap-3 px-3 py-2.5 rounded-xl cursor-pointer" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.08)">
+                <span class="text-[15px] shrink-0">🎵</span>
+                <span class="text-white text-[11px] font-semibold flex-1">TikTok Shop</span>
+                <span class="material-symbols-outlined" style="font-size:12px;color:rgba(255,255,255,0.22)">open_in_new</span>
+              </div>
+              <div class="flex items-center gap-3 px-3 py-2.5 rounded-xl cursor-pointer" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.08)">
+                <span class="text-[15px] shrink-0">📦</span>
+                <span class="text-white text-[11px] font-semibold flex-1">Lazada Store</span>
+                <span class="material-symbols-outlined" style="font-size:12px;color:rgba(255,255,255,0.22)">open_in_new</span>
+              </div>
+            </div>
+
+            <p class="text-center uppercase font-bold tracking-[0.14em] mt-4" style="font-size:9px;color:rgba(255,255,255,0.13)">taplink.my</p>
           </div>
-
-          <!-- Watermark -->
-          <p class="mt-lg text-white/20 text-label-md">taplink.my</p>
         </div>
       </div>
+    </div>
 
-      <!-- Controls -->
-      <div class="w-full max-w-[320px] glass-card p-md rounded-2xl space-y-md">
-        <!-- Background -->
-        <div>
-          <span class="text-label-md font-label-md text-on-surface-variant block mb-sm">BACKGROUND</span>
-          <div class="flex gap-sm">
-            <button @click="bg='#111111'" class="w-8 h-8 rounded-full border-2 border-white/20 bg-[#111111] hover:scale-110 transition-transform" title="Dark"></button>
-            <button @click="bg='#2d1b4e'" class="w-8 h-8 rounded-full border-2 border-white/20 bg-[#2d1b4e] hover:scale-110 transition-transform" title="Purple"></button>
-            <button @click="bg='#00283d'" class="w-8 h-8 rounded-full border-2 border-white/20 bg-[#00283d] hover:scale-110 transition-transform" title="Ocean"></button>
-            <button @click="bg='#1a2e1a'" class="w-8 h-8 rounded-full border-2 border-white/20 bg-[#1a2e1a] hover:scale-110 transition-transform" title="Forest"></button>
+  </div>
+</section>
+
+<!-- ═══════════ PLATFORMS BAR ═══════════ -->
+<div style="border-top:1px solid rgba(255,255,255,0.05);border-bottom:1px solid rgba(255,255,255,0.05);background:rgba(255,255,255,0.015)">
+  <div class="max-w-6xl mx-auto px-6 py-[18px]">
+    <div class="flex flex-wrap items-center justify-center gap-5 text-[#5a5a72] text-sm">
+      <span class="font-medium">Works with</span>
+      <span class="text-lg" title="TikTok">🎵</span>
+      <span class="text-lg" title="Shopee">🛍️</span>
+      <span class="text-lg" title="LINE">💬</span>
+      <span class="text-lg" title="Lazada">📦</span>
+      <span class="text-lg" title="Facebook">👥</span>
+      <span class="text-lg" title="Instagram">📸</span>
+      <span class="text-lg" title="YouTube">▶️</span>
+      <span class="text-lg" title="Grab">🚗</span>
+      <span class="font-medium">& more</span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ FEATURES ═══════════ -->
+<section id="features" class="py-[96px]">
+  <div class="max-w-6xl mx-auto px-6">
+
+    <div class="text-center mb-[60px] reveal">
+      <p class="text-[13px] font-bold uppercase tracking-[0.12em] text-indigo-400 mb-4">Features</p>
+      <h2 class="font-black text-white mb-4 tracking-tight"
+          style="font-family:'Plus Jakarta Sans','Inter',sans-serif;font-size:clamp(32px,4vw,54px);line-height:1.08;letter-spacing:-0.025em">
+        Everything you need to grow.
+      </h2>
+      <p class="text-[#9090aa] text-lg max-w-xl mx-auto">
+        All the tools a Thai creator or small business needs — in one simple, beautiful page.
+      </p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+
+      <div class="reveal reveal-d1 glow-card p-7 rounded-2xl">
+        <div class="feature-icon-wrap" style="background:rgba(99,102,241,0.12);border-color:rgba(99,102,241,0.2)">
+          <span class="material-symbols-outlined text-indigo-400" style="font-variation-settings:'FILL' 1">link</span>
+        </div>
+        <h3 class="text-white font-bold text-lg mb-2 tracking-tight">Your own link</h3>
+        <p class="text-[15px] leading-relaxed" style="color:#9090aa">Get a clean <span class="text-indigo-300 font-semibold">name.taplink.my</span> URL that looks great in any bio. Share once, update anytime.</p>
+      </div>
+
+      <div class="reveal reveal-d2 glow-card p-7 rounded-2xl">
+        <div class="feature-icon-wrap" style="background:rgba(236,72,153,0.12);border-color:rgba(236,72,153,0.2)">
+          <span class="material-symbols-outlined text-pink-400" style="font-variation-settings:'FILL' 1">palette</span>
+        </div>
+        <h3 class="text-white font-bold text-lg mb-2 tracking-tight">Full customization</h3>
+        <p class="text-[15px] leading-relaxed" style="color:#9090aa">Pick colors, fonts, and button styles. Upload a background photo. Make it truly yours — no code needed.</p>
+      </div>
+
+      <div class="reveal reveal-d3 glow-card p-7 rounded-2xl">
+        <div class="feature-icon-wrap" style="background:rgba(245,158,11,0.12);border-color:rgba(245,158,11,0.2)">
+          <span class="material-symbols-outlined text-amber-400" style="font-variation-settings:'FILL' 1">bar_chart</span>
+        </div>
+        <h3 class="text-white font-bold text-lg mb-2 tracking-tight">Real analytics</h3>
+        <p class="text-[15px] leading-relaxed" style="color:#9090aa">See who visits your page, which links they click, and what device they use. Understand your audience.</p>
+      </div>
+
+      <div class="reveal reveal-d1 glow-card p-7 rounded-2xl">
+        <div class="feature-icon-wrap" style="background:rgba(20,184,166,0.12);border-color:rgba(20,184,166,0.2)">
+          <span class="material-symbols-outlined text-teal-400" style="font-variation-settings:'FILL' 1">qr_code_2</span>
+        </div>
+        <h3 class="text-white font-bold text-lg mb-2 tracking-tight">Custom QR code</h3>
+        <p class="text-[15px] leading-relaxed" style="color:#9090aa">Generate a branded QR code for your page. Perfect for packaging, flyers, and business cards.</p>
+      </div>
+
+      <div class="reveal reveal-d2 glow-card p-7 rounded-2xl">
+        <div class="feature-icon-wrap" style="background:rgba(34,197,94,0.12);border-color:rgba(34,197,94,0.2)">
+          <span class="material-symbols-outlined text-green-400" style="font-variation-settings:'FILL' 1">location_on</span>
+        </div>
+        <h3 class="text-white font-bold text-lg mb-2 tracking-tight">Built for Thailand</h3>
+        <p class="text-[15px] leading-relaxed" style="color:#9090aa">Native support for LINE, Shopee, Lazada, TikTok, Grab — the platforms your Thai audience actually uses.</p>
+      </div>
+
+      <div class="reveal reveal-d3 glow-card p-7 rounded-2xl">
+        <div class="feature-icon-wrap" style="background:rgba(139,92,246,0.12);border-color:rgba(139,92,246,0.2)">
+          <span class="material-symbols-outlined text-violet-400" style="font-variation-settings:'FILL' 1">smartphone</span>
+        </div>
+        <h3 class="text-white font-bold text-lg mb-2 tracking-tight">Mobile-first design</h3>
+        <p class="text-[15px] leading-relaxed" style="color:#9090aa">Every profile looks perfect on mobile — because that's where your audience is scrolling.</p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ PRICING ═══════════ -->
+<section id="pricing" class="py-[96px]" style="border-top:1px solid rgba(255,255,255,0.05)">
+  <div class="max-w-6xl mx-auto px-6">
+
+    <div class="text-center mb-[60px] reveal">
+      <p class="text-[13px] font-bold uppercase tracking-[0.12em] text-indigo-400 mb-4">Pricing</p>
+      <h2 class="font-black text-white mb-4 tracking-tight"
+          style="font-family:'Plus Jakarta Sans','Inter',sans-serif;font-size:clamp(32px,4vw,54px);line-height:1.08;letter-spacing:-0.025em">
+        Simple, honest pricing.
+      </h2>
+      <p class="text-[#9090aa] text-lg">Start free. Upgrade when you're ready to grow.</p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-5 max-w-3xl mx-auto">
+
+      <!-- Free Plan -->
+      <div class="reveal reveal-d1 glow-card p-8 rounded-2xl flex flex-col">
+        <div class="mb-7">
+          <h3 class="text-white font-bold text-xl tracking-tight mb-3">Free</h3>
+          <div class="flex items-baseline gap-1.5">
+            <span class="text-[52px] font-black text-white tracking-tighter leading-none" style="font-family:'Plus Jakarta Sans','Inter',sans-serif">฿0</span>
+            <span class="text-sm font-medium" style="color:#6b6b8a">/month</span>
           </div>
+          <p class="text-sm mt-2.5" style="color:#6b6b8a">Perfect for getting started.</p>
         </div>
-        <!-- Font -->
-        <div>
-          <span class="text-label-md font-label-md text-on-surface-variant block mb-sm">FONT</span>
-          <select class="w-full bg-surface-container-highest border border-outline-variant text-on-surface rounded-lg px-sm py-sm text-body-sm outline-none focus:border-primary transition-colors" x-model="font">
-            <option value="Inter">Inter (System)</option>
-            <option value="Poppins">Poppins (Modern)</option>
-            <option value="Georgia">Serif (Classic)</option>
-          </select>
-        </div>
-        <div class="flex items-center gap-xs text-on-surface-variant">
-          <span class="material-symbols-outlined text-sm">info</span>
-          <p class="text-[10px] uppercase font-bold tracking-wider">Drag to reorder links in dashboard</p>
-        </div>
-      </div>
 
-    </div>
-  </section>
-
-  <!-- ======== FEATURES ======== -->
-  <section id="features" class="py-2xl border-t border-outline-variant">
-    <div class="text-center mb-xl reveal">
-      <h2 class="text-headline-lg font-headline-lg text-on-surface">Everything you need to grow.</h2>
-    </div>
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-lg">
-
-      <div class="reveal reveal-d1 bg-surface-container p-xl rounded-2xl border border-outline-variant hover:border-primary-container hover:-translate-y-1 hover:shadow-xl hover:shadow-primary/5 transition-all duration-300 group">
-        <div class="w-12 h-12 rounded-xl bg-primary-container/10 flex items-center justify-center mb-lg group-hover:scale-110 group-hover:bg-primary-container/20 transition-all duration-300">
-          <span class="material-symbols-outlined text-primary-container">link</span>
-        </div>
-        <h3 class="text-headline-md font-headline-md text-on-surface mb-sm">Your own link</h3>
-        <p class="text-on-surface-variant text-body-md">Get a professional <span class="text-primary font-bold">name.taplink.my</span> URL that looks great in any social media bio.</p>
-      </div>
-
-      <div class="reveal reveal-d2 bg-surface-container p-xl rounded-2xl border border-outline-variant hover:border-primary-container hover:-translate-y-1 hover:shadow-xl hover:shadow-primary/5 transition-all duration-300 group">
-        <div class="w-12 h-12 rounded-xl bg-primary-container/10 flex items-center justify-center mb-lg group-hover:scale-110 group-hover:bg-primary-container/20 transition-all duration-300">
-          <span class="material-symbols-outlined text-primary-container">palette</span>
-        </div>
-        <h3 class="text-headline-md font-headline-md text-on-surface mb-sm">Full customization</h3>
-        <p class="text-on-surface-variant text-body-md">Choose from hundreds of themes or build your own with colors, fonts, backgrounds, and button styles.</p>
-      </div>
-
-      <div class="reveal reveal-d3 bg-surface-container p-xl rounded-2xl border border-outline-variant hover:border-primary-container hover:-translate-y-1 hover:shadow-xl hover:shadow-primary/5 transition-all duration-300 group">
-        <div class="w-12 h-12 rounded-xl bg-primary-container/10 flex items-center justify-center mb-lg group-hover:scale-110 group-hover:bg-primary-container/20 transition-all duration-300">
-          <span class="material-symbols-outlined text-primary-container">location_on</span>
-        </div>
-        <h3 class="text-headline-md font-headline-md text-on-surface mb-sm">Built for Thailand</h3>
-        <p class="text-on-surface-variant text-body-md">Native integrations with LINE, Shopee, Lazada, Grab and all your favourite Thai platforms. Ready to use.</p>
-      </div>
-
-    </div>
-  </section>
-
-  <!-- ======== PRICING ======== -->
-  <section id="pricing" class="py-2xl">
-    <div class="text-center mb-xl reveal">
-      <h2 class="text-headline-lg font-headline-lg text-on-surface">Simple pricing.</h2>
-      <p class="text-on-surface-variant text-body-md mt-sm">Start free. Upgrade when you're ready.</p>
-    </div>
-
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-xl max-w-[800px] mx-auto">
-
-      <!-- Free -->
-      <div class="reveal reveal-d1 bg-surface-container p-xl rounded-2xl border border-outline-variant flex flex-col hover:-translate-y-1 hover:shadow-lg transition-all duration-300">
-        <div class="mb-lg">
-          <h3 class="text-headline-md font-headline-md text-on-surface">Free</h3>
-          <div class="flex items-baseline gap-xs mt-sm">
-            <span class="text-display font-display text-on-surface">฿0</span>
-            <span class="text-on-surface-variant text-body-md">/mo</span>
-          </div>
-          <p class="text-body-sm text-on-surface-variant mt-sm">Perfect for beginners.</p>
-        </div>
-        <ul class="space-y-sm flex-grow">
-          <li class="flex items-center gap-sm text-body-md text-on-surface">
-            <span class="material-symbols-outlined text-primary-container text-sm" style="font-variation-settings:'FILL' 1">check</span>
+        <ul class="space-y-3 flex-grow mb-8">
+          {% for item, ok in plan_free_features %}
+          <li class="flex items-center gap-3 text-[15px] {% if ok %}text-white{% else %}text-[#5a5a72]{% endif %}">
+            <div class="check-circle" style="{% if ok %}background:rgba(99,102,241,0.15);border:1px solid rgba(99,102,241,0.25){% else %}background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.09){% endif %}">
+              <span class="material-symbols-outlined" style="font-size:12px;{% if ok %}color:#818cf8;font-variation-settings:'FILL' 1{% else %}color:#5a5a72{% endif %}">{% if ok %}check{% else %}close{% endif %}</span>
+            </div>
+            {{ item }}
+          </li>
+          {% empty %}
+          <li class="flex items-center gap-3 text-[15px] text-white">
+            <div class="check-circle" style="background:rgba(99,102,241,0.15);border:1px solid rgba(99,102,241,0.25)">
+              <span class="material-symbols-outlined" style="font-size:12px;color:#818cf8;font-variation-settings:'FILL' 1">check</span>
+            </div>
             2 links
           </li>
-          <li class="flex items-center gap-sm text-body-md text-on-surface">
-            <span class="material-symbols-outlined text-primary-container text-sm" style="font-variation-settings:'FILL' 1">check</span>
-            Profile photo
+          <li class="flex items-center gap-3 text-[15px] text-white">
+            <div class="check-circle" style="background:rgba(99,102,241,0.15);border:1px solid rgba(99,102,241,0.25)">
+              <span class="material-symbols-outlined" style="font-size:12px;color:#818cf8;font-variation-settings:'FILL' 1">check</span>
+            </div>
+            Profile photo &amp; bio
           </li>
-          <li class="flex items-center gap-sm text-body-md text-on-surface">
-            <span class="material-symbols-outlined text-primary-container text-sm" style="font-variation-settings:'FILL' 1">check</span>
+          <li class="flex items-center gap-3 text-[15px] text-white">
+            <div class="check-circle" style="background:rgba(99,102,241,0.15);border:1px solid rgba(99,102,241,0.25)">
+              <span class="material-symbols-outlined" style="font-size:12px;color:#818cf8;font-variation-settings:'FILL' 1">check</span>
+            </div>
             Basic QR code
           </li>
-          <li class="flex items-center gap-sm text-body-md text-on-surface-variant">
-            <span class="material-symbols-outlined text-outline text-sm">close</span>
+          <li class="flex items-center gap-3 text-[15px] text-[#5a5a72]">
+            <div class="check-circle" style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.09)">
+              <span class="material-symbols-outlined" style="font-size:12px;color:#5a5a72">close</span>
+            </div>
             taplink.my watermark
           </li>
+          {% endfor %}
         </ul>
-        <a href="{% url 'account_login' %}" class="mt-xl block text-center w-full py-3 rounded-xl border border-outline-variant font-bold text-on-surface hover:bg-surface-container-highest transition-colors">
-          Get started
+
+        <a href="{% url 'account_login' %}" class="block text-center py-3.5 rounded-xl font-semibold text-[15px] text-white transition-all"
+           style="border:1px solid rgba(255,255,255,0.12);"
+           onmouseover="this.style.background='rgba(255,255,255,0.05)';this.style.borderColor='rgba(255,255,255,0.2)'"
+           onmouseout="this.style.background='';this.style.borderColor='rgba(255,255,255,0.12)'">
+          Get started free
         </a>
       </div>
 
-      <!-- Standard -->
-      <div class="reveal reveal-d2 bg-surface-container p-xl rounded-2xl border-2 border-primary-container flex flex-col relative brand-glow hover:-translate-y-1 hover:shadow-2xl hover:shadow-primary/10 transition-all duration-300">
-        <div class="absolute -top-4 left-1/2 -translate-x-1/2 bg-primary-container text-on-primary-container px-4 py-1 rounded-full text-label-md font-bold whitespace-nowrap">
-          Most popular
+      <!-- Standard Plan -->
+      <div class="reveal reveal-d2 relative p-8 rounded-2xl flex flex-col"
+           style="background:linear-gradient(150deg,rgba(99,102,241,0.13) 0%,rgba(124,58,237,0.07) 100%);border:1px solid rgba(192,193,255,0.22);box-shadow:0 0 0 1px rgba(99,102,241,0.1),0 24px 48px rgba(0,0,0,0.3),0 0 60px rgba(99,102,241,0.09)">
+
+        <div class="absolute -top-[14px] left-1/2 -translate-x-1/2 px-4 py-1 rounded-full text-[12px] font-bold text-white whitespace-nowrap"
+             style="background:linear-gradient(135deg,#7c7eff,#6366f1);box-shadow:0 4px 14px rgba(99,102,241,0.45)">
+          ⚡ Most popular
         </div>
-        <div class="mb-lg">
-          <h3 class="text-headline-md font-headline-md text-on-surface">Standard</h3>
-          <div class="flex items-baseline gap-xs mt-sm">
-            <span class="text-display font-display text-on-surface">฿99</span>
-            <span class="text-on-surface-variant text-body-md">/mo</span>
+
+        <div class="mb-7">
+          <h3 class="text-white font-bold text-xl tracking-tight mb-3">Standard</h3>
+          <div class="flex items-baseline gap-1.5">
+            <span class="text-[52px] font-black text-white tracking-tighter leading-none" style="font-family:'Plus Jakarta Sans','Inter',sans-serif">฿99</span>
+            <span class="text-sm font-medium" style="color:#6b6b8a">/month</span>
           </div>
-          <p class="text-body-sm text-on-surface-variant mt-sm">For growing creators &amp; businesses.</p>
+          <p class="text-sm mt-2.5" style="color:#6b6b8a">For growing creators &amp; businesses.</p>
         </div>
-        <ul class="space-y-sm flex-grow">
-          <li class="flex items-center gap-sm text-body-md text-on-surface">
-            <span class="material-symbols-outlined text-primary-container text-sm" style="font-variation-settings:'FILL' 1">check</span>
+
+        <ul class="space-y-3 flex-grow mb-8">
+          <li class="flex items-center gap-3 text-[15px] text-white">
+            <div class="check-circle" style="background:rgba(129,140,248,0.2);border:1px solid rgba(129,140,248,0.35)">
+              <span class="material-symbols-outlined" style="font-size:12px;color:#a5b4fc;font-variation-settings:'FILL' 1">check</span>
+            </div>
             10 links
           </li>
-          <li class="flex items-center gap-sm text-body-md text-on-surface">
-            <span class="material-symbols-outlined text-primary-container text-sm" style="font-variation-settings:'FILL' 1">check</span>
+          <li class="flex items-center gap-3 text-[15px] text-white">
+            <div class="check-circle" style="background:rgba(129,140,248,0.2);border:1px solid rgba(129,140,248,0.35)">
+              <span class="material-symbols-outlined" style="font-size:12px;color:#a5b4fc;font-variation-settings:'FILL' 1">check</span>
+            </div>
             All themes + full customization
           </li>
-          <li class="flex items-center gap-sm text-body-md text-on-surface">
-            <span class="material-symbols-outlined text-primary-container text-sm" style="font-variation-settings:'FILL' 1">check</span>
-            Background photo / video
+          <li class="flex items-center gap-3 text-[15px] text-white">
+            <div class="check-circle" style="background:rgba(129,140,248,0.2);border:1px solid rgba(129,140,248,0.35)">
+              <span class="material-symbols-outlined" style="font-size:12px;color:#a5b4fc;font-variation-settings:'FILL' 1">check</span>
+            </div>
+            Background photo upload
           </li>
-          <li class="flex items-center gap-sm text-body-md text-on-surface">
-            <span class="material-symbols-outlined text-primary-container text-sm" style="font-variation-settings:'FILL' 1">check</span>
-            Analytics (views, clicks, device, country)
+          <li class="flex items-center gap-3 text-[15px] text-white">
+            <div class="check-circle" style="background:rgba(129,140,248,0.2);border:1px solid rgba(129,140,248,0.35)">
+              <span class="material-symbols-outlined" style="font-size:12px;color:#a5b4fc;font-variation-settings:'FILL' 1">check</span>
+            </div>
+            Analytics — views, clicks, devices
           </li>
-          <li class="flex items-center gap-sm text-body-md text-on-surface">
-            <span class="material-symbols-outlined text-primary-container text-sm" style="font-variation-settings:'FILL' 1">check</span>
-            Custom QR code
+          <li class="flex items-center gap-3 text-[15px] text-white">
+            <div class="check-circle" style="background:rgba(129,140,248,0.2);border:1px solid rgba(129,140,248,0.35)">
+              <span class="material-symbols-outlined" style="font-size:12px;color:#a5b4fc;font-variation-settings:'FILL' 1">check</span>
+            </div>
+            Custom branded QR code
           </li>
-          <li class="flex items-center gap-sm text-body-md text-on-surface">
-            <span class="material-symbols-outlined text-primary-container text-sm" style="font-variation-settings:'FILL' 1">check</span>
+          <li class="flex items-center gap-3 text-[15px] text-white">
+            <div class="check-circle" style="background:rgba(129,140,248,0.2);border:1px solid rgba(129,140,248,0.35)">
+              <span class="material-symbols-outlined" style="font-size:12px;color:#a5b4fc;font-variation-settings:'FILL' 1">check</span>
+            </div>
             No watermark
           </li>
-          <li class="flex items-center gap-sm text-body-md text-on-surface">
-            <span class="material-symbols-outlined text-primary-container text-sm" style="font-variation-settings:'FILL' 1">check</span>
-            Try 1 month free with gift code
+          <li class="flex items-center gap-3 text-[15px] text-white">
+            <div class="check-circle" style="background:rgba(129,140,248,0.2);border:1px solid rgba(129,140,248,0.35)">
+              <span class="material-symbols-outlined" style="font-size:12px;color:#a5b4fc;font-variation-settings:'FILL' 1">check</span>
+            </div>
+            1-month free with gift code
           </li>
         </ul>
-        <a href="{% url 'account_login' %}" class="mt-xl block text-center w-full py-3 rounded-xl bg-primary-container text-on-primary-container font-bold hover:brightness-110 transition-all brand-glow">
-          Go Pro Now
+
+        <a href="{% url 'account_login' %}" class="btn-primary text-[15px] justify-center">
+          Get Standard
+          <span class="material-symbols-outlined" style="font-size:18px">arrow_forward</span>
         </a>
       </div>
 
     </div>
-  </section>
-</main>
-
-<!-- ======== FOOTER ======== -->
-<footer class="w-full py-xl px-gutter flex flex-col items-center gap-md text-center border-t border-outline-variant mt-xl bg-surface-container-lowest">
-  <div class="text-headline-md font-bold text-on-surface">taplink<span class="text-primary-container">.my</span></div>
-  <div class="flex flex-wrap justify-center gap-xl mt-md">
-    <a href="{% url 'terms' %}" class="text-on-surface-variant hover:text-primary transition-colors text-label-md font-label-md">Terms of Service</a>
-    <a href="{% url 'privacy' %}" class="text-on-surface-variant hover:text-primary transition-colors text-label-md font-label-md">Privacy Policy</a>
   </div>
-  <p class="text-body-sm text-on-surface-variant mt-lg opacity-60">© 2025 taplink.my. All rights reserved.</p>
+</section>
+
+<!-- ═══════════ FINAL CTA ═══════════ -->
+<section class="py-[96px]" style="border-top:1px solid rgba(255,255,255,0.05)">
+  <div class="max-w-4xl mx-auto px-6 text-center reveal">
+    <h2 class="font-black text-white mb-5 tracking-tight"
+        style="font-family:'Plus Jakarta Sans','Inter',sans-serif;font-size:clamp(32px,4vw,60px);line-height:1.08;letter-spacing:-0.03em">
+      Your audience is waiting.<br>
+      <span class="text-gradient">Your page is 5 minutes away.</span>
+    </h2>
+    <p class="text-lg max-w-md mx-auto mb-10" style="color:#9090aa">
+      Sign in with Google and launch your link-in-bio page today. Free, fast, no credit card needed.
+    </p>
+    <a href="{% url 'account_login' %}" class="btn-primary" style="font-size:16px;padding:15px 32px">
+      Create your free page
+      <span class="material-symbols-outlined">arrow_forward</span>
+    </a>
+  </div>
+</section>
+
+<!-- ═══════════ FOOTER ═══════════ -->
+<footer style="border-top:1px solid rgba(255,255,255,0.05);background:rgba(255,255,255,0.012)">
+  <div class="max-w-6xl mx-auto px-6 py-12">
+    <div class="flex flex-col md:flex-row items-center md:items-start justify-between gap-8 mb-8">
+
+      <!-- Brand -->
+      <div>
+        <a href="/" class="flex items-center gap-2.5 mb-3">
+          <div class="w-[28px] h-[28px] rounded-[7px] sidebar-logo-mark flex items-center justify-center">
+            <span class="material-symbols-outlined text-white" style="font-variation-settings:'FILL' 1;font-size:13px">link</span>
+          </div>
+          <span class="font-bold text-white text-[15px] tracking-tight" style="font-family:'Plus Jakarta Sans','Inter',sans-serif">
+            taplink<span class="text-gradient">.my</span>
+          </span>
+        </a>
+        <p class="text-[13px]" style="color:#5a5a72">One link. Every audience. 🇹🇭</p>
+      </div>
+
+      <!-- Links -->
+      <div class="flex flex-wrap gap-10 text-sm">
+        <div class="flex flex-col gap-2.5">
+          <span class="text-white font-semibold text-[11px] uppercase tracking-widest">Product</span>
+          <a href="#features" class="transition-colors" style="color:#9090aa" onmouseover="this.style.color='#e4e1ed'" onmouseout="this.style.color='#9090aa'">Features</a>
+          <a href="#pricing" class="transition-colors" style="color:#9090aa" onmouseover="this.style.color='#e4e1ed'" onmouseout="this.style.color='#9090aa'">Pricing</a>
+        </div>
+        <div class="flex flex-col gap-2.5">
+          <span class="text-white font-semibold text-[11px] uppercase tracking-widest">Legal</span>
+          <a href="{% url 'terms' %}" class="transition-colors" style="color:#9090aa" onmouseover="this.style.color='#e4e1ed'" onmouseout="this.style.color='#9090aa'">Terms of Service</a>
+          <a href="{% url 'privacy' %}" class="transition-colors" style="color:#9090aa" onmouseover="this.style.color='#e4e1ed'" onmouseout="this.style.color='#9090aa'">Privacy Policy</a>
+        </div>
+        <div class="flex flex-col gap-2.5">
+          <span class="text-white font-semibold text-[11px] uppercase tracking-widest">Account</span>
+          <a href="{% url 'account_login' %}" class="transition-colors" style="color:#9090aa" onmouseover="this.style.color='#e4e1ed'" onmouseout="this.style.color='#9090aa'">Log in</a>
+          <a href="{% url 'account_login' %}" class="transition-colors" style="color:#9090aa" onmouseover="this.style.color='#e4e1ed'" onmouseout="this.style.color='#9090aa'">Sign up free</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="pt-6" style="border-top:1px solid rgba(255,255,255,0.05)">
+      <p class="text-center text-[13px]" style="color:#3a3a52">© 2025 taplink.my · All rights reserved.</p>
+    </div>
+  </div>
 </footer>
 
-<!-- Ambient background glow -->
-<div class="fixed top-0 right-0 p-lg pointer-events-none opacity-20 hidden md:block">
-  <div class="w-[400px] h-[400px] bg-primary-container rounded-full blur-[150px]"></div>
 </div>
-<div class="fixed bottom-0 left-0 p-lg pointer-events-none opacity-10 hidden md:block">
-  <div class="w-[250px] h-[250px] bg-secondary-container rounded-full blur-[120px]"></div>
+
+<!-- Ambient glows -->
+<div class="fixed top-0 right-0 pointer-events-none opacity-25 hidden lg:block" style="padding:40px">
+  <div style="width:320px;height:320px;background:radial-gradient(circle,rgba(99,102,241,0.6) 0%,transparent 70%);border-radius:50%;filter:blur(80px)"></div>
+</div>
+<div class="fixed bottom-0 left-0 pointer-events-none opacity-15 hidden lg:block" style="padding:40px">
+  <div style="width:220px;height:220px;background:radial-gradient(circle,rgba(139,92,246,0.6) 0%,transparent 70%);border-radius:50%;filter:blur(60px)"></div>
 </div>
 
 {% endblock %}
 
 {% block extra_js %}
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
 <script>
-  // Scroll reveal
-  const _observer = new IntersectionObserver((entries) => {
+  const _obs = new IntersectionObserver((entries) => {
     entries.forEach(e => {
-      if (e.isIntersecting) {
-        e.target.classList.add('visible');
-        _observer.unobserve(e.target);
-      }
+      if (e.isIntersecting) { e.target.classList.add('visible'); _obs.unobserve(e.target); }
     });
-  }, { threshold: 0.12 });
-  document.querySelectorAll('.reveal').forEach(el => _observer.observe(el));
+  }, { threshold: 0.1 });
+  document.querySelectorAll('.reveal').forEach(el => _obs.observe(el));
 </script>
 {% endblock %}

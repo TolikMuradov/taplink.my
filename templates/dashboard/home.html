@@ -16,73 +16,141 @@
 <div
   x-data="dashboardApp()"
   x-init="init()"
-  class="flex h-screen overflow-hidden bg-surface text-on-surface"
+  class="flex h-screen overflow-hidden text-on-surface" style="background:#0c0c18"
 >
 
   <!-- ===== SIDEBAR ===== -->
   <aside
-    class="flex flex-col shrink-0 h-full border-r border-outline-variant bg-surface-container-low transition-all duration-300 z-30"
-    :class="sidebarOpen ? 'w-60' : 'w-20'"
+    class="flex flex-col shrink-0 h-full transition-all duration-300 z-30 hidden lg:flex"
+    :class="sidebarOpen ? 'w-[220px]' : 'w-[68px]'"
+    style="border-right:1px solid rgba(255,255,255,0.07);background:#0c0c18"
   >
-    <!-- Logo -->
-    <div class="flex items-center gap-3 px-4 py-5 border-b border-outline-variant">
-      <div class="w-9 h-9 rounded-xl bg-primary-container flex items-center justify-center shrink-0">
-        <span class="material-symbols-outlined text-on-primary-container text-lg" style="font-variation-settings:'FILL' 1">link</span>
+    <!-- Logo bar -->
+    <div class="flex items-center gap-3 px-3.5 py-[18px] shrink-0" style="border-bottom:1px solid rgba(255,255,255,0.06)">
+      <div class="w-9 h-9 rounded-xl sidebar-logo-mark flex items-center justify-center shrink-0">
+        <span class="material-symbols-outlined text-white text-lg" style="font-variation-settings:'FILL' 1">link</span>
       </div>
-      <span class="font-bold text-primary text-lg whitespace-nowrap overflow-hidden transition-all duration-300" :class="sidebarOpen ? 'opacity-100 max-w-xs' : 'opacity-0 max-w-0'">taplink.my</span>
-      <button @click="sidebarOpen = !sidebarOpen" class="ml-auto text-on-surface-variant hover:text-on-surface transition-colors hidden lg:flex shrink-0">
-        <span class="material-symbols-outlined text-xl" x-text="sidebarOpen ? 'chevron_left' : 'chevron_right'"></span>
+      <span class="sidebar-brand-text font-bold text-white text-[15px] whitespace-nowrap overflow-hidden transition-all duration-300 tracking-tight"
+            :class="sidebarOpen ? 'opacity-100 max-w-xs' : 'opacity-0 max-w-0'"
+            style="font-family:'Plus Jakarta Sans','Inter',sans-serif">
+        taplink<span class="dot-my">.my</span>
+      </span>
+      <button @click="sidebarOpen = !sidebarOpen"
+              class="ml-auto hidden lg:flex shrink-0 transition-colors"
+              style="color:#4a4a62"
+              onmouseover="this.style.color='#e4e1ed'" onmouseout="this.style.color='#4a4a62'">
+        <span class="material-symbols-outlined text-lg" x-text="sidebarOpen ? 'chevron_left' : 'chevron_right'"></span>
       </button>
     </div>
 
-    <!-- Nav items -->
-    <nav class="flex flex-col gap-1 p-3 flex-1">
+    <!-- Profile mini card -->
+    <div class="px-2.5 pt-2.5 shrink-0" x-show="sidebarOpen" x-transition>
+      <div class="flex items-center gap-2.5 px-2.5 py-2.5 rounded-xl" style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.06)">
+        <div x-bind:style="avatarUrl ? '' : ''" class="w-8 h-8 rounded-full shrink-0 overflow-hidden border flex items-center justify-center" style="border-color:rgba(255,255,255,0.12)">
+          <template x-if="avatarUrl">
+            <img :src="avatarUrl" class="w-full h-full object-cover">
+          </template>
+          <template x-if="!avatarUrl">
+            <div class="w-full h-full flex items-center justify-center text-white text-xs font-bold" style="background:linear-gradient(135deg,#7c3aed,#6366f1)">
+              {{ profile.user.email|first|upper }}
+            </div>
+          </template>
+        </div>
+        <div class="flex-1 min-w-0">
+          <p class="text-white text-[12px] font-semibold truncate">@{{ profile.username }}</p>
+          <a href="{% url 'profiles:public_profile' profile.username %}" target="_blank"
+             class="flex items-center gap-0.5 text-[10px] transition-colors"
+             style="color:#4a4a62"
+             onmouseover="this.style.color='#818cf8'" onmouseout="this.style.color='#4a4a62'">
+            View page
+            <span class="material-symbols-outlined" style="font-size:10px">open_in_new</span>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Nav -->
+    <nav class="flex flex-col gap-0.5 p-2.5 flex-1 mt-2">
+
       <button @click="activeTab='links'"
-        class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors w-full text-left"
-        :class="activeTab==='links' ? 'bg-secondary-container text-on-secondary-container' : 'text-on-surface-variant hover:bg-surface-container hover:text-on-surface'">
-        <span class="material-symbols-outlined text-xl shrink-0" :style="activeTab==='links' ? 'font-variation-settings:\'FILL\' 1' : ''">add_link</span>
-        <span class="text-sm font-medium whitespace-nowrap overflow-hidden transition-all duration-300" :class="sidebarOpen ? 'opacity-100 max-w-xs' : 'opacity-0 max-w-0'">Links</span>
+        class="flex items-center gap-3 px-2.5 py-2.5 rounded-xl transition-all w-full text-left"
+        :style="activeTab==='links'
+          ? 'background:rgba(99,102,241,0.18);border:1px solid rgba(99,102,241,0.22);color:#fff'
+          : 'border:1px solid transparent;color:#6b6b8a'"
+        onmouseover="if(this.getAttribute('data-active')!=='true') { this.style.background='rgba(255,255,255,0.05)';this.style.color='#e4e1ed'; }"
+        onmouseout="if(this.getAttribute('data-active')!=='true') { this.style.background='';this.style.color='#6b6b8a'; }"
+        :data-active="activeTab==='links'">
+        <span class="material-symbols-outlined text-[20px] shrink-0" :style="activeTab==='links' ? 'font-variation-settings:\'FILL\' 1;color:#a5b4fc' : ''">add_link</span>
+        <span class="text-[13px] font-semibold whitespace-nowrap overflow-hidden transition-all duration-300" :class="sidebarOpen ? 'opacity-100 max-w-xs' : 'opacity-0 max-w-0'">Links</span>
       </button>
+
       <button @click="activeTab='appearance'"
-        class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors w-full text-left"
-        :class="activeTab==='appearance' ? 'bg-secondary-container text-on-secondary-container' : 'text-on-surface-variant hover:bg-surface-container hover:text-on-surface'">
-        <span class="material-symbols-outlined text-xl shrink-0" :style="activeTab==='appearance' ? 'font-variation-settings:\'FILL\' 1' : ''">palette</span>
-        <span class="text-sm font-medium whitespace-nowrap overflow-hidden transition-all duration-300" :class="sidebarOpen ? 'opacity-100 max-w-xs' : 'opacity-0 max-w-0'">Appearance</span>
+        class="flex items-center gap-3 px-2.5 py-2.5 rounded-xl transition-all w-full text-left"
+        :style="activeTab==='appearance'
+          ? 'background:rgba(99,102,241,0.18);border:1px solid rgba(99,102,241,0.22);color:#fff'
+          : 'border:1px solid transparent;color:#6b6b8a'"
+        onmouseover="if(this.getAttribute('data-active')!=='true') { this.style.background='rgba(255,255,255,0.05)';this.style.color='#e4e1ed'; }"
+        onmouseout="if(this.getAttribute('data-active')!=='true') { this.style.background='';this.style.color='#6b6b8a'; }"
+        :data-active="activeTab==='appearance'">
+        <span class="material-symbols-outlined text-[20px] shrink-0" :style="activeTab==='appearance' ? 'font-variation-settings:\'FILL\' 1;color:#a5b4fc' : ''">palette</span>
+        <span class="text-[13px] font-semibold whitespace-nowrap overflow-hidden transition-all duration-300" :class="sidebarOpen ? 'opacity-100 max-w-xs' : 'opacity-0 max-w-0'">Appearance</span>
       </button>
+
       <a href="{% url 'dashboard:analytics' %}"
-        class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors text-on-surface-variant hover:bg-surface-container hover:text-on-surface">
-        <span class="material-symbols-outlined text-xl shrink-0">bar_chart</span>
-        <span class="text-sm font-medium whitespace-nowrap overflow-hidden transition-all duration-300" :class="sidebarOpen ? 'opacity-100 max-w-xs' : 'opacity-0 max-w-0'">Analytics</span>
+        class="flex items-center gap-3 px-2.5 py-2.5 rounded-xl transition-all"
+        style="border:1px solid transparent;color:#6b6b8a"
+        onmouseover="this.style.color='#e4e1ed';this.style.background='rgba(255,255,255,0.05)'"
+        onmouseout="this.style.color='#6b6b8a';this.style.background=''">
+        <span class="material-symbols-outlined text-[20px] shrink-0">bar_chart</span>
+        <span class="text-[13px] font-semibold whitespace-nowrap overflow-hidden transition-all duration-300" :class="sidebarOpen ? 'opacity-100 max-w-xs' : 'opacity-0 max-w-0'">Analytics</span>
       </a>
+
       <button @click="activeTab='settings'"
-        class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors w-full text-left"
-        :class="activeTab==='settings' ? 'bg-secondary-container text-on-secondary-container' : 'text-on-surface-variant hover:bg-surface-container hover:text-on-surface'">
-        <span class="material-symbols-outlined text-xl shrink-0" :style="activeTab==='settings' ? 'font-variation-settings:\'FILL\' 1' : ''">settings</span>
-        <span class="text-sm font-medium whitespace-nowrap overflow-hidden transition-all duration-300" :class="sidebarOpen ? 'opacity-100 max-w-xs' : 'opacity-0 max-w-0'">Settings</span>
+        class="flex items-center gap-3 px-2.5 py-2.5 rounded-xl transition-all w-full text-left"
+        :style="activeTab==='settings'
+          ? 'background:rgba(99,102,241,0.18);border:1px solid rgba(99,102,241,0.22);color:#fff'
+          : 'border:1px solid transparent;color:#6b6b8a'"
+        onmouseover="if(this.getAttribute('data-active')!=='true') { this.style.background='rgba(255,255,255,0.05)';this.style.color='#e4e1ed'; }"
+        onmouseout="if(this.getAttribute('data-active')!=='true') { this.style.background='';this.style.color='#6b6b8a'; }"
+        :data-active="activeTab==='settings'">
+        <span class="material-symbols-outlined text-[20px] shrink-0" :style="activeTab==='settings' ? 'font-variation-settings:\'FILL\' 1;color:#a5b4fc' : ''">settings</span>
+        <span class="text-[13px] font-semibold whitespace-nowrap overflow-hidden transition-all duration-300" :class="sidebarOpen ? 'opacity-100 max-w-xs' : 'opacity-0 max-w-0'">Settings</span>
       </button>
+
       <a href="{% url 'dashboard:qr' %}"
-        class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors text-on-surface-variant hover:bg-surface-container hover:text-on-surface">
-        <span class="material-symbols-outlined text-xl shrink-0">qr_code_2</span>
-        <span class="text-sm font-medium whitespace-nowrap overflow-hidden transition-all duration-300" :class="sidebarOpen ? 'opacity-100 max-w-xs' : 'opacity-0 max-w-0'">QR Code</span>
+        class="flex items-center gap-3 px-2.5 py-2.5 rounded-xl transition-all"
+        style="border:1px solid transparent;color:#6b6b8a"
+        onmouseover="this.style.color='#e4e1ed';this.style.background='rgba(255,255,255,0.05)'"
+        onmouseout="this.style.color='#6b6b8a';this.style.background=''">
+        <span class="material-symbols-outlined text-[20px] shrink-0">qr_code_2</span>
+        <span class="text-[13px] font-semibold whitespace-nowrap overflow-hidden transition-all duration-300" :class="sidebarOpen ? 'opacity-100 max-w-xs' : 'opacity-0 max-w-0'">QR Code</span>
       </a>
+
     </nav>
 
-    <!-- Plan badge + logout -->
-    <div class="p-3 border-t border-outline-variant space-y-2">
+    <!-- Bottom: plan + logout -->
+    <div class="p-2.5 space-y-1.5 shrink-0" style="border-top:1px solid rgba(255,255,255,0.06)">
       {% if not profile.is_standard %}
-      <a href="{% url 'upgrade' %}" class="flex items-center gap-2 px-3 py-2 rounded-xl bg-tertiary/10 hover:bg-tertiary/20 transition-colors">
-        <span class="material-symbols-outlined text-tertiary text-xl shrink-0" style="font-variation-settings:'FILL' 1">workspace_premium</span>
-        <span class="text-xs font-semibold text-tertiary whitespace-nowrap overflow-hidden transition-all duration-300" :class="sidebarOpen ? 'opacity-100 max-w-xs' : 'opacity-0 max-w-0'">Upgrade to Standard</span>
+      <a href="{% url 'upgrade' %}"
+         class="flex items-center gap-2.5 px-2.5 py-2.5 rounded-xl transition-all"
+         style="background:rgba(255,183,131,0.08);border:1px solid rgba(255,183,131,0.15)"
+         onmouseover="this.style.background='rgba(255,183,131,0.14)'" onmouseout="this.style.background='rgba(255,183,131,0.08)'">
+        <span class="material-symbols-outlined text-xl shrink-0" style="color:#ffb783;font-variation-settings:'FILL' 1">workspace_premium</span>
+        <span class="text-[12px] font-bold whitespace-nowrap overflow-hidden transition-all duration-300" style="color:#ffb783" :class="sidebarOpen ? 'opacity-100 max-w-xs' : 'opacity-0 max-w-0'">Upgrade to Standard</span>
       </a>
       {% else %}
-      <div class="flex items-center gap-2 px-3 py-2 rounded-xl bg-primary/10">
-        <span class="material-symbols-outlined text-primary text-xl shrink-0" style="font-variation-settings:'FILL' 1">workspace_premium</span>
-        <span class="text-xs font-semibold text-primary whitespace-nowrap overflow-hidden transition-all duration-300" :class="sidebarOpen ? 'opacity-100 max-w-xs' : 'opacity-0 max-w-0'">Standard Plan</span>
+      <div class="flex items-center gap-2.5 px-2.5 py-2.5 rounded-xl" style="background:rgba(192,193,255,0.07);border:1px solid rgba(192,193,255,0.12)">
+        <span class="material-symbols-outlined text-xl shrink-0" style="color:#c0c1ff;font-variation-settings:'FILL' 1">workspace_premium</span>
+        <span class="text-[12px] font-bold whitespace-nowrap overflow-hidden transition-all duration-300" style="color:#c0c1ff" :class="sidebarOpen ? 'opacity-100 max-w-xs' : 'opacity-0 max-w-0'">Standard Plan</span>
       </div>
       {% endif %}
-      <a href="{% url 'account_logout' %}" class="flex items-center gap-3 px-3 py-2 rounded-xl text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors">
-        <span class="material-symbols-outlined text-xl shrink-0">logout</span>
-        <span class="text-sm whitespace-nowrap overflow-hidden transition-all duration-300" :class="sidebarOpen ? 'opacity-100 max-w-xs' : 'opacity-0 max-w-0'">Log out</span>
+      <a href="{% url 'account_logout' %}"
+         class="flex items-center gap-3 px-2.5 py-2.5 rounded-xl transition-all"
+         style="border:1px solid transparent;color:#4a4a62"
+         onmouseover="this.style.color='#e4e1ed';this.style.background='rgba(255,255,255,0.04)'"
+         onmouseout="this.style.color='#4a4a62';this.style.background=''">
+        <span class="material-symbols-outlined text-[20px] shrink-0">logout</span>
+        <span class="text-[13px] font-medium whitespace-nowrap overflow-hidden transition-all duration-300" :class="sidebarOpen ? 'opacity-100 max-w-xs' : 'opacity-0 max-w-0'">Log out</span>
       </a>
     </div>
   </aside>
@@ -92,20 +160,23 @@
 
     <!-- At-limit banner -->
     {% if at_limit %}
-    <div class="flex items-center justify-center gap-3 bg-tertiary text-on-tertiary px-4 h-10 text-sm font-medium shrink-0">
-      <span class="material-symbols-outlined text-base" style="font-variation-settings:'FILL' 1">warning</span>
-      You've reached your {{ link_limit }}-link limit.
-      <a href="{% url 'upgrade' %}" class="underline font-semibold hover:no-underline">Upgrade to Standard &rarr;</a>
+    <div class="flex items-center justify-center gap-2.5 px-4 py-2.5 text-[13px] font-medium shrink-0" style="background:rgba(255,183,131,0.1);border-bottom:1px solid rgba(255,183,131,0.2)">
+      <span class="material-symbols-outlined text-[16px]" style="color:#ffb783;font-variation-settings:'FILL' 1">workspace_premium</span>
+      <span style="color:#e4c99a">You've reached your {{ link_limit }}-link limit.</span>
+      <a href="{% url 'upgrade' %}" class="font-semibold transition-opacity hover:opacity-80" style="color:#ffb783">Upgrade to Standard →</a>
     </div>
     {% endif %}
 
     <!-- Top bar (mobile only) -->
-    <div class="lg:hidden flex items-center gap-3 px-4 py-3 border-b border-outline-variant bg-surface-container-low shrink-0">
-      <div class="w-8 h-8 rounded-lg bg-primary-container flex items-center justify-center">
-        <span class="material-symbols-outlined text-on-primary-container text-base" style="font-variation-settings:'FILL' 1">link</span>
+    <div class="lg:hidden flex items-center gap-3 px-4 py-3 shrink-0" style="border-bottom:1px solid rgba(255,255,255,0.07);background:#0c0c18">
+      <div class="w-8 h-8 rounded-lg sidebar-logo-mark flex items-center justify-center">
+        <span class="material-symbols-outlined text-white text-[15px]" style="font-variation-settings:'FILL' 1">link</span>
       </div>
-      <span class="font-bold text-primary">taplink.my</span>
-      <button @click="previewOpen = !previewOpen" class="ml-auto text-on-surface-variant">
+      <span class="font-bold text-white text-[15px] tracking-tight" style="font-family:'Plus Jakarta Sans','Inter',sans-serif">
+        taplink<span class="text-gradient">.my</span>
+      </span>
+      <button @click="previewOpen = !previewOpen" class="ml-auto transition-colors" style="color:#5a5a72"
+              onmouseover="this.style.color='#e4e1ed'" onmouseout="this.style.color='#5a5a72'">
         <span class="material-symbols-outlined">phone_android</span>
       </button>
     </div>
