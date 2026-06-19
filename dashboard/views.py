@@ -87,18 +87,30 @@ def link_create(request):
     limit = STANDARD_LINK_LIMIT if profile.is_standard else FREE_LINK_LIMIT
     if Link.objects.filter(user=request.user).count() >= limit:
         return JsonResponse({'ok': False, 'error': 'Link limit reached.'}, status=400)
-    link = Link.objects.create(
-        user=request.user,
-        title='New link',
-        url='https://',
-        order=Link.objects.filter(user=request.user).count()
-    )
+
+    try:
+        prefill = json.loads(request.body) if request.body else {}
+    except (json.JSONDecodeError, ValueError):
+        prefill = {}
+
+    kwargs = {
+        'user': request.user,
+        'title': prefill.get('title', 'New link'),
+        'url': prefill.get('url', 'https://'),
+        'order': Link.objects.filter(user=request.user).count(),
+    }
+    for field in ('icon', 'icon_type', 'color', 'text_color', 'icon_color'):
+        if field in prefill:
+            kwargs[field] = prefill[field]
+
+    link = Link.objects.create(**kwargs)
     return JsonResponse({
         'ok': True,
         'id': link.id,
         'title': link.title,
         'url': link.url,
         'icon': link.icon,
+        'icon_type': link.icon_type,
         'color': link.color,
         'text_color': link.text_color,
         'icon_color': link.icon_color,
@@ -115,7 +127,7 @@ def link_create(request):
 def link_update(request, pk):
     link = get_object_or_404(Link, pk=pk, user=request.user)
     data = json.loads(request.body)
-    for field in ('title', 'url', 'icon', 'color', 'text_color', 'icon_color', 'font_family', 'display_style', 'thumbnail_url', 'is_active'):
+    for field in ('title', 'url', 'icon', 'icon_type', 'color', 'text_color', 'icon_color', 'font_family', 'display_style', 'thumbnail_url', 'is_active'):
         if field in data:
             setattr(link, field, data[field])
     link.save()

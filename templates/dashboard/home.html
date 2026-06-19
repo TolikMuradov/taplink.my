@@ -87,18 +87,6 @@
         <span class="text-[13px] font-semibold whitespace-nowrap overflow-hidden transition-all duration-300" :class="sidebarOpen ? 'opacity-100 max-w-xs' : 'opacity-0 max-w-0'">Links</span>
       </button>
 
-      <button @click="activeTab='appearance'"
-        class="flex items-center gap-3 px-2.5 py-2.5 rounded-xl transition-all w-full text-left"
-        :style="activeTab==='appearance'
-          ? 'background:rgba(99,102,241,0.18);border:1px solid rgba(99,102,241,0.22);color:#fff'
-          : 'border:1px solid transparent;color:#6b6b8a'"
-        onmouseover="if(this.getAttribute('data-active')!=='true') { this.style.background='rgba(255,255,255,0.05)';this.style.color='#e4e1ed'; }"
-        onmouseout="if(this.getAttribute('data-active')!=='true') { this.style.background='';this.style.color='#6b6b8a'; }"
-        :data-active="activeTab==='appearance'">
-        <span class="material-symbols-outlined text-[20px] shrink-0" :style="activeTab==='appearance' ? 'font-variation-settings:\'FILL\' 1;color:#a5b4fc' : ''">palette</span>
-        <span class="text-[13px] font-semibold whitespace-nowrap overflow-hidden transition-all duration-300" :class="sidebarOpen ? 'opacity-100 max-w-xs' : 'opacity-0 max-w-0'">Appearance</span>
-      </button>
-
       <a href="{% url 'dashboard:analytics' %}"
         class="flex items-center gap-3 px-2.5 py-2.5 rounded-xl transition-all"
         style="border:1px solid transparent;color:#6b6b8a"
@@ -188,31 +176,68 @@
     <div class="flex-1 overflow-y-auto custom-scrollbar">
       <div class="max-w-2xl mx-auto px-4 py-6 pb-24 lg:pb-6">
 
-        <!-- ========== TAB: LINKS ========== -->
+        <!-- ========== TAB: LINKS (merged with profile + appearance) ========== -->
         <div x-show="activeTab==='links'" x-cloak
           x-transition:enter="transition ease-out duration-180"
           x-transition:enter-start="opacity-0 translate-y-2"
           x-transition:enter-end="opacity-100 translate-y-0">
-          <!-- Header -->
-          <div class="flex items-center gap-3 mb-6">
-            <div>
-              <h1 class="text-xl font-bold text-on-surface">Links</h1>
-              <p class="text-sm text-on-surface-variant mt-0.5">
-                <span x-text="links.length"></span> links
-              </p>
+
+          <!-- ─── Profile quick-editor ─── -->
+          <div class="glass-card rounded-xl p-4 mb-5">
+            <div class="flex items-start gap-3">
+              <!-- Avatar -->
+              <div class="relative shrink-0">
+                <div class="w-[60px] h-[60px] overflow-hidden transition-all duration-300"
+                     :style="`border:${appearance.border_width}px solid ${appearance.border_color};border-radius:${appearance.avatar_shape==='square'?'12px':'50%'}`">
+                  <template x-if="avatarUrl">
+                    <img :src="avatarUrl" class="w-full h-full object-cover" alt="Avatar">
+                  </template>
+                  <template x-if="!avatarUrl">
+                    <div class="w-full h-full flex items-center justify-center text-white text-xl font-bold" style="background:linear-gradient(135deg,#7c3aed,#6366f1)">
+                      {{ profile.user.email|first|upper }}
+                    </div>
+                  </template>
+                </div>
+                <label class="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-primary flex items-center justify-center cursor-pointer hover:opacity-90 shadow-md">
+                  <span class="material-symbols-outlined text-on-primary" style="font-size:14px">edit</span>
+                  <input type="file" accept="image/*" class="hidden" @change="uploadAvatar($event)">
+                </label>
+              </div>
+              <!-- Editable fields -->
+              <div class="flex-1 min-w-0 space-y-2">
+                <input type="text" x-model="profile.displayName" maxlength="60" placeholder="Display name"
+                  class="w-full bg-surface-container rounded-lg px-3 py-2 text-sm font-semibold text-on-surface border border-outline-variant focus:border-primary outline-none transition-colors" />
+                <textarea x-model="profile.bio" maxlength="160" rows="2" placeholder="Bio…"
+                  class="w-full bg-surface-container rounded-lg px-3 py-2 text-xs text-on-surface border border-outline-variant focus:border-primary outline-none transition-colors resize-none"></textarea>
+                <input type="text" x-model="profile.location" maxlength="60" placeholder="Location"
+                  class="w-full bg-surface-container rounded-lg px-3 py-2 text-xs text-on-surface border border-outline-variant focus:border-primary outline-none transition-colors" />
+              </div>
             </div>
+            <div class="flex items-center justify-between mt-3 pt-3 border-t border-outline-variant/50">
+              <span class="text-[11px] text-on-surface-variant" x-text="`${profile.bio.length}/160`"></span>
+              <button @click="saveAppearance()" class="px-4 py-1.5 rounded-lg bg-primary text-on-primary text-xs font-semibold hover:opacity-90 active:scale-95 transition-all">
+                Save profile
+              </button>
+            </div>
+          </div>
+
+          <!-- ─── Links header + Add button ─── -->
+          <div class="flex items-center gap-2 mb-3">
+            <h2 class="text-sm font-bold text-on-surface-variant uppercase tracking-wide flex-1">
+              Links <span class="font-normal" x-text="`(${links.length}/${linkLimit})`"></span>
+            </h2>
             <template x-if="links.length < linkLimit">
               <button
-                @click="addLink()"
-                class="ml-auto flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-on-primary text-sm font-semibold hover:opacity-90 active:scale-95 transition-all"
+                @click="showAddModal = true"
+                class="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-primary text-on-primary text-sm font-semibold hover:opacity-90 active:scale-95 transition-all"
               >
                 <span class="material-symbols-outlined text-base">add</span>
-                Add link
+                Add
               </button>
             </template>
             <template x-if="links.length >= linkLimit">
               <a href="{% if not profile.is_standard %}{% url 'upgrade' %}{% else %}#{% endif %}"
-                class="ml-auto flex items-center gap-2 px-4 py-2 rounded-xl bg-surface-container border border-outline-variant text-on-surface-variant text-sm font-semibold transition-all"
+                class="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-surface-container border border-outline-variant text-on-surface-variant text-sm font-semibold transition-all"
                 :title="isStandard ? 'Link limit reached' : 'Upgrade to add more links'"
               >
                 <span class="material-symbols-outlined text-base">{% if not profile.is_standard %}workspace_premium{% else %}block{% endif %}</span>
@@ -222,13 +247,13 @@
           </div>
 
           <!-- Empty state -->
-          <div x-show="links.length === 0" class="flex flex-col items-center justify-center py-16 text-center">
-            <div class="w-20 h-20 rounded-2xl bg-surface-container-high flex items-center justify-center mb-4">
-              <span class="material-symbols-outlined text-4xl text-on-surface-variant">add_link</span>
+          <div x-show="links.length === 0" class="flex flex-col items-center justify-center py-12 text-center">
+            <div class="w-16 h-16 rounded-2xl bg-surface-container-high flex items-center justify-center mb-3">
+              <span class="material-symbols-outlined text-3xl text-on-surface-variant">add_link</span>
             </div>
-            <h3 class="text-lg font-semibold text-on-surface mb-2">No links yet</h3>
-            <p class="text-sm text-on-surface-variant mb-6 max-w-xs">Add your first link to get started. Share your social profiles, shop pages and more.</p>
-            <button @click="addLink()" class="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-on-primary text-sm font-semibold hover:opacity-90 transition-opacity">
+            <h3 class="text-base font-semibold text-on-surface mb-1">No links yet</h3>
+            <p class="text-sm text-on-surface-variant mb-4 max-w-xs">Add your social profiles, shop pages, and more.</p>
+            <button @click="showAddModal = true" class="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-on-primary text-sm font-semibold hover:opacity-90 transition-opacity">
               <span class="material-symbols-outlined text-base">add</span>
               Add your first link
             </button>
@@ -417,299 +442,229 @@
               </div>
             </template>
           </div>
-        </div>
 
-        <!-- ========== TAB: APPEARANCE ========== -->
-        <div x-show="activeTab==='appearance'" x-cloak
-          x-transition:enter="transition ease-out duration-180"
-          x-transition:enter-start="opacity-0 translate-y-2"
-          x-transition:enter-end="opacity-100 translate-y-0">
-          <div class="mb-6">
-            <h1 class="text-xl font-bold text-on-surface">Appearance</h1>
-            <p class="text-sm text-on-surface-variant mt-0.5">Customise how your page looks</p>
-          </div>
+          <!-- ─── Appearance ─── -->
+          <div class="mt-8 pb-4">
+            <div class="flex items-center gap-2 mb-4 pb-3" style="border-bottom:1px solid rgba(255,255,255,0.07)">
+              <span class="material-symbols-outlined text-base" style="color:#a5b4fc;font-variation-settings:'FILL' 1">palette</span>
+              <h2 class="text-xs font-bold uppercase tracking-widest" style="color:#6b6b8a">Appearance</h2>
+            </div>
+            <div class="space-y-3">
 
-          <div class="space-y-3">
-
-            <!-- PROFILE section -->
-            <div class="glass-card rounded-xl overflow-hidden">
-              <button @click="openSection = openSection === 'profile' ? '' : 'profile'" class="w-full flex items-center gap-3 px-5 py-4 text-left hover:bg-surface-container/50 transition-colors">
-                <span class="material-symbols-outlined text-primary text-xl" style="font-variation-settings:'FILL' 1">account_circle</span>
-                <span class="font-semibold text-on-surface">Profile</span>
-                <span class="material-symbols-outlined ml-auto text-on-surface-variant transition-transform" :class="openSection==='profile' ? 'rotate-180' : ''">expand_more</span>
-              </button>
-              <div x-show="openSection==='profile'" x-collapse class="px-5 pb-5 space-y-4 border-t border-outline-variant/50">
-                <!-- Avatar -->
-                <div class="flex items-center gap-4 pt-4">
-                  <div class="relative shrink-0">
-                    <div class="w-16 h-16 bg-surface-container-high flex items-center justify-center overflow-hidden transition-all duration-300"
-                         :style="`border: ${appearance.border_width}px solid ${appearance.border_color}; border-radius: ${appearance.avatar_shape === 'square' ? '12px' : '50%'}`">
-                      <template x-if="avatarUrl">
-                        <img :src="avatarUrl" alt="Avatar" class="w-full h-full object-cover">
-                      </template>
-                      <template x-if="!avatarUrl">
-                        <span class="material-symbols-outlined text-3xl text-on-surface-variant">person</span>
+              <!-- AVATAR STYLE -->
+              <div class="glass-card rounded-xl overflow-hidden">
+                <button @click="openSection = openSection === 'avatar' ? '' : 'avatar'" class="w-full flex items-center gap-3 px-5 py-4 text-left hover:bg-surface-container/50 transition-colors">
+                  <span class="material-symbols-outlined text-primary text-xl" style="font-variation-settings:'FILL' 1">account_circle</span>
+                  <span class="font-semibold text-on-surface">Avatar style</span>
+                  <span class="material-symbols-outlined ml-auto text-on-surface-variant transition-transform" :class="openSection==='avatar' ? 'rotate-180' : ''">expand_more</span>
+                </button>
+                <div x-show="openSection==='avatar'" x-collapse class="px-5 pb-5 space-y-4 border-t border-outline-variant/50">
+                  <div class="pt-4">
+                    <label class="text-xs font-semibold text-on-surface-variant uppercase tracking-wide mb-2 block">Shape</label>
+                    <div class="flex gap-2">
+                      <template x-for="shape in ['circle','square']" :key="shape">
+                        <button
+                          @click="appearance.avatar_shape = shape"
+                          class="flex-1 py-2 rounded-lg text-xs font-medium transition-colors capitalize border"
+                          :class="appearance.avatar_shape === shape ? 'bg-primary text-on-primary border-primary' : 'bg-surface-container text-on-surface-variant border-outline-variant hover:border-primary'"
+                          x-text="shape"
+                        ></button>
                       </template>
                     </div>
-                    <label class="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-primary flex items-center justify-center cursor-pointer hover:opacity-90">
-                      <span class="material-symbols-outlined text-on-primary text-sm">edit</span>
-                      <input type="file" accept="image/*" class="hidden" @change="uploadAvatar($event)">
-                    </label>
                   </div>
                   <div>
-                    <p class="text-sm font-medium text-on-surface">Profile photo</p>
-                    <p class="text-xs text-on-surface-variant">JPG, PNG or GIF &middot; Max 2MB</p>
+                    <label class="text-xs font-semibold text-on-surface-variant uppercase tracking-wide mb-2 block">Border</label>
+                    <div class="flex items-center gap-3">
+                      <input type="color" x-model="appearance.border_color" class="w-9 h-9 rounded-lg cursor-pointer border-0 p-0 shrink-0">
+                      <div class="flex-1">
+                        <div class="flex justify-between text-xs text-on-surface-variant mb-1">
+                          <span>Width</span>
+                          <span x-text="`${appearance.border_width}px`" class="font-semibold text-primary"></span>
+                        </div>
+                        <input type="range" min="0" max="8" x-model="appearance.border_width" class="w-full accent-primary">
+                      </div>
+                    </div>
                   </div>
-                </div>
-
-                <!-- Avatar shape -->
-                <div>
-                  <label class="text-xs font-semibold text-on-surface-variant uppercase tracking-wide mb-2 block">Shape</label>
-                  <div class="flex gap-2">
-                    <template x-for="shape in ['circle','square']" :key="shape">
-                      <button
-                        @click="appearance.avatar_shape = shape"
-                        class="flex-1 py-2 rounded-lg text-xs font-medium transition-colors capitalize border"
-                        :class="appearance.avatar_shape === shape ? 'bg-primary text-on-primary border-primary' : 'bg-surface-container text-on-surface-variant border-outline-variant hover:border-primary'"
-                        x-text="shape"
-                      ></button>
-                    </template>
-                  </div>
-                </div>
-
-                <!-- Display name -->
-                <div>
-                  <label class="text-xs font-semibold text-on-surface-variant uppercase tracking-wide mb-1.5 block">Display name</label>
-                  <input type="text" x-model="profile.displayName" maxlength="60"
-                    class="w-full bg-surface-container rounded-lg px-3 py-2 text-sm text-on-surface border border-outline-variant focus:border-primary outline-none transition-colors" />
-                </div>
-
-                <!-- Bio -->
-                <div>
-                  <div class="flex justify-between items-center mb-1.5">
-                    <label class="text-xs font-semibold text-on-surface-variant uppercase tracking-wide">Bio</label>
-                    <span class="text-xs text-on-surface-variant" x-text="`${profile.bio.length}/160`"></span>
-                  </div>
-                  <textarea x-model="profile.bio" maxlength="160" rows="3"
-                    class="w-full bg-surface-container rounded-lg px-3 py-2 text-sm text-on-surface border border-outline-variant focus:border-primary outline-none transition-colors resize-none"></textarea>
-                </div>
-
-                <!-- Location -->
-                <div>
-                  <label class="text-xs font-semibold text-on-surface-variant uppercase tracking-wide mb-1.5 block">Location</label>
-                  <input type="text" x-model="profile.location" maxlength="60"
-                    class="w-full bg-surface-container rounded-lg px-3 py-2 text-sm text-on-surface border border-outline-variant focus:border-primary outline-none transition-colors" />
                 </div>
               </div>
-            </div>
 
-            <!-- BACKGROUND section -->
-            <div class="glass-card rounded-xl overflow-hidden">
-              <button @click="openSection = openSection === 'bg' ? '' : 'bg'" class="w-full flex items-center gap-3 px-5 py-4 text-left hover:bg-surface-container/50 transition-colors">
-                <span class="material-symbols-outlined text-primary text-xl" style="font-variation-settings:'FILL' 1">wallpaper</span>
-                <span class="font-semibold text-on-surface">Background</span>
-                <span class="material-symbols-outlined ml-auto text-on-surface-variant transition-transform" :class="openSection==='bg' ? 'rotate-180' : ''">expand_more</span>
-              </button>
-              <div x-show="openSection==='bg'" x-collapse class="px-5 pb-5 space-y-4 border-t border-outline-variant/50">
-                <div class="pt-4">
-                  <label class="text-xs font-semibold text-on-surface-variant uppercase tracking-wide mb-2 block">Type</label>
-                  <div class="grid grid-cols-4 gap-2">
-                    <template x-for="type in ['color','gradient','image','video']" :key="type">
-                      <button
-                        @click="bg.type = type"
-                        class="py-2 rounded-lg text-xs font-medium transition-colors capitalize border"
-                        :class="bg.type === type ? 'bg-primary text-on-primary border-primary' : 'bg-surface-container text-on-surface-variant border-outline-variant hover:border-primary'"
-                        x-text="type"
-                      ></button>
-                    </template>
-                  </div>
-                </div>
-
-                <!-- Color -->
-                <div x-show="bg.type==='color'">
-                  <label class="text-xs font-semibold text-on-surface-variant uppercase tracking-wide mb-2 block">Color</label>
-                  <div class="flex items-center gap-3">
-                    <input type="color" x-model="bg.color" class="w-10 h-10 rounded-lg cursor-pointer border-0 p-0">
-                    <input type="text" x-model="bg.color" maxlength="7" class="flex-1 bg-surface-container rounded-lg px-3 py-2 text-sm font-mono text-on-surface border border-outline-variant focus:border-primary outline-none transition-colors">
-                  </div>
-                </div>
-
-                <!-- Gradient -->
-                <div x-show="bg.type==='gradient'" class="space-y-3">
-                  <div class="flex gap-3">
-                    <div class="flex-1">
-                      <label class="text-xs text-on-surface-variant mb-1.5 block">Color 1</label>
-                      <div class="flex items-center gap-2">
-                        <input type="color" x-model="bg.color" class="w-9 h-9 rounded-lg cursor-pointer border-0 p-0">
-                        <input type="text" x-model="bg.color" maxlength="7" class="flex-1 bg-surface-container rounded-lg px-2 py-1.5 text-xs font-mono text-on-surface border border-outline-variant focus:border-primary outline-none">
-                      </div>
-                    </div>
-                    <div class="flex-1">
-                      <label class="text-xs text-on-surface-variant mb-1.5 block">Color 2</label>
-                      <div class="flex items-center gap-2">
-                        <input type="color" x-model="bg.color2" class="w-9 h-9 rounded-lg cursor-pointer border-0 p-0">
-                        <input type="text" x-model="bg.color2" maxlength="7" class="flex-1 bg-surface-container rounded-lg px-2 py-1.5 text-xs font-mono text-on-surface border border-outline-variant focus:border-primary outline-none">
-                      </div>
-                    </div>
-                  </div>
-                  <div>
-                    <label class="text-xs text-on-surface-variant mb-1.5 block">Direction</label>
-                    <select x-model="bg.dir" class="w-full bg-surface-container rounded-lg px-3 py-2 text-sm text-on-surface border border-outline-variant focus:border-primary outline-none transition-colors">
-                      <option value="to bottom">Top to Bottom</option>
-                      <option value="to right">Left to Right</option>
-                      <option value="to bottom right">Diagonal (Down-Right)</option>
-                      <option value="to top right">Diagonal (Up-Right)</option>
-                    </select>
-                  </div>
-                </div>
-
-                <!-- Image -->
-                <div x-show="bg.type==='image'">
-                  {% if not profile.is_standard %}
-                  <div class="flex items-center gap-3 p-4 rounded-xl bg-surface-container-high border border-outline-variant/50">
-                    <span class="material-symbols-outlined text-tertiary" style="font-variation-settings:'FILL' 1">workspace_premium</span>
-                    <div class="flex-1">
-                      <p class="text-sm font-semibold text-on-surface">Standard only</p>
-                      <p class="text-xs text-on-surface-variant">Upgrade to upload a custom background image.</p>
-                    </div>
-                    <a href="#" class="px-3 py-1.5 rounded-lg bg-primary text-on-primary text-xs font-semibold whitespace-nowrap">Upgrade</a>
-                  </div>
-                  {% else %}
-                  <div class="space-y-3">
-                    <label class="flex flex-col items-center gap-2 py-6 rounded-xl border-2 border-dashed border-outline-variant hover:border-primary cursor-pointer transition-colors"
-                      :class="bgImageUrl ? 'border-primary/40' : ''">
-                      <template x-if="!bgImageUrl">
-                        <div class="flex flex-col items-center gap-2">
-                          <span class="material-symbols-outlined text-3xl text-on-surface-variant">upload</span>
-                          <span class="text-sm text-on-surface-variant">Click to upload background image</span>
-                        </div>
+              <!-- BACKGROUND -->
+              <div class="glass-card rounded-xl overflow-hidden">
+                <button @click="openSection = openSection === 'bg' ? '' : 'bg'" class="w-full flex items-center gap-3 px-5 py-4 text-left hover:bg-surface-container/50 transition-colors">
+                  <span class="material-symbols-outlined text-primary text-xl" style="font-variation-settings:'FILL' 1">wallpaper</span>
+                  <span class="font-semibold text-on-surface">Background</span>
+                  <span class="material-symbols-outlined ml-auto text-on-surface-variant transition-transform" :class="openSection==='bg' ? 'rotate-180' : ''">expand_more</span>
+                </button>
+                <div x-show="openSection==='bg'" x-collapse class="px-5 pb-5 space-y-4 border-t border-outline-variant/50">
+                  <div class="pt-4">
+                    <label class="text-xs font-semibold text-on-surface-variant uppercase tracking-wide mb-2 block">Type</label>
+                    <div class="grid grid-cols-4 gap-2">
+                      <template x-for="type in ['color','gradient','image','video']" :key="type">
+                        <button
+                          @click="bg.type = type"
+                          class="py-2 rounded-lg text-xs font-medium transition-colors capitalize border"
+                          :class="bg.type === type ? 'bg-primary text-on-primary border-primary' : 'bg-surface-container text-on-surface-variant border-outline-variant hover:border-primary'"
+                          x-text="type"
+                        ></button>
                       </template>
+                    </div>
+                  </div>
+                  <div x-show="bg.type==='color'">
+                    <label class="text-xs font-semibold text-on-surface-variant uppercase tracking-wide mb-2 block">Color</label>
+                    <div class="flex items-center gap-3">
+                      <input type="color" x-model="bg.color" class="w-10 h-10 rounded-lg cursor-pointer border-0 p-0">
+                      <input type="text" x-model="bg.color" maxlength="7" class="flex-1 bg-surface-container rounded-lg px-3 py-2 text-sm font-mono text-on-surface border border-outline-variant focus:border-primary outline-none transition-colors">
+                    </div>
+                  </div>
+                  <div x-show="bg.type==='gradient'" class="space-y-3">
+                    <div class="flex gap-3">
+                      <div class="flex-1">
+                        <label class="text-xs text-on-surface-variant mb-1.5 block">Color 1</label>
+                        <div class="flex items-center gap-2">
+                          <input type="color" x-model="bg.color" class="w-9 h-9 rounded-lg cursor-pointer border-0 p-0">
+                          <input type="text" x-model="bg.color" maxlength="7" class="flex-1 bg-surface-container rounded-lg px-2 py-1.5 text-xs font-mono text-on-surface border border-outline-variant focus:border-primary outline-none">
+                        </div>
+                      </div>
+                      <div class="flex-1">
+                        <label class="text-xs text-on-surface-variant mb-1.5 block">Color 2</label>
+                        <div class="flex items-center gap-2">
+                          <input type="color" x-model="bg.color2" class="w-9 h-9 rounded-lg cursor-pointer border-0 p-0">
+                          <input type="text" x-model="bg.color2" maxlength="7" class="flex-1 bg-surface-container rounded-lg px-2 py-1.5 text-xs font-mono text-on-surface border border-outline-variant focus:border-primary outline-none">
+                        </div>
+                      </div>
+                    </div>
+                    <div>
+                      <label class="text-xs text-on-surface-variant mb-1.5 block">Direction</label>
+                      <select x-model="bg.dir" class="w-full bg-surface-container rounded-lg px-3 py-2 text-sm text-on-surface border border-outline-variant focus:border-primary outline-none transition-colors">
+                        <option value="to bottom">Top to Bottom</option>
+                        <option value="to right">Left to Right</option>
+                        <option value="to bottom right">Diagonal (Down-Right)</option>
+                        <option value="to top right">Diagonal (Up-Right)</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div x-show="bg.type==='image'">
+                    {% if not profile.is_standard %}
+                    <div class="flex items-center gap-3 p-4 rounded-xl bg-surface-container-high border border-outline-variant/50">
+                      <span class="material-symbols-outlined text-tertiary" style="font-variation-settings:'FILL' 1">workspace_premium</span>
+                      <div class="flex-1">
+                        <p class="text-sm font-semibold text-on-surface">Standard only</p>
+                        <p class="text-xs text-on-surface-variant">Upgrade to upload a custom background image.</p>
+                      </div>
+                      <a href="{% url 'upgrade' %}" class="px-3 py-1.5 rounded-lg bg-primary text-on-primary text-xs font-semibold whitespace-nowrap">Upgrade</a>
+                    </div>
+                    {% else %}
+                    <div class="space-y-3">
+                      <label class="flex flex-col items-center gap-2 py-6 rounded-xl border-2 border-dashed border-outline-variant hover:border-primary cursor-pointer transition-colors" :class="bgImageUrl ? 'border-primary/40' : ''">
+                        <template x-if="!bgImageUrl">
+                          <div class="flex flex-col items-center gap-2">
+                            <span class="material-symbols-outlined text-3xl text-on-surface-variant">upload</span>
+                            <span class="text-sm text-on-surface-variant">Click to upload background image</span>
+                          </div>
+                        </template>
+                        <template x-if="bgImageUrl">
+                          <div class="flex flex-col items-center gap-1 py-1">
+                            <span class="material-symbols-outlined text-xl text-primary">image</span>
+                            <span class="text-xs text-on-surface-variant">Click to change image</span>
+                          </div>
+                        </template>
+                        <input type="file" accept="image/*" class="hidden" @change="uploadBackground($event)">
+                      </label>
                       <template x-if="bgImageUrl">
-                        <div class="flex flex-col items-center gap-1 py-1">
-                          <span class="material-symbols-outlined text-xl text-primary">image</span>
-                          <span class="text-xs text-on-surface-variant">Click to change image</span>
+                        <div>
+                          <p class="text-xs text-on-surface-variant mb-1.5">Drag to set position</p>
+                          <div class="relative rounded-xl overflow-hidden select-none" style="height:110px;cursor:crosshair;touch-action:none;" @mousedown.prevent="bgPosStartDrag($event)" @touchstart.prevent="bgPosStartDrag($event)">
+                            <div class="absolute inset-0" :style="`background-image:url(${bgImageUrl});background-size:cover;background-position:${bgPosX}% ${bgPosY}%;`"></div>
+                            <div class="absolute inset-0 pointer-events-none" style="border:1px solid rgba(255,255,255,0.15);background:linear-gradient(rgba(255,255,255,0.04) 1px,transparent 1px) 0 0/100% 33.3%,linear-gradient(90deg,rgba(255,255,255,0.04) 1px,transparent 1px) 0 0/33.3% 100%"></div>
+                            <div class="absolute pointer-events-none" style="width:18px;height:18px;margin:-9px;border:2px solid #fff;border-radius:50%;box-shadow:0 0 0 1px rgba(0,0,0,0.4),0 2px 6px rgba(0,0,0,0.4);" :style="`left:${bgPosX}%;top:${bgPosY}%`"></div>
+                          </div>
+                          <button @click="bgImageUrl=''" class="mt-1.5 text-xs text-error hover:underline">Remove image</button>
                         </div>
                       </template>
-                      <input type="file" accept="image/*" class="hidden" @change="uploadBackground($event)">
-                    </label>
-
-                    <!-- Drag-to-position editor -->
-                    <template x-if="bgImageUrl">
-                      <div>
-                        <p class="text-xs text-on-surface-variant mb-1.5">Drag to set position</p>
-                        <div
-                          class="relative rounded-xl overflow-hidden select-none"
-                          style="height:110px;cursor:crosshair;touch-action:none;"
-                          @mousedown.prevent="bgPosStartDrag($event)"
-                          @touchstart.prevent="bgPosStartDrag($event)"
-                        >
-                          <div
-                            class="absolute inset-0"
-                            :style="`background-image:url(${bgImageUrl});background-size:cover;background-position:${bgPosX}% ${bgPosY}%;`"
-                          ></div>
-                          <!-- Grid lines -->
-                          <div class="absolute inset-0 pointer-events-none" style="border:1px solid rgba(255,255,255,0.15);background:linear-gradient(rgba(255,255,255,0.04) 1px,transparent 1px) 0 0/100% 33.3%,linear-gradient(90deg,rgba(255,255,255,0.04) 1px,transparent 1px) 0 0/33.3% 100%"></div>
-                          <!-- Position crosshair -->
-                          <div
-                            class="absolute pointer-events-none"
-                            style="width:18px;height:18px;margin:-9px;border:2px solid #fff;border-radius:50%;box-shadow:0 0 0 1px rgba(0,0,0,0.4),0 2px 6px rgba(0,0,0,0.4);"
-                            :style="`left:${bgPosX}%;top:${bgPosY}%`"
-                          ></div>
-                        </div>
-                        <button @click="bgImageUrl=''" class="mt-1.5 text-xs text-error hover:underline">Remove image</button>
-                      </div>
-                    </template>
-                  </div>
-                  {% endif %}
-                </div>
-
-                <!-- Video -->
-                <div x-show="bg.type==='video'">
-                  {% if not profile.is_standard %}
-                  <div class="flex items-center gap-3 p-4 rounded-xl bg-surface-container-high border border-outline-variant/50">
-                    <span class="material-symbols-outlined text-tertiary" style="font-variation-settings:'FILL' 1">workspace_premium</span>
-                    <div class="flex-1">
-                      <p class="text-sm font-semibold text-on-surface">Standard only</p>
-                      <p class="text-xs text-on-surface-variant">Upgrade to use a video background.</p>
                     </div>
-                    <a href="#" class="px-3 py-1.5 rounded-lg bg-primary text-on-primary text-xs font-semibold whitespace-nowrap">Upgrade</a>
+                    {% endif %}
                   </div>
-                  {% else %}
-                  <div>
-                    <label class="text-xs text-on-surface-variant mb-1.5 block">Video URL (YouTube / MP4)</label>
-                    <input type="url" x-model="bg.videoUrl" placeholder="https://"
-                      class="w-full bg-surface-container rounded-lg px-3 py-2 text-sm text-on-surface border border-outline-variant focus:border-primary outline-none transition-colors">
+                  <div x-show="bg.type==='video'">
+                    {% if not profile.is_standard %}
+                    <div class="flex items-center gap-3 p-4 rounded-xl bg-surface-container-high border border-outline-variant/50">
+                      <span class="material-symbols-outlined text-tertiary" style="font-variation-settings:'FILL' 1">workspace_premium</span>
+                      <div class="flex-1">
+                        <p class="text-sm font-semibold text-on-surface">Standard only</p>
+                        <p class="text-xs text-on-surface-variant">Upgrade to use a video background.</p>
+                      </div>
+                      <a href="{% url 'upgrade' %}" class="px-3 py-1.5 rounded-lg bg-primary text-on-primary text-xs font-semibold whitespace-nowrap">Upgrade</a>
+                    </div>
+                    {% else %}
+                    <div>
+                      <label class="text-xs text-on-surface-variant mb-1.5 block">Video URL (YouTube / MP4)</label>
+                      <input type="url" x-model="bg.videoUrl" placeholder="https://" class="w-full bg-surface-container rounded-lg px-3 py-2 text-sm text-on-surface border border-outline-variant focus:border-primary outline-none transition-colors">
+                    </div>
+                    {% endif %}
                   </div>
-                  {% endif %}
                 </div>
               </div>
+
+              <!-- BUTTONS -->
+              <div class="glass-card rounded-xl overflow-hidden">
+                <button @click="openSection = openSection === 'btn' ? '' : 'btn'" class="w-full flex items-center gap-3 px-5 py-4 text-left hover:bg-surface-container/50 transition-colors">
+                  <span class="material-symbols-outlined text-primary text-xl" style="font-variation-settings:'FILL' 1">smart_button</span>
+                  <span class="font-semibold text-on-surface">Buttons</span>
+                  <span class="material-symbols-outlined ml-auto text-on-surface-variant transition-transform" :class="openSection==='btn' ? 'rotate-180' : ''">expand_more</span>
+                </button>
+                <div x-show="openSection==='btn'" x-collapse class="px-5 pb-5 space-y-4 border-t border-outline-variant/50">
+                  <div class="pt-4">
+                    <label class="text-xs font-semibold text-on-surface-variant uppercase tracking-wide mb-2 block">Style</label>
+                    <div class="grid grid-cols-3 gap-2">
+                      <template x-for="style in ['filled','outline','soft','shadow','glass','gradient','plain']" :key="style">
+                        <button
+                          @click="btn.style = style"
+                          class="py-2 rounded-lg text-xs font-medium transition-colors capitalize border"
+                          :class="btn.style === style ? 'bg-primary text-on-primary border-primary' : 'bg-surface-container text-on-surface-variant border-outline-variant hover:border-primary'"
+                          x-text="style"
+                        ></button>
+                      </template>
+                    </div>
+                  </div>
+                  <div>
+                    <label class="text-xs text-on-surface-variant mb-1.5 block">Text color</label>
+                    <div class="flex items-center gap-2">
+                      <input type="color" x-model="btn.textColor" class="w-9 h-9 rounded-lg cursor-pointer border-0 p-0">
+                      <input type="text" x-model="btn.textColor" maxlength="7" class="flex-1 bg-surface-container rounded-lg px-2 py-1.5 text-xs font-mono text-on-surface border border-outline-variant focus:border-primary outline-none">
+                    </div>
+                  </div>
+                  <div>
+                    <div class="flex justify-between items-center mb-2">
+                      <label class="text-xs font-semibold text-on-surface-variant uppercase tracking-wide">Corner radius</label>
+                      <span class="text-xs text-primary font-semibold" x-text="`${btn.radius}px`"></span>
+                    </div>
+                    <input type="range" min="0" max="50" x-model="btn.radius" class="w-full accent-primary">
+                    <div class="flex justify-between text-xs text-on-surface-variant mt-1">
+                      <span>Square</span><span>Rounded</span><span>Pill</span>
+                    </div>
+                  </div>
+                  <div class="flex items-center justify-between">
+                    <div>
+                      <p class="text-sm font-medium text-on-surface">Hover animation</p>
+                      <p class="text-xs text-on-surface-variant">Subtle lift on mouse hover</p>
+                    </div>
+                    <button @click="btn.hover = !btn.hover" class="w-11 h-6 rounded-full transition-colors relative shrink-0" :class="btn.hover ? 'bg-primary' : 'bg-surface-container-highest'">
+                      <span class="absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform" :class="btn.hover ? 'translate-x-5' : 'translate-x-0'"></span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
             </div>
 
-            <!-- BUTTONS section -->
-            <div class="glass-card rounded-xl overflow-hidden">
-              <button @click="openSection = openSection === 'btn' ? '' : 'btn'" class="w-full flex items-center gap-3 px-5 py-4 text-left hover:bg-surface-container/50 transition-colors">
-                <span class="material-symbols-outlined text-primary text-xl" style="font-variation-settings:'FILL' 1">smart_button</span>
-                <span class="font-semibold text-on-surface">Buttons</span>
-                <span class="material-symbols-outlined ml-auto text-on-surface-variant transition-transform" :class="openSection==='btn' ? 'rotate-180' : ''">expand_more</span>
+            <!-- Save appearance -->
+            <div class="sticky bottom-0 pt-4 pb-2 mt-4" style="background:rgba(12,12,24,0.92);backdrop-filter:blur(8px)">
+              <button @click="saveAppearance()" class="w-full py-3 rounded-xl bg-primary text-on-primary font-semibold text-sm hover:opacity-90 active:scale-[0.98] transition-all flex items-center justify-center gap-2">
+                <span class="material-symbols-outlined text-base">save</span>
+                Save appearance
               </button>
-              <div x-show="openSection==='btn'" x-collapse class="px-5 pb-5 space-y-4 border-t border-outline-variant/50">
-                <div class="pt-4">
-                  <label class="text-xs font-semibold text-on-surface-variant uppercase tracking-wide mb-2 block">Style</label>
-                  <div class="grid grid-cols-3 gap-2">
-                    <template x-for="style in ['filled','outline','soft','shadow','glass','gradient','plain']" :key="style">
-                      <button
-                        @click="btn.style = style"
-                        class="py-2 rounded-lg text-xs font-medium transition-colors capitalize border"
-                        :class="btn.style === style ? 'bg-primary text-on-primary border-primary' : 'bg-surface-container text-on-surface-variant border-outline-variant hover:border-primary'"
-                        x-text="style"
-                      ></button>
-                    </template>
-                  </div>
-                </div>
-
-                <div>
-                  <label class="text-xs text-on-surface-variant mb-1.5 block">Text color</label>
-                  <div class="flex items-center gap-2">
-                    <input type="color" x-model="btn.textColor" class="w-9 h-9 rounded-lg cursor-pointer border-0 p-0">
-                    <input type="text" x-model="btn.textColor" maxlength="7" class="flex-1 bg-surface-container rounded-lg px-2 py-1.5 text-xs font-mono text-on-surface border border-outline-variant focus:border-primary outline-none">
-                  </div>
-                </div>
-
-                <div>
-                  <div class="flex justify-between items-center mb-2">
-                    <label class="text-xs font-semibold text-on-surface-variant uppercase tracking-wide">Corner radius</label>
-                    <span class="text-xs text-primary font-semibold" x-text="`${btn.radius}px`"></span>
-                  </div>
-                  <input type="range" min="0" max="50" x-model="btn.radius" class="w-full accent-primary">
-                  <div class="flex justify-between text-xs text-on-surface-variant mt-1">
-                    <span>Square</span><span>Rounded</span><span>Pill</span>
-                  </div>
-                </div>
-
-                <div class="flex items-center justify-between">
-                  <div>
-                    <p class="text-sm font-medium text-on-surface">Hover animation</p>
-                    <p class="text-xs text-on-surface-variant">Subtle lift effect on mouse hover</p>
-                  </div>
-                  <button @click="btn.hover = !btn.hover"
-                    class="w-11 h-6 rounded-full transition-colors relative shrink-0"
-                    :class="btn.hover ? 'bg-primary' : 'bg-surface-container-highest'">
-                    <span class="absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform" :class="btn.hover ? 'translate-x-5' : 'translate-x-0'"></span>
-                  </button>
-                </div>
-              </div>
             </div>
-
-
           </div>
 
-          <!-- Sticky save -->
-          <div class="sticky bottom-0 pt-4 pb-2 bg-surface/90 backdrop-blur-sm mt-4">
-            <button @click="saveAppearance()" class="w-full py-3 rounded-xl bg-primary text-on-primary font-semibold text-sm hover:opacity-90 active:scale-[0.98] transition-all flex items-center justify-center gap-2">
-              <span class="material-symbols-outlined text-base">save</span>
-              Save changes
-            </button>
-          </div>
         </div>
 
         <!-- ========== TAB: ANALYTICS ========== -->
@@ -944,13 +899,13 @@
           <span class="material-symbols-outlined text-xl" :style="activeTab==='links' ? 'font-variation-settings:\'FILL\' 1' : ''">add_link</span>
           Links
         </button>
-        <button @click="activeTab='appearance'" class="flex-1 flex flex-col items-center gap-1 py-3 text-xs transition-colors" :class="activeTab==='appearance' ? 'text-primary' : 'text-on-surface-variant'">
-          <span class="material-symbols-outlined text-xl" :style="activeTab==='appearance' ? 'font-variation-settings:\'FILL\' 1' : ''">palette</span>
-          Look
-        </button>
         <a href="{% url 'dashboard:analytics' %}" class="flex-1 flex flex-col items-center gap-1 py-3 text-xs transition-colors text-on-surface-variant hover:text-primary">
           <span class="material-symbols-outlined text-xl">bar_chart</span>
           Stats
+        </a>
+        <a href="{% url 'dashboard:qr' %}" class="flex-1 flex flex-col items-center gap-1 py-3 text-xs transition-colors text-on-surface-variant hover:text-primary">
+          <span class="material-symbols-outlined text-xl">qr_code_2</span>
+          QR
         </a>
         <button @click="activeTab='settings'" class="flex-1 flex flex-col items-center gap-1 py-3 text-xs transition-colors" :class="activeTab==='settings' ? 'text-primary' : 'text-on-surface-variant'">
           <span class="material-symbols-outlined text-xl" :style="activeTab==='settings' ? 'font-variation-settings:\'FILL\' 1' : ''">settings</span>
@@ -1077,6 +1032,92 @@
       </div>
     </div>
   </aside>
+
+  <!-- ===== ADD LINK MODAL ===== -->
+  <div
+    x-show="showAddModal"
+    x-cloak
+    x-transition:enter="transition ease-out duration-200"
+    x-transition:enter-start="opacity-0"
+    x-transition:enter-end="opacity-100"
+    x-transition:leave="transition ease-in duration-150"
+    x-transition:leave-start="opacity-100"
+    x-transition:leave-end="opacity-0"
+    @keydown.escape.window="showAddModal = false"
+    class="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4"
+  >
+    <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" @click="showAddModal = false"></div>
+    <div x-show="showAddModal"
+      x-transition:enter="transition ease-out duration-220"
+      x-transition:enter-start="opacity-0 translate-y-4"
+      x-transition:enter-end="opacity-100 translate-y-0"
+      x-transition:leave="transition ease-in duration-150"
+      x-transition:leave-start="opacity-100 translate-y-0"
+      x-transition:leave-end="opacity-0 translate-y-4"
+      class="relative w-full sm:max-w-lg glass-card sm:rounded-2xl rounded-t-2xl overflow-hidden shadow-2xl"
+      style="max-height:85vh;display:flex;flex-direction:column;">
+
+      <!-- Header -->
+      <div class="flex items-center gap-3 px-5 py-4 shrink-0" style="border-bottom:1px solid rgba(255,255,255,0.07)">
+        <span class="material-symbols-outlined text-primary" style="font-variation-settings:'FILL' 1">add_circle</span>
+        <h3 class="font-bold text-on-surface text-base">Add link</h3>
+        <button @click="showAddModal = false" class="ml-auto text-on-surface-variant hover:text-on-surface transition-colors">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <!-- Search -->
+      <div class="px-4 py-3 shrink-0" style="border-bottom:1px solid rgba(255,255,255,0.05)">
+        <div class="flex items-center gap-2 px-3 py-2 rounded-xl" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08)">
+          <span class="material-symbols-outlined text-on-surface-variant text-base">search</span>
+          <input type="text" x-model="addModalSearch" placeholder="Search…" class="flex-1 bg-transparent text-sm text-on-surface outline-none placeholder-on-surface-variant">
+          <button x-show="addModalSearch" @click="addModalSearch=''" class="text-on-surface-variant hover:text-on-surface transition-colors">
+            <span class="material-symbols-outlined text-sm">close</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Category chips -->
+      <div class="flex gap-2 px-4 py-3 overflow-x-auto shrink-0 custom-scrollbar" style="border-bottom:1px solid rgba(255,255,255,0.05)">
+        <template x-for="cat in addModalCategories" :key="cat.id">
+          <button
+            @click="addModalCategory = cat.id"
+            class="shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold transition-all"
+            :class="addModalCategory === cat.id
+              ? 'bg-primary text-on-primary'
+              : 'text-on-surface-variant hover:text-on-surface'"
+            style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08)"
+            :style="addModalCategory === cat.id ? 'background:;border-color:transparent' : ''"
+            x-text="cat.label"
+          ></button>
+        </template>
+      </div>
+
+      <!-- Items grid -->
+      <div class="overflow-y-auto flex-1 p-4 custom-scrollbar">
+        <div class="grid grid-cols-4 gap-2">
+          <template x-for="type in filteredAddTypes" :key="type.id">
+            <button
+              @click="addLinkFromType(type)"
+              class="flex flex-col items-center gap-2 p-3 rounded-xl transition-all hover:scale-105 active:scale-95 group"
+              style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07)"
+              onmouseover="this.style.borderColor='rgba(99,102,241,0.4)'"
+              onmouseout="this.style.borderColor='rgba(255,255,255,0.07)'"
+            >
+              <div class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+                :style="`background:${type.color === 'transparent' ? 'rgba(255,255,255,0.08)' : type.color + '22'};border:1.5px solid ${type.color === 'transparent' ? 'rgba(255,255,255,0.12)' : type.color + '66'}`">
+                <span class="material-symbols-outlined text-xl" :style="`color:${type.color === 'transparent' ? '#a5b4fc' : type.color}`" x-text="type.icon"></span>
+              </div>
+              <span class="text-[10px] font-medium text-on-surface-variant group-hover:text-on-surface text-center leading-tight truncate w-full transition-colors" x-text="type.label"></span>
+            </button>
+          </template>
+          <div x-show="filteredAddTypes.length === 0" class="col-span-4 py-8 text-center text-sm text-on-surface-variant">
+            No results for "<span x-text="addModalSearch"></span>"
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- ===== ICON PICKER MODAL ===== -->
   <div
@@ -1394,6 +1435,7 @@ const INITIAL_LINKS = [
     title: "{{ link.title|escapejs }}",
     url: "{{ link.url|escapejs }}",
     icon: "{{ link.icon|escapejs }}",
+    icon_type: "{{ link.icon_type|escapejs }}",
     color: "{{ link.color|escapejs }}",
     text_color: "{{ link.text_color|escapejs }}",
     icon_color: "{{ link.icon_color|escapejs }}",
@@ -1403,6 +1445,63 @@ const INITIAL_LINKS = [
     display_style: "{{ link.display_style|escapejs }}",
     thumbnail_url: "{{ link.thumbnail_url|escapejs }}",
   },{% endfor %}
+];
+
+const ADD_LINK_TYPES = [
+  // Social
+  { id:'instagram',  label:'Instagram',   category:'social',   color:'#E1306C', icon:'photo_camera',        icon_type:'instagram' },
+  { id:'tiktok',     label:'TikTok',      category:'social',   color:'#000000', icon:'music_video',         icon_type:'tiktok' },
+  { id:'youtube',    label:'YouTube',     category:'social',   color:'#FF0000', icon:'smart_display',       icon_type:'youtube' },
+  { id:'facebook',   label:'Facebook',    category:'social',   color:'#1877F2', icon:'thumb_up',            icon_type:'facebook' },
+  { id:'twitter',    label:'X / Twitter', category:'social',   color:'#1DA1F2', icon:'alternate_email',     icon_type:'twitter' },
+  { id:'threads',    label:'Threads',     category:'social',   color:'#111111', icon:'timeline',            icon_type:'threads' },
+  { id:'linkedin',   label:'LinkedIn',    category:'social',   color:'#0A66C2', icon:'work',                icon_type:'linkedin' },
+  { id:'discord',    label:'Discord',     category:'social',   color:'#5865F2', icon:'headset_mic',         icon_type:'discord' },
+  { id:'telegram',   label:'Telegram',    category:'social',   color:'#2AABEE', icon:'send',                icon_type:'telegram' },
+  { id:'whatsapp',   label:'WhatsApp',    category:'social',   color:'#25D366', icon:'chat',                icon_type:'whatsapp' },
+  { id:'line',       label:'LINE',        category:'social',   color:'#00B900', icon:'message',             icon_type:'line' },
+  { id:'wechat',     label:'WeChat',      category:'social',   color:'#07C160', icon:'chat_bubble',         icon_type:'wechat' },
+  { id:'snapchat',   label:'Snapchat',    category:'social',   color:'#FFCD00', icon:'camera_indoor',       icon_type:'snapchat' },
+  { id:'pinterest',  label:'Pinterest',   category:'social',   color:'#E60023', icon:'collections',         icon_type:'pinterest' },
+  { id:'reddit',     label:'Reddit',      category:'social',   color:'#FF4500', icon:'forum',               icon_type:'reddit' },
+  { id:'twitch',     label:'Twitch',      category:'social',   color:'#9146FF', icon:'videogame_asset',     icon_type:'twitch' },
+  { id:'viber',      label:'Viber',       category:'social',   color:'#7360F2', icon:'call',                icon_type:'viber' },
+  { id:'bereal',     label:'BeReal',      category:'social',   color:'#444444', icon:'camera_front',        icon_type:'bereal' },
+  // Commerce
+  { id:'shopee',     label:'Shopee',      category:'commerce', color:'#EE4D2D', icon:'shopping_bag',        icon_type:'shopee' },
+  { id:'lazada',     label:'Lazada',      category:'commerce', color:'#F57224', icon:'local_mall',          icon_type:'lazada' },
+  { id:'amazon',     label:'Amazon',      category:'commerce', color:'#FF9900', icon:'storefront',          icon_type:'amazon' },
+  { id:'etsy',       label:'Etsy',        category:'commerce', color:'#F56400', icon:'handmade',            icon_type:'etsy' },
+  { id:'ebay',       label:'eBay',        category:'commerce', color:'#E53238', icon:'sell',                icon_type:'ebay' },
+  { id:'grabfood',   label:'GrabFood',    category:'commerce', color:'#00B14F', icon:'delivery_dining',     icon_type:'grabfood' },
+  { id:'foodpanda',  label:'Foodpanda',   category:'commerce', color:'#D70F64', icon:'restaurant',          icon_type:'foodpanda' },
+  { id:'store',      label:'Store',       category:'commerce', color:'#8083ff', icon:'store',               icon_type:'material' },
+  { id:'payment',    label:'Payment',     category:'commerce', color:'#4CAF50', icon:'payments',            icon_type:'material' },
+  { id:'donation',   label:'Donation',    category:'commerce', color:'#E91E63', icon:'favorite',            icon_type:'material' },
+  // Media
+  { id:'spotify',    label:'Spotify',     category:'media',    color:'#1DB954', icon:'library_music',       icon_type:'spotify' },
+  { id:'applemusic', label:'Apple Music', category:'media',    color:'#FC3C44', icon:'headphones',          icon_type:'applemusic' },
+  { id:'soundcloud', label:'SoundCloud',  category:'media',    color:'#FF5500', icon:'cloud',               icon_type:'soundcloud' },
+  { id:'podcast',    label:'Podcast',     category:'media',    color:'#9C27B0', icon:'podcasts',            icon_type:'material' },
+  { id:'video',      label:'Video',       category:'media',    color:'#F44336', icon:'play_circle',         icon_type:'material' },
+  { id:'gallery',    label:'Gallery',     category:'media',    color:'#2196F3', icon:'photo_library',       icon_type:'material' },
+  { id:'blog',       label:'Blog',        category:'media',    color:'#607D8B', icon:'article',             icon_type:'material' },
+  // Contact
+  { id:'email',      label:'Email',       category:'contact',  color:'#6366F1', icon:'mail',                icon_type:'email' },
+  { id:'phone',      label:'Phone',       category:'contact',  color:'#4CAF50', icon:'call',                icon_type:'phone' },
+  { id:'location',   label:'Location',    category:'contact',  color:'#F44336', icon:'location_on',         icon_type:'location' },
+  { id:'website',    label:'Website',     category:'contact',  color:'#607D8B', icon:'language',            icon_type:'website' },
+  { id:'calendly',   label:'Calendly',    category:'contact',  color:'#006BFF', icon:'event_available',     icon_type:'material' },
+  // Events
+  { id:'event',      label:'Event',       category:'events',   color:'#FF9800', icon:'event',               icon_type:'material' },
+  { id:'ticket',     label:'Ticket',      category:'events',   color:'#9C27B0', icon:'confirmation_number', icon_type:'material' },
+  { id:'rsvp',       label:'RSVP',        category:'events',   color:'#E91E63', icon:'how_to_reg',          icon_type:'material' },
+  { id:'announce',   label:'Announce',    category:'events',   color:'#F59E0B', icon:'campaign',            icon_type:'material' },
+  // Text
+  { id:'heading',    label:'Heading',     category:'text',     color:'transparent', icon:'title',           icon_type:'material' },
+  { id:'divider',    label:'Divider',     category:'text',     color:'transparent', icon:'horizontal_rule', icon_type:'material' },
+  // Custom (all)
+  { id:'custom',     label:'Custom link', category:'all',      color:'#8083ff', icon:'link',                icon_type:'material' },
 ];
 
 function dashboardApp() {
@@ -1419,8 +1518,22 @@ function dashboardApp() {
     iconPickerLinkId: null,
     iconSearch: '',
 
+    // Add link modal
+    showAddModal: false,
+    addModalSearch: '',
+    addModalCategory: 'all',
+    addModalCategories: [
+      { id: 'commerce', label: 'Commerce' },
+      { id: 'social',   label: 'Social' },
+      { id: 'media',    label: 'Media' },
+      { id: 'contact',  label: 'Contact' },
+      { id: 'events',   label: 'Events' },
+      { id: 'text',     label: 'Text' },
+      { id: 'all',      label: 'View all' },
+    ],
+
     // Appearance
-    openSection: 'profile',
+    openSection: '',
     profile: {
       displayName: "{{ profile.display_name|escapejs }}",
       bio: "{{ profile.bio|escapejs }}",
@@ -1566,17 +1679,38 @@ function dashboardApp() {
     },
 
     // ---- LINKS ----
-    async addLink() {
+    get filteredAddTypes() {
+      let items = ADD_LINK_TYPES;
+      if (this.addModalCategory !== 'all') {
+        items = items.filter(t => t.category === this.addModalCategory || t.category === 'all');
+      }
+      if (this.addModalSearch) {
+        const q = this.addModalSearch.toLowerCase();
+        items = items.filter(t => t.label.toLowerCase().includes(q));
+      }
+      return items;
+    },
+
+    async addLinkFromType(type) {
+      this.showAddModal = false;
       try {
         const res = await fetch('{% url "dashboard:link_create" %}', {
           method: 'POST',
           headers: { 'X-CSRFToken': CSRF_TOKEN, 'Content-Type': 'application/json' },
-          body: JSON.stringify({}),
+          body: JSON.stringify({
+            title: type.label,
+            url: 'https://',
+            icon: type.icon,
+            icon_type: type.icon_type,
+            color: type.color === 'transparent' ? '#8083ff' : type.color,
+            text_color: '#ffffff',
+            icon_color: '#ffffff',
+          }),
         });
         const data = await res.json();
         if (data.ok) {
           this.links.push(data);
-          showToast('Link added!', 'success');
+          showToast(type.label + ' added!', 'success');
         } else {
           showToast(data.error || 'Could not add link.', 'error');
         }
@@ -1594,6 +1728,7 @@ function dashboardApp() {
             title: link.title,
             url: link.url,
             icon: link.icon,
+            icon_type: link.icon_type || 'material',
             color: link.color,
             text_color: link.text_color,
             icon_color: link.icon_color,
@@ -1693,7 +1828,7 @@ function dashboardApp() {
           }),
         });
         const data = await res.json();
-        if (data.ok) showToast('Appearance saved!', 'success');
+        if (data.ok) showToast('Saved!', 'success');
         else showToast('Could not save.', 'error');
       } catch(e) {
         showToast('Network error.', 'error');

@@ -65,13 +65,13 @@
         <span class="material-symbols-outlined text-[20px] shrink-0">add_link</span>
         <span class="text-[13px] font-semibold whitespace-nowrap overflow-hidden transition-all duration-300" :class="open ? 'opacity-100 max-w-xs' : 'opacity-0 max-w-0'">Links</span>
       </a>
-      <a href="{% url 'dashboard:home' %}?tab=appearance"
+      <a href="{% url 'dashboard:home' %}?tab=links"
         class="flex items-center gap-3 px-2.5 py-2.5 rounded-xl transition-all"
         style="border:1px solid transparent;color:#6b6b8a"
         onmouseover="this.style.color='#e4e1ed';this.style.background='rgba(255,255,255,0.05)'"
         onmouseout="this.style.color='#6b6b8a';this.style.background=''">
         <span class="material-symbols-outlined text-[20px] shrink-0">palette</span>
-        <span class="text-[13px] font-semibold whitespace-nowrap overflow-hidden transition-all duration-300" :class="open ? 'opacity-100 max-w-xs' : 'opacity-0 max-w-0'">Appearance</span>
+        <span class="text-[13px] font-semibold whitespace-nowrap overflow-hidden transition-all duration-300" :class="open ? 'opacity-100 max-w-xs' : 'opacity-0 max-w-0'">Links</span>
       </a>
       <a href="{% url 'dashboard:analytics' %}"
         class="flex items-center gap-3 px-2.5 py-2.5 rounded-xl transition-all"
