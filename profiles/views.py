@@ -1,5 +1,6 @@
 import hashlib
 import re
+from urllib.parse import quote
 from django.shortcuts import render, redirect
 from accounts.models import UserProfile, Link, Appearance
 from analytics_app.models import ProfileView, LinkClick
@@ -10,6 +11,86 @@ def _parse_youtube_id(url):
         return None
     m = re.search(r'(?:youtu\.be/|youtube\.com/(?:watch\?(?:.*&)?v=|embed/|shorts/))([A-Za-z0-9_-]{11})', url)
     return m.group(1) if m else None
+
+
+def _get_embed(link):
+    """Return (embed_url, embed_height) for media link types, or (None, 0)."""
+    url = link.url or ''
+    lt = link.link_type
+
+    if lt == 'spotify':
+        m = re.search(r'spotify\.com/(track|album|playlist|artist|episode|show)/([A-Za-z0-9]+)', url)
+        if m:
+            kind, sid = m.group(1), m.group(2)
+            height = 152 if kind == 'track' else 352
+            return f'https://open.spotify.com/embed/{kind}/{sid}?utm_source=generator', height
+
+    elif lt == 'youtube':
+        vid = _parse_youtube_id(url)
+        if vid:
+            return f'https://www.youtube.com/embed/{vid}', 315
+        m = re.search(r'youtube\.com/playlist\?.*?list=([A-Za-z0-9_-]+)', url)
+        if m:
+            return f'https://www.youtube.com/embed/videoseries?list={m.group(1)}', 315
+
+    elif lt == 'soundcloud':
+        if 'soundcloud.com/' in url:
+            return f'https://w.soundcloud.com/player/?url={quote(url)}&color=%23ff5500&auto_play=false&hide_related=true&show_comments=false&show_user=true&visual=true', 300
+
+    elif lt == 'apple_music':
+        m = re.search(r'music\.apple\.com/(.+)', url)
+        if m:
+            return f'https://embed.music.apple.com/{m.group(1)}', 450
+
+    elif lt == 'deezer':
+        m = re.search(r'deezer\.com/(track|album|playlist|artist)/(\d+)', url)
+        if m:
+            return f'https://widget.deezer.com/widget/dark/{m.group(1)}/{m.group(2)}', 300
+
+    elif lt == 'tidal':
+        type_map = {'track': 'tracks', 'album': 'albums', 'playlist': 'playlists'}
+        m = re.search(r'tidal\.com/browse/(track|album|playlist)/(\d+)', url)
+        if m:
+            return f'https://embed.tidal.com/{type_map.get(m.group(1), "tracks")}/{m.group(2)}', 300
+
+    elif lt == 'bandcamp':
+        m = re.search(r'(https?://[^/]+\.bandcamp\.com/(track|album)/[^?#\s]+)', url)
+        if m:
+            return f'https://bandcamp.com/EmbeddedPlayer/v=2/track={quote(m.group(1))}/size=large/bgcol=1a1a2e/linkcol=a5b4fc/', 120
+
+    elif lt == 'podcast':
+        m = re.search(r'spotify\.com/(episode|show)/([A-Za-z0-9]+)', url)
+        if m:
+            return f'https://open.spotify.com/embed/{m.group(1)}/{m.group(2)}', 232
+
+    elif lt == 'tiktok_video':
+        m = re.search(r'tiktok\.com/@[\w.\-]+/video/(\d+)', url)
+        if m:
+            return f'https://www.tiktok.com/embed/v2/{m.group(1)}', 700
+
+    elif lt == 'vimeo':
+        m = re.search(r'vimeo\.com/(?:video/)?(\d+)', url)
+        if m:
+            return f'https://player.vimeo.com/video/{m.group(1)}?title=0&byline=0&portrait=0', 315
+
+    elif lt == 'audiomack':
+        m = re.search(r'audiomack\.com/([^/]+)/(song|album|playlist)/([^/?#\s]+)', url)
+        if m:
+            return f'https://audiomack.com/embed/{m.group(1)}/{m.group(2)}/{m.group(3)}', 252
+
+    elif lt == 'pdf':
+        if url and url not in ('#', 'https://'):
+            return f'https://docs.google.com/viewer?url={quote(url)}&embedded=true', 600
+
+    elif lt == 'video':
+        if url and url not in ('#', 'https://'):
+            return 'video:' + url, 0  # sentinel for <video> tag
+
+    elif lt == 'audio':
+        if url and url not in ('#', 'https://'):
+            return 'audio:' + url, 0  # sentinel for <audio> tag
+
+    return None, 0
 
 
 def _get_ip(request):
@@ -141,6 +222,7 @@ def public_profile(request, username):
         else:
             social_icon_color = icon_color
 
+        embed_url, embed_height = _get_embed(link)
         entry = {
             'link': link,
             'btn_css': _build_btn_css(link, appearance),
@@ -150,9 +232,13 @@ def public_profile(request, username):
             'social_icon_color': social_icon_color,
             'is_iconify': ':' in link.icon,
             'is_material': ':' not in link.icon and link.icon_type == 'material',
+            'embed_url': embed_url,
+            'embed_height': embed_height,
         }
 
-        if link.display_style == 'icon_only':
+        if link.link_type in ('header', 'divider'):
+            main_links.append(entry)
+        elif link.display_style == 'icon_only':
             social_links.append(entry)
         else:
             main_links.append(entry)

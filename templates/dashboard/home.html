@@ -239,13 +239,13 @@
 
                 <!-- Quick-add social icons -->
                 <div class="flex items-center gap-2 flex-wrap">
-                  <template x-for="qt in [{id:'instagram',icon:'photo_camera',color:'#E1306C'},{id:'tiktok',icon:'music_video',color:'#69C9D0'},{id:'youtube',icon:'play_arrow',color:'#FF0000'},{id:'email',icon:'mail',color:'#4285F4'}]" :key="qt.id">
+                  <template x-for="qt in [{id:'instagram',color:'#E1306C'},{id:'tiktok',color:'#010101'},{id:'youtube',color:'#FF0000'},{id:'whatsapp',color:'#25D366'}]" :key="qt.id">
                     <button
                       @click="addLinkFromType(ADD_LINK_TYPES.find(t=>t.id===qt.id))"
                       class="relative w-8 h-8 rounded-full flex items-center justify-center hover:opacity-80 active:scale-90 transition-all"
                       :style="`background:${qt.color}22;border:1.5px solid ${qt.color}55`"
                       :title="qt.id">
-                      <span class="material-symbols-outlined" style="font-size:15px" :style="`color:${qt.color}`" x-text="qt.icon"></span>
+                      <span class="iconify" :data-icon="ADD_LINK_TYPES.find(t=>t.id===qt.id)?.icon||'mdi:link'" data-width="15" data-height="15" :style="`color:${qt.color}`"></span>
                       <span class="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-surface-container border border-outline-variant/60 flex items-center justify-center text-on-surface-variant" style="font-size:9px;line-height:1;font-weight:700">+</span>
                     </button>
                   </template>
@@ -311,10 +311,63 @@
                 :data-link-id="link.id"
                 style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07)"
               >
-                <!-- Left accent bar (link color) -->
-                <div class="absolute left-0 top-3 bottom-3 w-[3px] rounded-r-full transition-colors"
-                     :style="`background:${link.color};opacity:${link.is_active ? '0.75' : '0.3'}`"></div>
+                <!-- Left accent bar — hidden for header/divider -->
+                <template x-if="link.link_type !== 'header' && link.link_type !== 'divider'">
+                  <div class="absolute left-0 top-3 bottom-3 w-[3px] rounded-r-full transition-colors"
+                       :style="`background:${link.color};opacity:${link.is_active ? '0.75' : '0.3'}`"></div>
+                </template>
 
+                <!-- ══ HEADER ══ -->
+                <template x-if="link.link_type === 'header'">
+                  <div class="flex items-center gap-3 pl-5 pr-4 py-3">
+                    <div class="drag-handle cursor-grab active:cursor-grabbing shrink-0 select-none" style="color:rgba(255,255,255,0.15)">
+                      <span class="material-symbols-outlined" style="font-size:16px">drag_indicator</span>
+                    </div>
+                    <span class="iconify shrink-0" data-icon="mdi:format-header-1" data-width="16" data-height="16" style="color:#a5b4fc"></span>
+                    <input type="text" x-model="link.title" @change="updateLink(link)"
+                      placeholder="Header text…"
+                      class="flex-1 bg-transparent text-[14px] font-bold text-on-surface placeholder-on-surface-variant/30 outline-none border-0 leading-tight">
+                    <button @click.stop="link.is_active = !link.is_active; updateLink(link)"
+                      class="shrink-0 w-9 h-[20px] rounded-full transition-all relative"
+                      :class="link.is_active ? 'bg-primary' : 'bg-surface-container-highest'">
+                      <span class="absolute top-[2px] left-[2px] w-[16px] h-[16px] rounded-full bg-white shadow-sm transition-transform"
+                        :class="link.is_active ? 'translate-x-[17px]' : 'translate-x-0'"></span>
+                    </button>
+                    <button @click="deleteLink(link.id)" class="shrink-0 ml-1 transition-colors" style="color:rgba(255,255,255,0.18)"
+                      onmouseover="this.style.color='rgb(239,68,68)'" onmouseout="this.style.color='rgba(255,255,255,0.18)'" title="Delete">
+                      <span class="material-symbols-outlined" style="font-size:15px">delete</span>
+                    </button>
+                  </div>
+                </template>
+
+                <!-- ══ DIVIDER ══ -->
+                <template x-if="link.link_type === 'divider'">
+                  <div class="flex items-center gap-3 pl-5 pr-4 py-3">
+                    <div class="drag-handle cursor-grab active:cursor-grabbing shrink-0 select-none" style="color:rgba(255,255,255,0.15)">
+                      <span class="material-symbols-outlined" style="font-size:16px">drag_indicator</span>
+                    </div>
+                    <div class="flex-1 flex items-center gap-2">
+                      <div class="h-px flex-1 rounded-full" style="background:rgba(255,255,255,0.12)"></div>
+                      <input type="text" x-model="link.title" @change="updateLink(link)"
+                        placeholder="Label (optional)"
+                        class="bg-transparent text-[11px] text-on-surface-variant/50 placeholder-on-surface-variant/20 outline-none border-0 text-center min-w-0 max-w-[120px]">
+                      <div class="h-px flex-1 rounded-full" style="background:rgba(255,255,255,0.12)"></div>
+                    </div>
+                    <button @click.stop="link.is_active = !link.is_active; updateLink(link)"
+                      class="shrink-0 w-9 h-[20px] rounded-full transition-all relative"
+                      :class="link.is_active ? 'bg-primary' : 'bg-surface-container-highest'">
+                      <span class="absolute top-[2px] left-[2px] w-[16px] h-[16px] rounded-full bg-white shadow-sm transition-transform"
+                        :class="link.is_active ? 'translate-x-[17px]' : 'translate-x-0'"></span>
+                    </button>
+                    <button @click="deleteLink(link.id)" class="shrink-0 ml-1 transition-colors" style="color:rgba(255,255,255,0.18)"
+                      onmouseover="this.style.color='rgb(239,68,68)'" onmouseout="this.style.color='rgba(255,255,255,0.18)'" title="Delete">
+                      <span class="material-symbols-outlined" style="font-size:15px">delete</span>
+                    </button>
+                  </div>
+                </template>
+
+                <!-- ══ Normal LINK / Media ══ -->
+                <template x-if="link.link_type !== 'header' && link.link_type !== 'divider'"><div>
                 <!-- ── Main row: drag + icon + title/url + toggle ── -->
                 <div class="flex items-center gap-3 pl-5 pr-4 pt-3.5 pb-3">
 
@@ -383,6 +436,15 @@
 
                   <!-- Thin divider -->
                   <div class="w-px h-3.5 shrink-0" style="background:rgba(255,255,255,0.08)"></div>
+
+                  <!-- Embed badge (media types) -->
+                  <template x-if="EMBED_LINK_TYPES.has(link.link_type)">
+                    <span class="h-6 px-2 rounded-md text-[9px] font-bold tracking-widest shrink-0 flex items-center gap-1"
+                      style="background:rgba(29,185,84,0.1);border:1px solid rgba(29,185,84,0.25);color:#1DB954">
+                      <span class="iconify" data-icon="mdi:play-circle" data-width="10" data-height="10"></span>
+                      EMBED
+                    </span>
+                  </template>
 
                   <!-- Font button -->
                   <button @click="openFontPicker = (openFontPicker === link.id ? null : link.id)"
@@ -456,6 +518,7 @@
                   </div>
                 </div>
 
+                </div></template><!-- /normal link -->
               </div>
             </template>
           </div>
@@ -1022,17 +1085,45 @@
             <!-- Links preview -->
             <div class="px-3 space-y-2 pb-4">
               <template x-for="link in links.filter(l => l.is_active)" :key="link.id">
-                <div
-                  class="flex items-center gap-2 px-3 py-2.5 cursor-pointer"
-                  :style="previewBtnStyle(link)"
-                  style="transition: transform 0.18s ease, box-shadow 0.18s ease;"
-                  @mouseenter="if(btn.hover) $el.style.transform='translateY(-2px)'"
-                  @mouseleave="if(btn.hover) $el.style.transform='translateY(0)'"
-                >
-                  <span class="material-symbols-outlined" :style="`font-size:14px;color:${link.icon_color}`" x-text="link.icon"></span>
-                  <span class="text-xs font-medium flex-1 truncate"
-                    :style="`font-family:'${link.font_family || font.family}',sans-serif;color:${link.text_color}`"
-                    x-text="link.title"></span>
+                <div>
+                  <!-- Header -->
+                  <template x-if="link.link_type === 'header'">
+                    <div class="px-1 pt-2 pb-0.5">
+                      <p class="text-[10px] font-bold uppercase tracking-widest opacity-60 truncate"
+                        :style="`color:${font.textColor};font-family:'${link.font_family || font.family}',sans-serif`"
+                        x-text="link.title"></p>
+                    </div>
+                  </template>
+                  <!-- Divider -->
+                  <template x-if="link.link_type === 'divider'">
+                    <div class="flex items-center gap-2 px-1 py-1.5">
+                      <div class="h-px flex-1 opacity-20" :style="`background:${font.textColor}`"></div>
+                      <template x-if="link.title && link.title !== 'Divider'">
+                        <span class="text-[9px] opacity-40 shrink-0" :style="`color:${font.textColor}`" x-text="link.title"></span>
+                      </template>
+                      <div class="h-px flex-1 opacity-20" :style="`background:${font.textColor}`"></div>
+                    </div>
+                  </template>
+                  <!-- Normal link -->
+                  <template x-if="link.link_type !== 'header' && link.link_type !== 'divider'">
+                    <div
+                      class="flex items-center gap-2 px-3 py-2.5 cursor-pointer"
+                      :style="previewBtnStyle(link)"
+                      style="transition: transform 0.18s ease, box-shadow 0.18s ease;"
+                      @mouseenter="if(btn.hover) $el.style.transform='translateY(-2px)'"
+                      @mouseleave="if(btn.hover) $el.style.transform='translateY(0)'"
+                    >
+                      <template x-if="link.icon && link.icon.includes(':')">
+                        <span class="iconify" :data-icon="link.icon" data-width="14" data-height="14" :style="`color:${link.icon_color};flex-shrink:0`"></span>
+                      </template>
+                      <template x-if="!link.icon || !link.icon.includes(':')">
+                        <span class="material-symbols-outlined" :style="`font-size:14px;color:${link.icon_color};flex-shrink:0`" x-text="link.icon || 'link'"></span>
+                      </template>
+                      <span class="text-xs font-medium flex-1 truncate"
+                        :style="`font-family:'${link.font_family || font.family}',sans-serif;color:${link.text_color}`"
+                        x-text="link.title"></span>
+                    </div>
+                  </template>
                 </div>
               </template>
               <template x-if="links.filter(l=>l.is_active).length===0">
@@ -1134,24 +1225,33 @@
           </template>
         </div>
 
-        <!-- Right: items grid -->
-        <div class="flex-1 overflow-y-auto p-3 custom-scrollbar">
-          <div class="grid grid-cols-3 sm:grid-cols-5 gap-2">
+        <!-- Right: items list -->
+        <div class="flex-1 overflow-y-auto p-2 custom-scrollbar">
+          <div class="flex flex-col gap-0.5">
             <template x-for="type in filteredAddTypes" :key="type.id">
               <button
                 @click="addLinkFromType(type)"
-                class="flex flex-col items-center gap-2 p-3 rounded-xl transition-all hover:scale-105 active:scale-95 group"
-                style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07)"
-                onmouseover="this.style.borderColor='rgba(99,102,241,0.4)'"
-                onmouseout="this.style.borderColor='rgba(255,255,255,0.07)'">
-                <div class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
-                  :style="`background:${type.color === 'transparent' ? 'rgba(255,255,255,0.08)' : type.color + '22'};border:1.5px solid ${type.color === 'transparent' ? 'rgba(255,255,255,0.12)' : type.color + '66'}`">
-                  <span class="material-symbols-outlined text-xl" :style="`color:${type.color === 'transparent' ? '#a5b4fc' : type.color}`" x-text="type.icon"></span>
+                class="flex items-center gap-3 w-full px-3 py-2.5 rounded-xl transition-all active:scale-[0.98] text-left"
+                style="border:1px solid transparent"
+                onmouseover="this.style.background='rgba(255,255,255,0.05)';this.style.borderColor='rgba(255,255,255,0.08)'"
+                onmouseout="this.style.background='';this.style.borderColor='transparent'">
+                <!-- Icon badge -->
+                <div class="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
+                  :style="`background:${type.color}22;border:1.5px solid ${type.color}44`">
+                  <template x-if="type.icon && type.icon.includes(':')">
+                    <span class="iconify" :data-icon="type.icon" data-width="20" data-height="20" :style="`color:${type.color}`"></span>
+                  </template>
+                  <template x-if="!type.icon || !type.icon.includes(':')">
+                    <span class="material-symbols-outlined" style="font-size:18px" :style="`color:${type.color}`" x-text="type.icon"></span>
+                  </template>
                 </div>
-                <span class="text-[10px] font-medium text-on-surface-variant group-hover:text-on-surface text-center leading-tight truncate w-full transition-colors" x-text="type.label"></span>
+                <!-- Label -->
+                <span class="flex-1 text-[13px] font-medium text-on-surface" x-text="type.label"></span>
+                <!-- Arrow -->
+                <span class="material-symbols-outlined text-[16px] shrink-0" style="color:rgba(255,255,255,0.18)">chevron_right</span>
               </button>
             </template>
-            <div x-show="filteredAddTypes.length === 0" class="col-span-3 sm:col-span-5 py-8 text-center text-sm text-on-surface-variant">
+            <div x-show="filteredAddTypes.length === 0" class="py-10 text-center text-sm text-on-surface-variant">
               No results for "<span x-text="addModalSearch"></span>"
             </div>
           </div>
@@ -1473,6 +1573,7 @@ const CSRF_TOKEN = (function() {
 })();
 
 const PLATFORM_ICONS = {{ platform_icons_json|safe }};
+const EMBED_LINK_TYPES = new Set(['spotify','youtube','soundcloud','apple_music','deezer','tidal','bandcamp','podcast','tiktok_video','vimeo','audiomack','pdf','video','audio']);
 
 /* ── Iconify icon picker data ── */
 const ICON_CATEGORIES = {
@@ -1650,12 +1751,73 @@ const INITIAL_LINKS = [
     is_active: {{ link.is_active|yesno:"true,false" }},
     order: {{ link.order }},
     display_style: "{{ link.display_style|escapejs }}",
+    link_type: "{{ link.link_type|escapejs }}",
     thumbnail_url: "{{ link.thumbnail_url|escapejs }}",
   },{% endfor %}
 ];
 
 const ADD_LINK_TYPES = [
-  // TODO: fill per-category items
+  // ── Social ──
+  { id: 'instagram',      label: 'Instagram',      icon: 'simple-icons:instagram',   icon_type: 'instagram',   color: '#E1306C', category: 'social' },
+  { id: 'tiktok',         label: 'TikTok',         icon: 'simple-icons:tiktok',      icon_type: 'tiktok',      color: '#010101', category: 'social' },
+  { id: 'tiktok_shop',    label: 'TikTok Shop',    icon: 'simple-icons:tiktok',      icon_type: 'tiktok',      color: '#EE1D52', category: 'social' },
+  { id: 'x',              label: 'X',              icon: 'simple-icons:x',           icon_type: 'x',           color: '#000000', category: 'social' },
+  { id: 'threads',        label: 'Threads',        icon: 'simple-icons:threads',     icon_type: 'threads',     color: '#000000', category: 'social' },
+  { id: 'facebook',       label: 'Facebook',       icon: 'simple-icons:facebook',    icon_type: 'facebook',    color: '#1877F2', category: 'social' },
+  { id: 'youtube',        label: 'YouTube',        icon: 'simple-icons:youtube',     icon_type: 'youtube',     color: '#FF0000', category: 'social' },
+  { id: 'linkedin',       label: 'LinkedIn',       icon: 'simple-icons:linkedin',    icon_type: 'linkedin',    color: '#0A66C2', category: 'social' },
+  { id: 'snapchat',       label: 'Snapchat',       icon: 'simple-icons:snapchat',    icon_type: 'snapchat',    color: '#FFFC00', category: 'social' },
+  { id: 'pinterest',      label: 'Pinterest',      icon: 'simple-icons:pinterest',   icon_type: 'pinterest',   color: '#E60023', category: 'social' },
+  { id: 'twitch',         label: 'Twitch',         icon: 'simple-icons:twitch',      icon_type: 'twitch',      color: '#9146FF', category: 'social' },
+  { id: 'reddit',         label: 'Reddit',         icon: 'simple-icons:reddit',      icon_type: 'reddit',      color: '#FF4500', category: 'social' },
+  { id: 'discord',        label: 'Discord',        icon: 'simple-icons:discord',     icon_type: 'discord',     color: '#5865F2', category: 'social' },
+  { id: 'telegram',       label: 'Telegram',       icon: 'simple-icons:telegram',    icon_type: 'telegram',    color: '#2AABEE', category: 'social' },
+  { id: 'whatsapp',       label: 'WhatsApp',       icon: 'simple-icons:whatsapp',    icon_type: 'whatsapp',    color: '#25D366', category: 'social' },
+  { id: 'line',           label: 'Line',           icon: 'simple-icons:line',        icon_type: 'line',        color: '#00B900', category: 'social' },
+  { id: 'wechat',         label: 'WeChat',         icon: 'simple-icons:wechat',      icon_type: 'wechat',      color: '#07C160', category: 'social' },
+  { id: 'bluesky',        label: 'Bluesky',        icon: 'simple-icons:bluesky',     icon_type: 'bluesky',     color: '#0085FF', category: 'social' },
+  { id: 'mastodon',       label: 'Mastodon',       icon: 'simple-icons:mastodon',    icon_type: 'mastodon',    color: '#6364FF', category: 'social' },
+  { id: 'bereal',         label: 'BeReal',         icon: 'simple-icons:bereal',      icon_type: 'bereal',      color: '#000000', category: 'social' },
+  { id: 'kick',           label: 'Kick',           icon: 'simple-icons:kick',        icon_type: 'kick',        color: '#53FC18', category: 'social' },
+  { id: 'clubhouse',      label: 'Clubhouse',      icon: 'simple-icons:clubhouse',   icon_type: 'clubhouse',   color: '#F3E8CC', category: 'social' },
+  { id: 'cameo',          label: 'Cameo',          icon: 'simple-icons:cameo',       icon_type: 'cameo',       color: '#00D4D4', category: 'social' },
+  { id: 'substack',       label: 'Substack',       icon: 'simple-icons:substack',    icon_type: 'substack',    color: '#FF6719', category: 'social' },
+  { id: 'medium',         label: 'Medium',         icon: 'simple-icons:medium',      icon_type: 'medium',      color: '#000000', category: 'social' },
+  { id: 'patreon',        label: 'Patreon',        icon: 'simple-icons:patreon',     icon_type: 'patreon',     color: '#FF424D', category: 'social' },
+  { id: 'github',         label: 'GitHub',         icon: 'simple-icons:github',      icon_type: 'github',      color: '#181717', category: 'social' },
+  { id: 'behance',        label: 'Behance',        icon: 'simple-icons:behance',     icon_type: 'behance',     color: '#1769FF', category: 'social' },
+  { id: 'dribbble',       label: 'Dribbble',       icon: 'simple-icons:dribbble',    icon_type: 'dribbble',    color: '#EA4C89', category: 'social' },
+  { id: 'google_reviews', label: 'Google Reviews', icon: 'simple-icons:google',      icon_type: 'google',      color: '#4285F4', category: 'social' },
+  { id: 'rss',            label: 'RSS Feed',       icon: 'mdi:rss',                  icon_type: 'rss',         color: '#FF6600', category: 'social' },
+
+  // ── Media (embed players) ──
+  { id: 'spotify',     label: 'Spotify',        icon: 'simple-icons:spotify',       icon_type: 'spotify',     color: '#1DB954', category: 'media', link_type: 'spotify' },
+  { id: 'youtube',     label: 'YouTube',         icon: 'simple-icons:youtube',       icon_type: 'youtube',     color: '#FF0000', category: 'media', link_type: 'youtube' },
+  { id: 'soundcloud',  label: 'SoundCloud',      icon: 'simple-icons:soundcloud',    icon_type: 'soundcloud',  color: '#FF5500', category: 'media', link_type: 'soundcloud' },
+  { id: 'applemusic',  label: 'Apple Music',     icon: 'simple-icons:applemusic',    icon_type: 'applemusic',  color: '#FC3C44', category: 'media', link_type: 'apple_music' },
+  { id: 'deezer',      label: 'Deezer',          icon: 'simple-icons:deezer',        icon_type: 'deezer',      color: '#EF5466', category: 'media', link_type: 'deezer' },
+  { id: 'tidal',       label: 'Tidal',           icon: 'simple-icons:tidal',         icon_type: 'tidal',       color: '#000000', category: 'media', link_type: 'tidal' },
+  { id: 'bandcamp',    label: 'Bandcamp',        icon: 'simple-icons:bandcamp',      icon_type: 'bandcamp',    color: '#1DA0C3', category: 'media', link_type: 'bandcamp' },
+  { id: 'podcast',      label: 'Podcast',         icon: 'mdi:podcast',                icon_type: 'podcast',      color: '#9933CC', category: 'media', link_type: 'podcast' },
+  { id: 'tiktok_video', label: 'TikTok Video',   icon: 'simple-icons:tiktok',        icon_type: 'tiktok',       color: '#010101', category: 'media', link_type: 'tiktok_video' },
+  { id: 'vimeo',        label: 'Vimeo',           icon: 'simple-icons:vimeo',         icon_type: 'vimeo',        color: '#1AB7EA', category: 'media', link_type: 'vimeo' },
+  { id: 'audiomack',    label: 'Audiomack',       icon: 'simple-icons:audiomack',     icon_type: 'audiomack',    color: '#FFA500', category: 'media', link_type: 'audiomack' },
+  { id: 'pdf',          label: 'PDF',             icon: 'mdi:file-pdf-box',           icon_type: 'pdf',          color: '#F40F02', category: 'media', link_type: 'pdf' },
+  { id: 'video',        label: 'My Video',        icon: 'mdi:video',                  icon_type: 'video',        color: '#6366f1', category: 'media', link_type: 'video' },
+  { id: 'audio',        label: 'My Music',        icon: 'mdi:music-circle',           icon_type: 'audio',        color: '#8b5cf6', category: 'media', link_type: 'audio' },
+  { id: 'presave',      label: 'Music Pre-save',  icon: 'mdi:music-note-plus',        icon_type: 'presave',      color: '#1DB954', category: 'media', link_type: 'presave' },
+  // ── Media (link only) ──
+  { id: 'netflix',     label: 'Netflix',         icon: 'simple-icons:netflix',       icon_type: 'netflix',     color: '#E50914', category: 'media' },
+  { id: 'disneyplus',  label: 'Disney+',         icon: 'simple-icons:disneyplus',    icon_type: 'disneyplus',  color: '#113CCF', category: 'media' },
+  { id: 'primevideo',  label: 'Prime Video',     icon: 'simple-icons:primevideo',    icon_type: 'primevideo',  color: '#00A8E0', category: 'media' },
+  { id: 'appletv',     label: 'Apple TV+',       icon: 'simple-icons:appletv',       icon_type: 'appletv',     color: '#000000', category: 'media' },
+  { id: 'crunchyroll', label: 'Crunchyroll',     icon: 'simple-icons:crunchyroll',   icon_type: 'crunchyroll', color: '#F47521', category: 'media' },
+  { id: 'mubi',        label: 'Mubi',            icon: 'simple-icons:mubi',          icon_type: 'mubi',        color: '#000000', category: 'media' },
+  { id: 'plex',        label: 'Plex',            icon: 'simple-icons:plex',          icon_type: 'plex',        color: '#E5A00D', category: 'media' },
+
+  // ── Text ──
+  { id: 'header',  label: 'Header Text', icon: 'mdi:format-header-1', icon_type: 'header',  color: '#a5b4fc', category: 'text', link_type: 'header' },
+  { id: 'divider', label: 'Divider',     icon: 'mdi:minus',           icon_type: 'divider', color: '#6b6b8a', category: 'text', link_type: 'divider' },
 ];
 
 function dashboardApp() {
@@ -1843,12 +2005,13 @@ function dashboardApp() {
           headers: { 'X-CSRFToken': CSRF_TOKEN, 'Content-Type': 'application/json' },
           body: JSON.stringify({
             title: type.label,
-            url: 'https://',
+            url: (type.link_type && type.link_type !== 'link') ? '#' : 'https://',
             icon: type.icon,
             icon_type: type.icon_type,
             color: type.color === 'transparent' ? '#8083ff' : type.color,
             text_color: '#ffffff',
             icon_color: '#ffffff',
+            link_type: type.link_type || 'link',
           }),
         });
         const data = await res.json();

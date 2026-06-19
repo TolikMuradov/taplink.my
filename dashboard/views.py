@@ -93,13 +93,15 @@ def link_create(request):
     except (json.JSONDecodeError, ValueError):
         prefill = {}
 
+    link_type = prefill.get('link_type', 'link')
     kwargs = {
         'user': request.user,
         'title': prefill.get('title', 'New link'),
-        'url': prefill.get('url', 'https://'),
+        'url': prefill.get('url', '#') if link_type != 'link' else prefill.get('url', 'https://'),
+        'link_type': link_type,
         'order': Link.objects.filter(user=request.user).count(),
     }
-    for field in ('icon', 'icon_type', 'color', 'text_color', 'icon_color'):
+    for field in ('icon', 'icon_type', 'color', 'text_color', 'icon_color', 'display_style'):
         if field in prefill:
             kwargs[field] = prefill[field]
 
@@ -118,6 +120,7 @@ def link_create(request):
         'is_active': link.is_active,
         'order': link.order,
         'display_style': link.display_style,
+        'link_type': link.link_type,
         'thumbnail_url': link.thumbnail_url,
     })
 
@@ -127,7 +130,7 @@ def link_create(request):
 def link_update(request, pk):
     link = get_object_or_404(Link, pk=pk, user=request.user)
     data = json.loads(request.body)
-    for field in ('title', 'url', 'icon', 'icon_type', 'color', 'text_color', 'icon_color', 'font_family', 'display_style', 'thumbnail_url', 'is_active'):
+    for field in ('title', 'url', 'icon', 'icon_type', 'color', 'text_color', 'icon_color', 'font_family', 'display_style', 'link_type', 'thumbnail_url', 'is_active'):
         if field in data:
             setattr(link, field, data[field])
     link.save()

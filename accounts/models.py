@@ -51,6 +51,7 @@ class Link(models.Model):
     icon_color    = models.CharField(max_length=7, default='#ffffff')      # icon color
     font_family   = models.CharField(max_length=60, blank=True, default='') # per-link font (empty = global)
     display_style = models.CharField(max_length=20, default='icon_text')   # 'icon_text' or 'icon_only'
+    link_type     = models.CharField(max_length=20, default='link')        # 'link', 'header', 'divider'
     thumbnail_url = models.URLField(max_length=500, blank=True)
     is_active     = models.BooleanField(default=True)
     order         = models.PositiveIntegerField(default=0)
