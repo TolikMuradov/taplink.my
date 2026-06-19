@@ -75,6 +75,8 @@ class Appearance(models.Model):
     bg_color2       = models.CharField(max_length=7, default='#1f1f27')
     bg_gradient_dir = models.CharField(max_length=10, default='to bottom')
     bg_image        = models.ImageField(upload_to='backgrounds/', null=True, blank=True)
+    bg_image_pos_x  = models.FloatField(default=50.0)
+    bg_image_pos_y  = models.FloatField(default=50.0)
     bg_video_url    = models.URLField(max_length=500, blank=True)
     # Buttons
     btn_style      = models.CharField(max_length=10, default='filled')     # filled, outline, soft, shadow, glass, gradient

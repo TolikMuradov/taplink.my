@@ -9,6 +9,9 @@
   .sortable-chosen  { box-shadow: 0 0 0 2px rgba(192,193,255,0.35), 0 8px 24px rgba(0,0,0,0.4) !important; }
   .sortable-drag    { box-shadow: 0 16px 40px rgba(0,0,0,0.5) !important; }
   .drag-handle      { touch-action: none; }
+  /* Avatar crop modal */
+  #avatar-crop-area { touch-action: none; user-select: none; }
+  #avatar-crop-area img { pointer-events: none; user-select: none; }
 </style>
 {% endblock %}
 
@@ -573,7 +576,7 @@
                   </div>
                   {% else %}
                   <div class="space-y-3">
-                    <label class="flex flex-col items-center gap-2 py-8 rounded-xl border-2 border-dashed border-outline-variant hover:border-primary cursor-pointer transition-colors"
+                    <label class="flex flex-col items-center gap-2 py-6 rounded-xl border-2 border-dashed border-outline-variant hover:border-primary cursor-pointer transition-colors"
                       :class="bgImageUrl ? 'border-primary/40' : ''">
                       <template x-if="!bgImageUrl">
                         <div class="flex flex-col items-center gap-2">
@@ -582,17 +585,39 @@
                         </div>
                       </template>
                       <template x-if="bgImageUrl">
-                        <div class="relative w-full">
-                          <img :src="bgImageUrl" class="w-full h-24 object-cover rounded-lg" alt="Background">
-                          <div class="absolute inset-0 bg-black/40 rounded-lg flex items-center justify-center">
-                            <span class="text-white text-xs font-medium">Click to change</span>
-                          </div>
+                        <div class="flex flex-col items-center gap-1 py-1">
+                          <span class="material-symbols-outlined text-xl text-primary">image</span>
+                          <span class="text-xs text-on-surface-variant">Click to change image</span>
                         </div>
                       </template>
                       <input type="file" accept="image/*" class="hidden" @change="uploadBackground($event)">
                     </label>
+
+                    <!-- Drag-to-position editor -->
                     <template x-if="bgImageUrl">
-                      <button @click="bgImageUrl=''; bg.imageUrl=''" class="text-xs text-error hover:underline">Remove image</button>
+                      <div>
+                        <p class="text-xs text-on-surface-variant mb-1.5">Drag to set position</p>
+                        <div
+                          class="relative rounded-xl overflow-hidden select-none"
+                          style="height:110px;cursor:crosshair;touch-action:none;"
+                          @mousedown.prevent="bgPosStartDrag($event)"
+                          @touchstart.prevent="bgPosStartDrag($event)"
+                        >
+                          <div
+                            class="absolute inset-0"
+                            :style="`background-image:url(${bgImageUrl});background-size:cover;background-position:${bgPosX}% ${bgPosY}%;`"
+                          ></div>
+                          <!-- Grid lines -->
+                          <div class="absolute inset-0 pointer-events-none" style="border:1px solid rgba(255,255,255,0.15);background:linear-gradient(rgba(255,255,255,0.04) 1px,transparent 1px) 0 0/100% 33.3%,linear-gradient(90deg,rgba(255,255,255,0.04) 1px,transparent 1px) 0 0/33.3% 100%"></div>
+                          <!-- Position crosshair -->
+                          <div
+                            class="absolute pointer-events-none"
+                            style="width:18px;height:18px;margin:-9px;border:2px solid #fff;border-radius:50%;box-shadow:0 0 0 1px rgba(0,0,0,0.4),0 2px 6px rgba(0,0,0,0.4);"
+                            :style="`left:${bgPosX}%;top:${bgPosY}%`"
+                          ></div>
+                        </div>
+                        <button @click="bgImageUrl=''" class="mt-1.5 text-xs text-error hover:underline">Remove image</button>
+                      </div>
                     </template>
                   </div>
                   {% endif %}
@@ -958,7 +983,24 @@
         <!-- Phone frame -->
         <div class="rounded-[40px] border-[8px] border-surface-container-highest overflow-hidden shadow-2xl" style="aspect-ratio:9/19.5">
           <!-- Phone screen -->
-          <div class="h-full overflow-y-auto" :style="previewBgStyle()">
+          <div class="h-full relative overflow-hidden" :style="previewBgStyle()">
+
+            <!-- YouTube iframe overlay (video bg type) -->
+            <template x-if="bg.type==='video' && getYouTubeId(bg.videoUrl)">
+              <div class="absolute inset-0 pointer-events-none overflow-hidden" style="z-index:0">
+                <iframe
+                  :src="`https://www.youtube.com/embed/${getYouTubeId(bg.videoUrl)}?autoplay=1&mute=1&loop=1&playlist=${getYouTubeId(bg.videoUrl)}&controls=0&playsinline=1`"
+                  style="position:absolute;top:-30%;left:-30%;width:160%;height:160%;border:0;"
+                  allow="autoplay; encrypted-media"
+                  frameborder="0"
+                ></iframe>
+                <div class="absolute inset-0" style="background:rgba(0,0,0,0.25)"></div>
+              </div>
+            </template>
+
+            <!-- Scrollable content layer -->
+            <div class="h-full overflow-y-auto" style="position:relative;z-index:1">
+
             <!-- Notch -->
             <div class="h-7 flex items-center justify-center" style="background:rgba(0,0,0,0.2)">
               <div class="w-16 h-3 bg-black rounded-full"></div>
@@ -1016,8 +1058,9 @@
               <span class="opacity-40" style="font-size:9px" :style="`color:${font.textColor}`">taplink.my</span>
             </div>
             {% endif %}
-          </div>
-        </div>
+            </div><!-- /scrollable content layer -->
+          </div><!-- /phone screen outer -->
+        </div><!-- /phone frame -->
         <!-- Gloss overlay -->
         <div class="absolute inset-0 rounded-[40px] pointer-events-none" style="background:linear-gradient(135deg,rgba(255,255,255,0.06) 0%,transparent 60%)"></div>
       </div>
@@ -1211,6 +1254,105 @@
     </div>
   </div>
 
+  <!-- ===== AVATAR CROP MODAL ===== -->
+  <div
+    x-show="cropperOpen"
+    x-cloak
+    x-transition:enter="transition ease-out duration-200"
+    x-transition:enter-start="opacity-0"
+    x-transition:enter-end="opacity-100"
+    x-transition:leave="transition ease-in duration-150"
+    x-transition:leave-start="opacity-100"
+    x-transition:leave-end="opacity-0"
+    @keydown.escape.window="cropperOpen = false"
+    class="fixed inset-0 z-50 flex items-center justify-center p-4"
+  >
+    <div class="absolute inset-0 bg-black/75 backdrop-blur-sm" @click="cropperOpen = false"></div>
+    <div x-show="cropperOpen"
+      x-transition:enter="transition ease-out duration-220"
+      x-transition:enter-start="opacity-0 scale-95 translate-y-2"
+      x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+      x-transition:leave="transition ease-in duration-150"
+      x-transition:leave-start="opacity-100 scale-100"
+      x-transition:leave-end="opacity-0 scale-95"
+      class="relative w-full max-w-sm glass-card rounded-2xl overflow-hidden shadow-2xl">
+
+      <!-- Başlık -->
+      <div class="flex items-center gap-3 px-5 py-4 border-b border-outline-variant">
+        <span class="material-symbols-outlined text-primary" style="font-variation-settings:'FILL' 1">crop_free</span>
+        <h3 class="font-semibold text-on-surface">Fotoğrafı ayarla</h3>
+        <button @click="cropperOpen = false" class="ml-auto text-on-surface-variant hover:text-on-surface transition-colors">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <!-- Crop alanı -->
+      <div class="flex flex-col items-center py-6 px-5" style="background:#0c0c18">
+        <p class="text-xs mb-4" style="color:#6b6b8a">Kareyi sürükle · Köşelerden boyutlandır</p>
+
+        <!--
+          320×320 konteyner. Resim sabit (cover), daire sürüklenebilir.
+          box-shadow daire dışını kararatır.
+        -->
+        <div
+          id="crop-container"
+          class="relative overflow-hidden"
+          style="width:320px;height:320px;background:#111;border-radius:8px;"
+        >
+          <!-- Sabit resim (cover modunda, taşan kısım gizlenir) -->
+          <img
+            id="crop-img"
+            :src="cropperSrc"
+            alt=""
+            draggable="false"
+            style="position:absolute;pointer-events:none;"
+          >
+
+          <!-- Sürüklenebilir kare çerçeve + köşe tutamaçları -->
+          <div
+            id="crop-frame"
+            style="position:absolute;width:220px;height:220px;
+                   box-shadow:0 0 0 600px rgba(0,0,0,0.65);
+                   border:2px solid rgba(124,126,255,0.9);
+                   cursor:move;z-index:10;box-sizing:border-box;"
+            @mousedown.prevent="cropFrameDrag($event)"
+            @touchstart.prevent="cropFrameDrag($event)"
+          >
+            <!-- Köşe tutamaçları (boyutlandırma) -->
+            <div style="position:absolute;top:-7px;left:-7px;width:14px;height:14px;background:#7c7eff;border-radius:3px;cursor:nw-resize;"
+              @mousedown.stop.prevent="cropResizeDrag($event,'nw')"
+              @touchstart.stop.prevent="cropResizeDrag($event,'nw')"></div>
+            <div style="position:absolute;top:-7px;right:-7px;width:14px;height:14px;background:#7c7eff;border-radius:3px;cursor:ne-resize;"
+              @mousedown.stop.prevent="cropResizeDrag($event,'ne')"
+              @touchstart.stop.prevent="cropResizeDrag($event,'ne')"></div>
+            <div style="position:absolute;bottom:-7px;left:-7px;width:14px;height:14px;background:#7c7eff;border-radius:3px;cursor:sw-resize;"
+              @mousedown.stop.prevent="cropResizeDrag($event,'sw')"
+              @touchstart.stop.prevent="cropResizeDrag($event,'sw')"></div>
+            <div style="position:absolute;bottom:-7px;right:-7px;width:14px;height:14px;background:#7c7eff;border-radius:3px;cursor:se-resize;"
+              @mousedown.stop.prevent="cropResizeDrag($event,'se')"
+              @touchstart.stop.prevent="cropResizeDrag($event,'se')"></div>
+          </div>
+        </div>
+
+        <p class="text-xs mt-3" style="color:#4a4a62">Daire içindeki alan profil fotoğrafı olacak</p>
+      </div>
+
+      <!-- Butonlar -->
+      <div class="px-5 py-4 flex gap-3 border-t border-outline-variant">
+        <button
+          @click="cropperOpen = false"
+          class="flex-1 py-2.5 rounded-xl text-sm font-semibold transition-colors"
+          style="background:rgba(255,255,255,0.05);color:#c7c4d7;border:1px solid rgba(255,255,255,0.08);"
+        >İptal</button>
+        <button
+          @click="applyCrop()"
+          class="flex-1 py-2.5 rounded-xl text-white text-sm font-semibold transition-opacity hover:opacity-90"
+          style="background:linear-gradient(135deg,#7c7eff,#6366f1);box-shadow:0 4px 14px rgba(99,102,241,0.4)"
+        >Uygula</button>
+      </div>
+    </div>
+  </div>
+
 </div>
 {% endblock %}
 
@@ -1265,7 +1407,7 @@ const INITIAL_LINKS = [
 
 function dashboardApp() {
   return {
-    activeTab: 'links',
+    activeTab: new URLSearchParams(window.location.search).get('tab') || 'links',
     sidebarOpen: true,
     previewOpen: true,
     isStandard: {{ profile.is_standard|yesno:"true,false" }},
@@ -1312,6 +1454,12 @@ function dashboardApp() {
     // Avatar & background
     avatarUrl: "{% if profile.avatar %}{{ profile.avatar.url|escapejs }}{% endif %}",
     bgImageUrl: "{% if appearance.bg_image %}{{ appearance.bg_image.url|escapejs }}{% endif %}",
+    bgPosX: {{ appearance.bg_image_pos_x|default:50 }},
+    bgPosY: {{ appearance.bg_image_pos_y|default:50 }},
+
+    // Avatar crop modal
+    cropperOpen: false,
+    cropperSrc: '',
 
     // Settings
     showUsernameModal: false,
@@ -1381,10 +1529,17 @@ function dashboardApp() {
 
     // ---- PREVIEW ----
     previewBgStyle() {
-      if (this.bg.type === 'gradient') {
-        return `background: linear-gradient(${this.bg.dir}, ${this.bg.color}, ${this.bg.color2}); height:100%; overflow-y:auto`;
-      }
-      return `background-color: ${this.bg.color}; height:100%; overflow-y:auto`;
+      if (this.bg.type === 'gradient')
+        return `background:linear-gradient(${this.bg.dir},${this.bg.color},${this.bg.color2});`;
+      if (this.bg.type === 'image' && this.bgImageUrl)
+        return `background-image:url(${this.bgImageUrl});background-size:cover;background-position:${this.bgPosX}% ${this.bgPosY}%;`;
+      return `background-color:${this.bg.color};`;
+    },
+
+    getYouTubeId(url) {
+      if (!url) return null;
+      const m = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?(?:.*&)?v=|embed\/|shorts\/))([A-Za-z0-9_-]{11})/);
+      return m ? m[1] : null;
     },
 
     previewBtnStyle(link) {
@@ -1521,6 +1676,9 @@ function dashboardApp() {
             bg_color: this.bg.color,
             bg_color2: this.bg.color2,
             bg_gradient_dir: this.bg.dir,
+            bg_video_url: this.bg.videoUrl,
+            bg_image_pos_x: parseFloat(this.bgPosX),
+            bg_image_pos_y: parseFloat(this.bgPosY),
             btn_style: this.btn.style,
             btn_color: this.btn.color,
             btn_text_color: this.btn.textColor,
@@ -1640,33 +1798,258 @@ function dashboardApp() {
       navigator.clipboard.writeText(url).then(() => showToast('Link copied!', 'success'));
     },
 
-    async uploadAvatar(event) {
+    uploadAvatar(event) {
       const file = event.target.files[0];
+      event.target.value = '';
       if (!file) return;
-      if (file.size > 2 * 1024 * 1024) {
-        showToast('File too large. Max 2 MB.', 'error');
+
+      // GIF: crop modal atla, direkt yükle
+      if (file.type === 'image/gif') {
+        if (file.size > 5 * 1024 * 1024) { showToast('GIF max 5 MB olabilir.', 'error'); return; }
+        const fd = new FormData();
+        fd.append('avatar', file, file.name);
+        showToast('GIF yükleniyor…', 'warning');
+        fetch('{% url "dashboard:avatar_upload" %}', {
+          method: 'POST', headers: { 'X-CSRFToken': CSRF_TOKEN }, body: fd,
+        }).then(r => r.json()).then(d => {
+          if (d.ok) { this.avatarUrl = d.url + '?t=' + Date.now(); showToast('GIF profil fotoğrafı ayarlandı!', 'success'); }
+          else showToast(d.error || 'Yükleme başarısız.', 'error');
+        }).catch(() => showToast('Ağ hatası.', 'error'));
         return;
       }
-      const formData = new FormData();
-      formData.append('avatar', file);
-      showToast('Uploading photo…', 'warning');
-      try {
-        const res = await fetch('{% url "dashboard:avatar_upload" %}', {
-          method: 'POST',
-          headers: { 'X-CSRFToken': CSRF_TOKEN },
-          body: formData,
-        });
-        const data = await res.json();
-        if (data.ok) {
-          this.avatarUrl = data.url + '?t=' + Date.now();
-          showToast('Profile photo updated!', 'success');
-        } else {
-          showToast(data.error || 'Upload failed.', 'error');
+
+      if (file.size > 2 * 1024 * 1024) { showToast('Dosya çok büyük. Max 2 MB.', 'error'); return; }
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        this.cropperSrc = e.target.result;
+        const tmp = new Image();
+        tmp.onload = () => {
+          this.cropperOpen = true;
+          this.$nextTick(() => {
+            const imgEl    = document.getElementById('crop-img');
+            const frame    = document.getElementById('crop-frame');
+            const cont     = document.getElementById('crop-container');
+            if (!imgEl || !frame || !cont) return;
+            const CONT     = 320;
+            // Contain: resmin tamamı görünsün, kenar boşluğu kabul edilir
+            const scale    = Math.min(CONT / tmp.naturalWidth, CONT / tmp.naturalHeight);
+            const dW       = Math.round(tmp.naturalWidth  * scale);
+            const dH       = Math.round(tmp.naturalHeight * scale);
+            const dX       = Math.round((CONT - dW) / 2);
+            const dY       = Math.round((CONT - dH) / 2);
+            imgEl.style.width  = dW + 'px';
+            imgEl.style.height = dH + 'px';
+            imgEl.style.left   = dX + 'px';
+            imgEl.style.top    = dY + 'px';
+            // Resim sınırlarını sakla (drag/resize için)
+            cont.dataset.imgX = dX;
+            cont.dataset.imgY = dY;
+            cont.dataset.imgW = dW;
+            cont.dataset.imgH = dH;
+            // Frame: resmin kısa kenarına sığacak boyut, ortada başlar
+            const FSIZE    = Math.min(220, dW, dH);
+            frame.style.width  = FSIZE + 'px';
+            frame.style.height = FSIZE + 'px';
+            frame.style.left   = Math.round(dX + (dW - FSIZE) / 2) + 'px';
+            frame.style.top    = Math.round(dY + (dH - FSIZE) / 2) + 'px';
+          });
+        };
+        tmp.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    },
+
+    cropFrameDrag(e) {
+      const frame = document.getElementById('crop-frame');
+      const cont  = document.getElementById('crop-container');
+      if (!frame) return;
+      const fW  = parseFloat(frame.style.width)  || 220;
+      const fH  = parseFloat(frame.style.height) || 220;
+      const imgX = parseFloat(cont?.dataset.imgX) || 0;
+      const imgY = parseFloat(cont?.dataset.imgY) || 0;
+      const imgW = parseFloat(cont?.dataset.imgW) || 320;
+      const imgH = parseFloat(cont?.dataset.imgH) || 320;
+
+      const t = e.touches ? e.touches[0] : e;
+      const startMX = t.clientX;
+      const startMY = t.clientY;
+      const startFX = parseFloat(frame.style.left) || imgX;
+      const startFY = parseFloat(frame.style.top)  || imgY;
+
+      frame.style.cursor = 'grabbing';
+
+      const onMove = (ev) => {
+        if (ev.cancelable) ev.preventDefault();
+        const touch = ev.touches ? ev.touches[0] : ev;
+        let nx = startFX + (touch.clientX - startMX);
+        let ny = startFY + (touch.clientY - startMY);
+        // Frame yalnızca resim içinde hareket eder
+        nx = Math.max(imgX, Math.min(imgX + imgW - fW, nx));
+        ny = Math.max(imgY, Math.min(imgY + imgH - fH, ny));
+        frame.style.left = nx + 'px';
+        frame.style.top  = ny + 'px';
+      };
+      const onUp = () => {
+        frame.style.cursor = 'move';
+        document.removeEventListener('mousemove', onMove);
+        document.removeEventListener('mouseup',   onUp);
+        document.removeEventListener('touchmove', onMove);
+        document.removeEventListener('touchend',  onUp);
+      };
+      document.addEventListener('mousemove', onMove);
+      document.addEventListener('mouseup',   onUp);
+      document.addEventListener('touchmove', onMove, { passive: false });
+      document.addEventListener('touchend',  onUp);
+    },
+
+    cropResizeDrag(e, dir) {
+      const frame = document.getElementById('crop-frame');
+      const cont  = document.getElementById('crop-container');
+      if (!frame) return;
+      const MIN  = 40;
+      const imgX = parseFloat(cont?.dataset.imgX) || 0;
+      const imgY = parseFloat(cont?.dataset.imgY) || 0;
+      const imgW = parseFloat(cont?.dataset.imgW) || 320;
+      const imgH = parseFloat(cont?.dataset.imgH) || 320;
+
+      const t = e.touches ? e.touches[0] : e;
+      const startMX = t.clientX;
+      const startMY = t.clientY;
+      const startX  = parseFloat(frame.style.left)  || imgX;
+      const startY  = parseFloat(frame.style.top)   || imgY;
+      const startS  = parseFloat(frame.style.width) || Math.min(220, imgW, imgH);
+
+      const onMove = (ev) => {
+        if (ev.cancelable) ev.preventDefault();
+        const touch = ev.touches ? ev.touches[0] : ev;
+        const dx = touch.clientX - startMX;
+        const dy = touch.clientY - startMY;
+        let delta, s, x = startX, y = startY;
+
+        // Köşe yönüne göre delta + resim sınırları içinde kısıtla
+        if (dir === 'se') {
+          delta = (dx + dy) / 2;
+          s = Math.max(MIN, Math.min(startS + delta,
+            imgX + imgW - startX, imgY + imgH - startY));
+        } else if (dir === 'nw') {
+          delta = -(dx + dy) / 2;
+          s = Math.max(MIN, Math.min(startS + delta,
+            startX - imgX + startS, startY - imgY + startS));
+          x = startX + startS - s;
+          y = startY + startS - s;
+        } else if (dir === 'ne') {
+          delta = (dx - dy) / 2;
+          s = Math.max(MIN, Math.min(startS + delta,
+            imgX + imgW - startX, startY - imgY + startS));
+          y = startY + startS - s;
+        } else { // sw
+          delta = (-dx + dy) / 2;
+          s = Math.max(MIN, Math.min(startS + delta,
+            startX - imgX + startS, imgY + imgH - startY));
+          x = startX + startS - s;
         }
-      } catch(e) {
-        showToast('Network error.', 'error');
-      }
-      event.target.value = '';
+
+        frame.style.left   = x + 'px';
+        frame.style.top    = y + 'px';
+        frame.style.width  = s + 'px';
+        frame.style.height = s + 'px';
+      };
+      const onUp = () => {
+        document.removeEventListener('mousemove', onMove);
+        document.removeEventListener('mouseup',   onUp);
+        document.removeEventListener('touchmove', onMove);
+        document.removeEventListener('touchend',  onUp);
+      };
+      document.addEventListener('mousemove', onMove);
+      document.addEventListener('mouseup',   onUp);
+      document.addEventListener('touchmove', onMove, { passive: false });
+      document.addEventListener('touchend',  onUp);
+    },
+
+    async applyCrop() {
+      const imgEl = document.getElementById('crop-img');
+      const frame = document.getElementById('crop-frame');
+      if (!imgEl || !frame) return;
+      const OUT  = 400;
+
+      // Frame'in konteynerdeki pozisyonu ve boyutu (dinamik — kullanıcı yeniden boyutlandırmış olabilir)
+      const frameX = parseFloat(frame.style.left)   || 0;
+      const frameY = parseFloat(frame.style.top)    || 0;
+      const frameW = parseFloat(frame.style.width)  || 220;
+      const frameH = parseFloat(frame.style.height) || 220;
+
+      // Resmin konteynerdeki pozisyonu ve boyutu
+      const imgDX = parseFloat(imgEl.style.left)   || 0;
+      const imgDY = parseFloat(imgEl.style.top)    || 0;
+      const imgDW = parseFloat(imgEl.style.width)  || 320;
+      const imgDH = parseFloat(imgEl.style.height) || 320;
+
+      // Frame'in resim üzerindeki pozisyonu (resim koordinatlarına çevir)
+      const natW   = imgEl.naturalWidth  || imgDW;
+      const natH   = imgEl.naturalHeight || imgDH;
+      const scaleX = natW / imgDW;
+      const scaleY = natH / imgDH;
+      const srcX = Math.max(0, Math.round((frameX - imgDX) * scaleX));
+      const srcY = Math.max(0, Math.round((frameY - imgDY) * scaleY));
+      const srcW = Math.min(natW - srcX, Math.round(frameW * scaleX));
+      const srcH = Math.min(natH - srcY, Math.round(frameH * scaleY));
+
+      const canvas = document.createElement('canvas');
+      canvas.width  = OUT;
+      canvas.height = OUT;
+      const ctx = canvas.getContext('2d');
+
+      const img = new Image();
+      img.src = this.cropperSrc;
+      await new Promise(r => { img.complete ? r() : (img.onload = r); });
+      ctx.drawImage(img, srcX, srcY, srcW, srcH, 0, 0, OUT, OUT);
+
+      canvas.toBlob(async (blob) => {
+        const formData = new FormData();
+        formData.append('avatar', blob, 'avatar.jpg');
+        showToast('Yükleniyor…', 'warning');
+        try {
+          const res = await fetch('{% url "dashboard:avatar_upload" %}', {
+            method: 'POST',
+            headers: { 'X-CSRFToken': CSRF_TOKEN },
+            body: formData,
+          });
+          const data = await res.json();
+          if (data.ok) {
+            this.avatarUrl = data.url + '?t=' + Date.now();
+            showToast('Profil fotoğrafı güncellendi!', 'success');
+          } else {
+            showToast(data.error || 'Yükleme başarısız.', 'error');
+          }
+        } catch(err) { showToast('Ağ hatası.', 'error'); }
+        this.cropperOpen = false;
+      }, 'image/jpeg', 0.92);
+    },
+
+    bgPosStartDrag(e) {
+      const container = e.currentTarget;
+      const updatePos = (clientX, clientY) => {
+        const rect = container.getBoundingClientRect();
+        this.bgPosX = Math.round(Math.max(0, Math.min(100, (clientX - rect.left) / rect.width * 100)));
+        this.bgPosY = Math.round(Math.max(0, Math.min(100, (clientY - rect.top) / rect.height * 100)));
+      };
+      const t = e.touches ? e.touches[0] : e;
+      updatePos(t.clientX, t.clientY);
+      const onMove = (ev) => {
+        const touch = ev.touches ? ev.touches[0] : ev;
+        updatePos(touch.clientX, touch.clientY);
+      };
+      const onUp = () => {
+        document.removeEventListener('mousemove', onMove);
+        document.removeEventListener('mouseup', onUp);
+        document.removeEventListener('touchmove', onMove);
+        document.removeEventListener('touchend', onUp);
+      };
+      document.addEventListener('mousemove', onMove);
+      document.addEventListener('mouseup', onUp);
+      document.addEventListener('touchmove', onMove, { passive: false });
+      document.addEventListener('touchend', onUp);
     },
 
     async uploadBackground(event) {

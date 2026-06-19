@@ -1,7 +1,15 @@
 import hashlib
+import re
 from django.shortcuts import render, redirect
 from accounts.models import UserProfile, Link, Appearance
 from analytics_app.models import ProfileView, LinkClick
+
+
+def _parse_youtube_id(url):
+    if not url:
+        return None
+    m = re.search(r'(?:youtu\.be/|youtube\.com/(?:watch\?(?:.*&)?v=|embed/|shorts/))([A-Za-z0-9_-]{11})', url)
+    return m.group(1) if m else None
 
 
 def _get_ip(request):
@@ -87,10 +95,18 @@ def public_profile(request, username):
 
     # Background CSS
     bg = appearance
+    youtube_embed_url = None
     if bg.bg_type == 'gradient':
         bg_style = f'background:linear-gradient({bg.bg_gradient_dir},{bg.bg_color},{bg.bg_color2});'
     elif bg.bg_type == 'image' and bg.bg_image:
-        bg_style = f'background-image:url({bg.bg_image.url});background-size:cover;background-position:center;background-attachment:fixed;'
+        px = getattr(bg, 'bg_image_pos_x', 50)
+        py = getattr(bg, 'bg_image_pos_y', 50)
+        bg_style = f'background-image:url({bg.bg_image.url});background-size:cover;background-position:{px}% {py}%;background-attachment:fixed;'
+    elif bg.bg_type == 'video' and bg.bg_video_url:
+        vid_id = _parse_youtube_id(bg.bg_video_url)
+        if vid_id:
+            youtube_embed_url = f'https://www.youtube.com/embed/{vid_id}?autoplay=1&mute=1&loop=1&playlist={vid_id}&controls=0&playsinline=1'
+        bg_style = f'background-color:{bg.bg_color};'
     else:
         bg_style = f'background-color:{bg.bg_color};'
 
@@ -157,6 +173,7 @@ def public_profile(request, username):
         'social_links': social_links,
         'main_links': main_links,
         'bg_style': bg_style,
+        'youtube_embed_url': youtube_embed_url,
         'border_style': border_style,
         'shape_css': shape_css,
         'icon_size': icon_size,

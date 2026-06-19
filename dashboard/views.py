@@ -152,7 +152,8 @@ def appearance_save(request):
 
     allowed_appearance = [
         'avatar_shape', 'border_color', 'border_width',
-        'bg_type', 'bg_color', 'bg_color2', 'bg_gradient_dir',
+        'bg_type', 'bg_color', 'bg_color2', 'bg_gradient_dir', 'bg_video_url',
+        'bg_image_pos_x', 'bg_image_pos_y',
         'btn_style', 'btn_color', 'btn_text_color', 'btn_radius', 'btn_hover',
         'font_family', 'font_size', 'text_color',
         'social_icon_style', 'social_icon_size',
@@ -234,6 +235,18 @@ def avatar_upload(request):
     f = request.FILES.get('avatar')
     if not f:
         return JsonResponse({'ok': False, 'error': 'No file provided.'}, status=400)
+
+    is_gif = f.content_type == 'image/gif' or f.name.lower().endswith('.gif')
+
+    if is_gif:
+        if f.size > 5 * 1024 * 1024:
+            return JsonResponse({'ok': False, 'error': 'GIF max 5 MB olabilir.'}, status=400)
+        profile = request.user.profile
+        if profile.avatar:
+            profile.avatar.delete(save=False)
+        profile.avatar.save(f'av_{request.user.id}.gif', f, save=True)
+        return JsonResponse({'ok': True, 'url': profile.avatar.url})
+
     if f.size > 2 * 1024 * 1024:
         return JsonResponse({'ok': False, 'error': 'File too large. Max 2 MB.'}, status=400)
 
