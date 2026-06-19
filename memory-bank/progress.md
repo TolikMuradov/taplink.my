@@ -62,3 +62,5 @@
 - 2026-06-17 Session 3: Pages 5-7, gift codes, public profile, QR editor, UX fixes
 - 2026-06-17 Session 4: qr-code-styling.js, global UI (animations/transitions), drag&drop, avatar upload
 - 2026-06-18 Session 5: Analytics (models+tracking+dashboard), rate limiting, free plan limit
+- 2026-06-19 Session 6: Avatar crop modal (custom), YouTube bg, bg image position editor, GIF avatar
+- 2026-06-19 Session 7: Dashboard UX overhaul — Links+Appearance merged, Add link modal (50+ types), compact link cards (accordion)

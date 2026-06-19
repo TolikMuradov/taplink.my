@@ -260,7 +260,7 @@
           </div>
 
           <!-- Link cards -->
-          <div class="space-y-3" id="links-list">
+          <div class="space-y-2" id="links-list">
             <template x-for="link in links" :key="link.id">
               <div
                 x-transition:enter="transition ease-out duration-200"
@@ -269,176 +269,166 @@
                 x-transition:leave="transition ease-in duration-150"
                 x-transition:leave-start="opacity-100 scale-100"
                 x-transition:leave-end="opacity-0 scale-[0.98]"
-                class="glass-card rounded-xl p-4 group hover:border-primary/60 hover:shadow-lg hover:shadow-primary/5 transition-all duration-200"
-                :class="link.is_active ? '' : 'opacity-50'"
+                class="glass-card rounded-xl overflow-hidden transition-all duration-200"
+                :class="[link.is_active ? '' : 'opacity-55', expandedLink === link.id ? 'border-primary/40 shadow-lg shadow-primary/5' : '']"
                 :data-link-id="link.id"
               >
-                <div class="flex items-center gap-3">
+                <!-- ── Compact row (always visible) ── -->
+                <div class="flex items-center gap-2.5 px-3 py-3">
+
                   <!-- Drag handle -->
                   <div class="drag-handle text-on-surface-variant cursor-grab active:cursor-grabbing shrink-0 hover:text-primary transition-colors">
-                    <span class="material-symbols-outlined text-xl">drag_indicator</span>
+                    <span class="material-symbols-outlined" style="font-size:18px">drag_indicator</span>
                   </div>
 
-                  <!-- Icon button -->
-                  <button
-                    @click="openIconPicker(link.id)"
-                    class="w-10 h-10 rounded-lg flex items-center justify-center shrink-0 hover:opacity-80 transition-opacity"
-                    :style="`background-color: ${link.color}22; border: 1.5px solid ${link.color}`"
-                    title="Change icon"
-                  >
-                    <span class="material-symbols-outlined text-xl" :style="`color: ${link.icon_color}`" x-text="link.icon"></span>
-                  </button>
+                  <!-- Icon badge -->
+                  <div class="w-9 h-9 rounded-lg flex items-center justify-center shrink-0"
+                    :style="`background:${link.color}22;border:1.5px solid ${link.color}66`">
+                    <span class="material-symbols-outlined text-lg" :style="`color:${link.icon_color}`" x-text="link.icon"></span>
+                  </div>
 
-                  <!-- Title + URL inputs -->
-                  <div class="flex-1 min-w-0 space-y-1.5">
-                    <input
-                      type="text"
-                      x-model="link.title"
-                      @change="updateLink(link)"
-                      placeholder="Title"
-                      class="w-full bg-transparent border-0 border-b border-outline-variant focus:border-primary outline-none text-sm font-medium text-on-surface placeholder-on-surface-variant/50 pb-0.5 transition-colors"
-                    />
-                    <input
-                      type="url"
-                      x-model="link.url"
-                      @change="updateLink(link)"
-                      placeholder="https://"
-                      class="w-full bg-transparent border-0 border-b border-outline-variant focus:border-primary outline-none text-xs text-on-surface-variant placeholder-on-surface-variant/50 pb-0.5 transition-colors"
-                    />
+                  <!-- Title + URL (tap to expand) -->
+                  <div class="flex-1 min-w-0 cursor-pointer" @click="toggleLink(link.id)">
+                    <p class="text-sm font-semibold text-on-surface truncate leading-tight" x-text="link.title || 'Untitled'"></p>
+                    <p class="text-[11px] text-on-surface-variant truncate leading-tight mt-0.5" x-text="link.url || 'No URL set'"></p>
                   </div>
 
                   <!-- Active toggle -->
-                  <button
-                    @click="link.is_active = !link.is_active; updateLink(link)"
-                    class="shrink-0 w-11 h-6 rounded-full transition-colors relative"
-                    :class="link.is_active ? 'bg-primary' : 'bg-surface-container-highest'"
-                  >
-                    <span
-                      class="absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform"
-                      :class="link.is_active ? 'translate-x-5' : 'translate-x-0'"
-                    ></span>
+                  <button @click.stop="link.is_active = !link.is_active; updateLink(link)"
+                    class="shrink-0 w-10 h-[22px] rounded-full transition-colors relative"
+                    :class="link.is_active ? 'bg-primary' : 'bg-surface-container-highest'">
+                    <span class="absolute top-[2px] left-[2px] w-[18px] h-[18px] rounded-full bg-white shadow transition-transform"
+                      :class="link.is_active ? 'translate-x-[18px]' : 'translate-x-0'"></span>
                   </button>
 
-                  <!-- Delete -->
-                  <button
-                    @click="deleteLink(link.id)"
-                    class="shrink-0 text-on-surface-variant hover:text-error transition-colors"
-                  >
-                    <span class="material-symbols-outlined text-xl">delete</span>
+                  <!-- Expand chevron -->
+                  <button @click="toggleLink(link.id)"
+                    class="shrink-0 w-7 h-7 rounded-lg flex items-center justify-center transition-all text-on-surface-variant hover:text-primary hover:bg-surface-container"
+                    :class="expandedLink === link.id ? 'rotate-180 text-primary' : ''">
+                    <span class="material-symbols-outlined" style="font-size:18px">expand_more</span>
                   </button>
                 </div>
 
-                <!-- Colour row -->
-                <div class="flex items-end gap-2 mt-3 pt-3 border-t border-outline-variant/50">
-                  <!-- Button color swatch -->
-                  <div class="flex-1 flex flex-col gap-1">
-                    <span class="text-xs text-on-surface-variant text-center">Button</span>
-                    <label class="relative h-8 rounded-lg cursor-pointer overflow-hidden border border-outline-variant/60 hover:border-primary transition-colors" :style="`background:${link.color}`">
-                      <input type="color" x-model="link.color" @input="updateLink(link)" class="absolute inset-0 opacity-0 w-full h-full cursor-pointer"/>
-                    </label>
-                  </div>
-                  <!-- Text color swatch -->
-                  <div class="flex-1 flex flex-col gap-1">
-                    <span class="text-xs text-on-surface-variant text-center">Text</span>
-                    <label class="relative h-8 rounded-lg cursor-pointer overflow-hidden border border-outline-variant/60 hover:border-primary transition-colors" :style="`background:${link.text_color}`">
-                      <input type="color" x-model="link.text_color" @input="updateLink(link)" class="absolute inset-0 opacity-0 w-full h-full cursor-pointer"/>
-                    </label>
-                  </div>
-                  <!-- Icon color swatch -->
-                  <div class="flex-1 flex flex-col gap-1">
-                    <span class="text-xs text-on-surface-variant text-center">Icon</span>
-                    <label class="relative h-8 rounded-lg cursor-pointer overflow-hidden border border-outline-variant/60 hover:border-primary transition-colors" :style="`background:${link.icon_color}`">
-                      <input type="color" x-model="link.icon_color" @input="updateLink(link)" class="absolute inset-0 opacity-0 w-full h-full cursor-pointer"/>
-                    </label>
-                  </div>
-                  <!-- Change icon button -->
-                  <button
-                    @click="openIconPicker(link.id)"
-                    class="flex flex-col items-center gap-1 px-3 shrink-0"
-                    title="Change icon"
-                  >
-                    <span class="text-xs text-on-surface-variant">Icon</span>
-                    <div class="h-8 w-10 rounded-lg border border-outline-variant/60 hover:border-primary flex items-center justify-center transition-colors">
-                      <span class="material-symbols-outlined text-on-surface-variant" style="font-size:16px" x-text="link.icon"></span>
-                    </div>
-                  </button>
-                </div>
+                <!-- ── Expanded settings panel ── -->
+                <div x-show="expandedLink === link.id"
+                     x-transition:enter="transition-all ease-out duration-200"
+                     x-transition:enter-start="opacity-0"
+                     x-transition:enter-end="opacity-100"
+                     x-transition:leave="transition-all ease-in duration-150"
+                     x-transition:leave-start="opacity-100"
+                     x-transition:leave-end="opacity-0">
+                  <div class="px-3 pb-3 space-y-3 border-t border-outline-variant/40 pt-3">
 
-                <!-- Font row -->
-                <div class="mt-2 pt-2 border-t border-outline-variant/30">
-                  <div class="flex items-center gap-2">
-                    <span class="text-xs text-on-surface-variant shrink-0">Font</span>
-                    <!-- Current selection display -->
-                    <div class="flex-1 px-3 py-1.5 rounded-lg bg-surface-container border border-outline-variant text-sm text-on-surface truncate"
-                         :style="link.font_family ? `font-family:'${link.font_family}',sans-serif` : ''"
-                         x-text="link.font_family || 'Default'">
+                    <!-- Title + URL editable inputs -->
+                    <div class="space-y-1.5">
+                      <input type="text" x-model="link.title" @change="updateLink(link)" placeholder="Title"
+                        class="w-full bg-surface-container rounded-lg px-3 py-2 text-sm font-semibold text-on-surface border border-outline-variant focus:border-primary outline-none transition-colors" />
+                      <input type="url" x-model="link.url" @change="updateLink(link)" placeholder="https://"
+                        class="w-full bg-surface-container rounded-lg px-3 py-2 text-xs text-on-surface-variant border border-outline-variant focus:border-primary outline-none transition-colors" />
                     </div>
-                    <button
-                      @click="openFontPicker = (openFontPicker === link.id ? null : link.id)"
-                      class="shrink-0 px-3 py-1.5 rounded-lg text-xs border border-outline-variant text-on-surface-variant hover:border-primary transition-colors"
-                      :class="openFontPicker === link.id ? 'border-primary text-primary' : ''"
-                    >
-                      <span class="material-symbols-outlined" style="font-size:14px;vertical-align:middle">expand_more</span>
-                    </button>
-                  </div>
 
-                  <!-- Font picker panel -->
-                  <div x-show="openFontPicker === link.id" x-cloak
-                       class="mt-2 p-3 rounded-xl bg-surface-container border border-outline-variant space-y-3">
-                    <!-- Free fonts -->
-                    <div>
-                      <p class="text-xs font-semibold text-on-surface-variant uppercase tracking-wide mb-2">Free</p>
-                      <div class="grid grid-cols-3 gap-1.5">
-                        <button
-                          @click="link.font_family = ''; updateLink(link); openFontPicker = null"
-                          class="py-2 rounded-lg text-xs border transition-colors"
-                          :class="!link.font_family ? 'bg-primary text-on-primary border-primary' : 'border-outline-variant text-on-surface-variant hover:border-primary'"
-                        >Default</button>
-                        <template x-for="f in FREE_FONTS" :key="f.name">
+                    <!-- Controls row -->
+                    <div class="flex items-center gap-2 flex-wrap">
+
+                      <!-- Color swatches group -->
+                      <div class="flex items-center gap-1.5 p-1.5 rounded-lg" style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07)">
+                        <span class="text-[10px] text-on-surface-variant pl-0.5 pr-1">Colors</span>
+                        <label class="w-6 h-6 rounded-md cursor-pointer overflow-hidden border border-white/10 hover:border-primary/60 transition-colors relative shrink-0" :style="`background:${link.color}`" title="Button">
+                          <input type="color" x-model="link.color" @input="updateLink(link)" class="absolute inset-0 opacity-0 w-full h-full cursor-pointer">
+                        </label>
+                        <label class="w-6 h-6 rounded-md cursor-pointer overflow-hidden border border-white/10 hover:border-primary/60 transition-colors relative shrink-0" :style="`background:${link.text_color}`" title="Text">
+                          <input type="color" x-model="link.text_color" @input="updateLink(link)" class="absolute inset-0 opacity-0 w-full h-full cursor-pointer">
+                        </label>
+                        <label class="w-6 h-6 rounded-md cursor-pointer overflow-hidden border border-white/10 hover:border-primary/60 transition-colors relative shrink-0" :style="`background:${link.icon_color}`" title="Icon">
+                          <input type="color" x-model="link.icon_color" @input="updateLink(link)" class="absolute inset-0 opacity-0 w-full h-full cursor-pointer">
+                        </label>
+                      </div>
+
+                      <!-- Icon picker button -->
+                      <button @click="openIconPicker(link.id)"
+                        class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs text-on-surface-variant hover:text-primary transition-colors"
+                        style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07)"
+                        onmouseover="this.style.borderColor='rgba(99,102,241,0.4)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.07)'">
+                        <span class="material-symbols-outlined text-base" x-text="link.icon"></span>
+                        <span>Icon</span>
+                      </button>
+
+                      <!-- Font picker button -->
+                      <button @click="openFontPicker = (openFontPicker === link.id ? null : link.id)"
+                        class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs text-on-surface-variant hover:text-primary transition-colors"
+                        :class="openFontPicker === link.id ? 'text-primary' : ''"
+                        style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07)"
+                        :style="openFontPicker === link.id ? 'border-color:rgba(99,102,241,0.4)' : ''"
+                        onmouseover="if(!this.classList.contains('text-primary')) this.style.borderColor='rgba(99,102,241,0.4)'" onmouseout="if(!this.classList.contains('text-primary')) this.style.borderColor='rgba(255,255,255,0.07)'">
+                        <span class="material-symbols-outlined text-base">text_fields</span>
+                        <span x-text="link.font_family || 'Font'"></span>
+                      </button>
+
+                      <!-- Spacer -->
+                      <div class="flex-1"></div>
+
+                      <!-- Delete -->
+                      <button @click="deleteLink(link.id)"
+                        class="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs text-error/70 hover:text-error hover:bg-error/10 border border-transparent hover:border-error/20 transition-all">
+                        <span class="material-symbols-outlined text-base">delete</span>
+                      </button>
+                    </div>
+
+                    <!-- Font picker panel -->
+                    <div x-show="openFontPicker === link.id" x-cloak
+                         class="p-3 rounded-xl border border-outline-variant space-y-3" style="background:rgba(255,255,255,0.03)">
+                      <div>
+                        <p class="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest mb-2">Free</p>
+                        <div class="grid grid-cols-3 gap-1.5">
                           <button
-                            @click="link.font_family = f.name; updateLink(link); openFontPicker = null"
-                            class="py-2 rounded-lg text-xs border transition-colors truncate px-1"
-                            :class="link.font_family === f.name ? 'bg-primary text-on-primary border-primary' : 'border-outline-variant text-on-surface-variant hover:border-primary'"
-                            :style="`font-family:'${f.name}',sans-serif`"
-                            x-text="f.label"
-                          ></button>
-                        </template>
-                      </div>
-                    </div>
-                    <!-- Standard fonts -->
-                    <div>
-                      <div class="flex items-center gap-2 mb-2">
-                        <p class="text-xs font-semibold text-on-surface-variant uppercase tracking-wide">Standard</p>
-                        <template x-if="!isStandard">
-                          <a href="{% url 'upgrade' %}" class="text-xs text-tertiary hover:underline">Upgrade to unlock →</a>
-                        </template>
-                      </div>
-                      <div class="grid grid-cols-3 gap-1.5">
-                        <template x-for="f in STANDARD_FONTS" :key="f.name">
-                          <template x-if="isStandard">
+                            @click="link.font_family = ''; updateLink(link); openFontPicker = null"
+                            class="py-1.5 rounded-lg text-xs border transition-colors"
+                            :class="!link.font_family ? 'bg-primary text-on-primary border-primary' : 'border-outline-variant text-on-surface-variant hover:border-primary'"
+                          >Default</button>
+                          <template x-for="f in FREE_FONTS" :key="f.name">
                             <button
                               @click="link.font_family = f.name; updateLink(link); openFontPicker = null"
-                              class="py-2 rounded-lg text-xs border transition-colors truncate px-1"
+                              class="py-1.5 rounded-lg text-xs border transition-colors truncate px-1"
                               :class="link.font_family === f.name ? 'bg-primary text-on-primary border-primary' : 'border-outline-variant text-on-surface-variant hover:border-primary'"
                               :style="`font-family:'${f.name}',sans-serif`"
-                              :title="f.vibe"
                               x-text="f.label"
                             ></button>
                           </template>
+                        </div>
+                      </div>
+                      <div>
+                        <div class="flex items-center gap-2 mb-2">
+                          <p class="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">Standard</p>
                           <template x-if="!isStandard">
-                            <div
-                              class="py-2 rounded-lg text-xs border border-outline-variant/30 text-on-surface-variant/30 flex items-center justify-center gap-1 cursor-not-allowed truncate px-1 select-none"
-                              :style="`font-family:'${f.name}',sans-serif`"
-                            >
-                              <span x-text="f.label"></span>
-                              <span class="material-symbols-outlined" style="font-size:10px">lock</span>
-                            </div>
+                            <a href="{% url 'upgrade' %}" class="text-xs text-tertiary hover:underline">Upgrade →</a>
                           </template>
-                        </template>
+                        </div>
+                        <div class="grid grid-cols-3 gap-1.5">
+                          <template x-for="f in STANDARD_FONTS" :key="f.name">
+                            <template x-if="isStandard">
+                              <button
+                                @click="link.font_family = f.name; updateLink(link); openFontPicker = null"
+                                class="py-1.5 rounded-lg text-xs border transition-colors truncate px-1"
+                                :class="link.font_family === f.name ? 'bg-primary text-on-primary border-primary' : 'border-outline-variant text-on-surface-variant hover:border-primary'"
+                                :style="`font-family:'${f.name}',sans-serif`"
+                                x-text="f.label"
+                              ></button>
+                            </template>
+                            <template x-if="!isStandard">
+                              <div class="py-1.5 rounded-lg text-xs border border-outline-variant/30 text-on-surface-variant/30 flex items-center justify-center gap-1 cursor-not-allowed truncate px-1 select-none"
+                                :style="`font-family:'${f.name}',sans-serif`">
+                                <span x-text="f.label"></span>
+                                <span class="material-symbols-outlined" style="font-size:10px">lock</span>
+                              </div>
+                            </template>
+                          </template>
+                        </div>
                       </div>
                     </div>
+
                   </div>
-                </div>
+                </div><!-- /expanded panel -->
+
               </div>
             </template>
           </div>
@@ -1595,6 +1585,11 @@ function dashboardApp() {
     showDeleteModal: false,
     deleteConfirmUsername: '',
     openFontPicker: null,
+    expandedLink: null,
+
+    toggleLink(id) {
+      this.expandedLink = (this.expandedLink === id ? null : id);
+    },
 
     iconCategories: [
       { name: 'Social',   icons: PLATFORM_ICONS.filter(i => i.category === 'Social') },
