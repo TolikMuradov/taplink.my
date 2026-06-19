@@ -44,7 +44,7 @@ class Link(models.Model):
     user          = models.ForeignKey(User, on_delete=models.CASCADE, related_name='links')
     title         = models.CharField(max_length=80)
     url           = models.URLField(max_length=500)
-    icon          = models.CharField(max_length=40, default='link')        # Material symbol name
+    icon          = models.CharField(max_length=80, default='mdi:link')    # Iconify icon id (e.g. 'simple-icons:instagram') or legacy Material name
     icon_type     = models.CharField(max_length=20, default='material')    # 'material' or platform name
     color         = models.CharField(max_length=7, default='#8083ff')      # button bg / accent color
     text_color    = models.CharField(max_length=7, default='#ffffff')      # label text color

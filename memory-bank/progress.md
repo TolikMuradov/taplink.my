@@ -64,3 +64,4 @@
 - 2026-06-18 Session 5: Analytics (models+tracking+dashboard), rate limiting, free plan limit
 - 2026-06-19 Session 6: Avatar crop modal (custom), YouTube bg, bg image position editor, GIF avatar
 - 2026-06-19 Session 7: Dashboard UX overhaul — Links+Appearance merged, Add link modal (50+ types), compact link cards (accordion)
+- 2026-06-19 Session 8: Link cards → Linktree-style (always expanded, inline inputs, bottom toolbar); Profile section → flat (avatar + inline name/bio/location + quick social icons + big Add pill); Design tab ayrıldı (Background); Avatar style + Buttons accordion kaldırıldı (Buttons ileride per-link template olarak gelecek); Nav sırası: Links → Design → Analytics → Settings

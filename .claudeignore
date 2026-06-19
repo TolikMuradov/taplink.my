@@ -1,0 +1,49 @@
+# Python bytecode
+**/__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# SQLite veritabanı
+*.sqlite3
+
+# Kullanıcı yüklemeleri
+media/
+
+# Git / editör
+.git/
+.vscode/
+.claude/
+
+# Django migrations
+**/migrations/0*.py
+
+# ── Dashboard dışı templates ──
+templates/profiles/
+templates/core/
+templates/account/
+templates/accounts/
+templates/admin/
+
+# ── Dashboard dışı app'ler ──
+profiles/
+core/
+analytics_app/
+
+# ── Accounts app — sadece models.py gerekli ──
+accounts/admin.py
+accounts/adapters.py
+accounts/apps.py
+accounts/signals.py
+accounts/tests.py
+accounts/urls.py
+accounts/views.py
+
+# ── Dashboard app — gereksiz dosyalar ──
+dashboard/admin.py
+dashboard/apps.py
+dashboard/models.py
+dashboard/tests.py
+
+# Planlama belgesi
+plan.txt

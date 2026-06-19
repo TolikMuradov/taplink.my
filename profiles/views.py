@@ -148,7 +148,8 @@ def public_profile(request, username):
             'hover': appearance.btn_hover,
             'platform_color': platform_color,
             'social_icon_color': social_icon_color,
-            'is_material': link.icon_type == 'material',
+            'is_iconify': ':' in link.icon,
+            'is_material': ':' not in link.icon and link.icon_type == 'material',
         }
 
         if link.display_style == 'icon_only':
